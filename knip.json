@@ -10,6 +10,13 @@
     "onnxruntime-common",
     "onnxruntime-node",
     "@claude-memory/core",
+    "@claude-memory/embedding-onnx",
+    "@claude-memory/storage-postgres",
+    "@claude-memory/hooks",
+    "@modelcontextprotocol/sdk",
+    "pino",
+    "pino-pretty",
+    "zod",
     "drizzle-orm",
     "drizzle-zod",
     "postgres"
