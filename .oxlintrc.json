@@ -1,0 +1,6 @@
+{
+  "rules": {
+    "all": "warn"
+  },
+  "ignorePatterns": ["dist/", "node_modules/", "coverage/"]
+}
