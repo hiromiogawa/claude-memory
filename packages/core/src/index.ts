@@ -10,3 +10,4 @@ export type {
   SearchResult,
   StorageStats,
 } from './entities/index.js'
+export type { ChunkingStrategy, EmbeddingProvider, StorageRepository } from './interfaces/index.js'
