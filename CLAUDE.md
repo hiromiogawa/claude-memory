@@ -38,3 +38,35 @@
 - `pnpm knip` — 未使用コード検出
 - `pnpm dep-check` — 依存方向検証
 - `pnpm build` — 全パッケージビルド
+
+## Claude Code Integration
+
+### MCP Server (settings.json)
+```json
+{
+  "mcpServers": {
+    "claude-memory": {
+      "command": "docker",
+      "args": ["exec", "claude-memory-mcp-server-1", "node", "packages/mcp-server/dist/index.js"]
+    }
+  }
+}
+```
+
+### Hooks (settings.json)
+```json
+{
+  "hooks": {
+    "PostSessionEnd": [{
+      "command": "docker exec claude-memory-mcp-server-1 node packages/hooks/dist/index.js"
+    }]
+  }
+}
+```
+
+### Setup
+```bash
+git clone <repo>
+cd claude-memory
+docker compose up -d
+```
