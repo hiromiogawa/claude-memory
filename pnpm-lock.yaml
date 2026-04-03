@@ -32,6 +32,9 @@ importers:
 
   packages/core:
     devDependencies:
+      '@types/node':
+        specifier: 25.5.0
+        version: 25.5.0
       '@vitest/coverage-v8':
         specifier: 3.1.1
         version: 3.1.1(vitest@3.1.1(@types/node@25.5.0)(jiti@2.6.1)(yaml@2.8.2))
