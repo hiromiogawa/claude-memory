@@ -5,7 +5,7 @@
       "project": ["src/**/*.ts"]
     }
   },
-  "ignore": ["**/*.test.ts"],
+  "ignore": ["**/*.test.ts", "scripts/**"],
   "ignoreDependencies": [
     "onnxruntime-common",
     "onnxruntime-node",
