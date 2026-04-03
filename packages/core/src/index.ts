@@ -17,5 +17,11 @@ export {
   StorageConnectionError,
 } from './errors/index.js'
 export type { ChunkingStrategy, EmbeddingProvider, StorageRepository } from './interfaces/index.js'
-export { SaveMemoryUseCase } from './use-cases/save-memory.js'
-export { SearchMemoryUseCase } from './use-cases/search-memory.js'
+export {
+  ClearMemoryUseCase,
+  DeleteMemoryUseCase,
+  GetStatsUseCase,
+  ListMemoriesUseCase,
+  SaveMemoryUseCase,
+  SearchMemoryUseCase,
+} from './use-cases/index.js'
