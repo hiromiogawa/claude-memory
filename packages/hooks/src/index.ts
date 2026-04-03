@@ -1,2 +1,2 @@
-// Placeholder - will be populated in later tasks
-export {}
+export { QAChunkingStrategy } from './qa-chunking-strategy.js'
+export { SessionEndHandler } from './session-end-handler.js'
