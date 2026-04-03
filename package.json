@@ -15,6 +15,18 @@
     "knip": "knip",
     "dep-check": "depcruise --validate packages/"
   },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "onnxruntime-node"
+    ],
+    "packageExtensions": {
+      "@huggingface/transformers@3.4.1": {
+        "dependencies": {
+          "onnxruntime-common": "1.20.1"
+        }
+      }
+    }
+  },
   "devDependencies": {
     "@biomejs/biome": "2.4.10",
     "@commitlint/cli": "20.5.0",

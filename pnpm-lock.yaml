@@ -4,6 +4,8 @@ settings:
   autoInstallPeers: true
   excludeLinksFromLockfile: false
 
+packageExtensionsChecksum: sha256-m+GShMUvabCJ+YhGgo9iTlV7xd/avo5nr/Iz/FW8Mds=
+
 importers:
 
   .:
@@ -53,7 +55,16 @@ importers:
       '@huggingface/transformers':
         specifier: 3.4.1
         version: 3.4.1
+      onnxruntime-common:
+        specifier: 1.20.1
+        version: 1.20.1
+      onnxruntime-node:
+        specifier: 1.20.1
+        version: 1.20.1
     devDependencies:
+      '@types/node':
+        specifier: 25.5.0
+        version: 25.5.0
       '@vitest/coverage-v8':
         specifier: 3.1.1
         version: 3.1.1(vitest@3.1.1(@types/node@25.5.0)(jiti@2.6.1)(yaml@2.8.2))
@@ -2334,6 +2345,7 @@ snapshots:
   '@huggingface/transformers@3.4.1':
     dependencies:
       '@huggingface/jinja': 0.3.4
+      onnxruntime-common: 1.20.1
       onnxruntime-node: 1.20.1
       onnxruntime-web: 1.22.0-dev.20250306-ccf8fdd9ea
       sharp: 0.33.5
