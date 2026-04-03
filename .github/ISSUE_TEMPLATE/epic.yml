@@ -1,0 +1,25 @@
+name: "Epic"
+description: "大きな機能単位の目標"
+labels: ["epic"]
+body:
+  - type: textarea
+    id: goal
+    attributes:
+      label: "ゴール"
+      description: "この Epic で達成したいこと"
+    validations:
+      required: true
+  - type: textarea
+    id: success-criteria
+    attributes:
+      label: "完了条件"
+      description: "何をもって Done とするか"
+    validations:
+      required: true
+  - type: textarea
+    id: child-issues
+    attributes:
+      label: "子Issue一覧"
+      description: "Task / Story / Bug への分解（後から更新OK）"
+      value: |
+        - [ ] #

@@ -1,0 +1,27 @@
+name: "Story"
+description: "ユーザー視点の機能要求"
+labels: ["story"]
+body:
+  - type: input
+    id: parent-epic
+    attributes:
+      label: "親Epic"
+  - type: textarea
+    id: user-story
+    attributes:
+      label: "ユーザーストーリー"
+      description: "〜として、〜したい。なぜなら〜"
+      value: |
+        **〜として**、
+        **〜したい。**
+        **なぜなら**〜
+    validations:
+      required: true
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: "受け入れ条件"
+      value: |
+        - [ ]
+    validations:
+      required: true

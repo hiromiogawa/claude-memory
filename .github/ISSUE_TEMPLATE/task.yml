@@ -1,0 +1,32 @@
+name: "Task"
+description: "技術的な実装作業"
+labels: ["task"]
+body:
+  - type: input
+    id: parent-epic
+    attributes:
+      label: "親Epic"
+      description: "関連するEpicの番号（例: #1）"
+  - type: textarea
+    id: what
+    attributes:
+      label: "やること"
+      description: "具体的な作業内容"
+    validations:
+      required: true
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: "受け入れ条件"
+      description: "PR時に確認するチェックリスト"
+      value: |
+        - [ ] テストが通る
+        - [ ] 型エラーがない
+        - [ ] knipで未使用コードがない
+    validations:
+      required: true
+  - type: textarea
+    id: technical-notes
+    attributes:
+      label: "技術メモ"
+      description: "実装方針、参考情報（任意）"

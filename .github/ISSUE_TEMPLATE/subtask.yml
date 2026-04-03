@@ -1,0 +1,23 @@
+name: "Subtask"
+description: "Taskをさらに分解した作業単位"
+labels: ["subtask"]
+body:
+  - type: input
+    id: parent-task
+    attributes:
+      label: "親Task"
+      description: "関連するTaskの番号（例: #5）"
+    validations:
+      required: true
+  - type: textarea
+    id: what
+    attributes:
+      label: "やること"
+    validations:
+      required: true
+  - type: textarea
+    id: done
+    attributes:
+      label: "完了条件"
+      value: |
+        - [ ]
