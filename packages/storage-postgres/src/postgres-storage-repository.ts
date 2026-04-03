@@ -97,7 +97,7 @@ export class PostgresStorageRepository implements StorageRepository {
 
   async findById(id: string): Promise<Memory | null> {
     const rows = await this.db.select().from(memories).where(eq(memories.id, id)).limit(1)
-    if (rows.length === 0) return null
+    if (rows.length === 0 || !rows[0]) return null
     return toMemory(rows[0])
   }
 
@@ -211,6 +211,15 @@ export class PostgresStorageRepository implements StorageRepository {
       .from(memories)
 
     const row = result[0]
+    if (!row) {
+      return {
+        totalMemories: 0,
+        totalSessions: 0,
+        averageContentLength: 0,
+        oldestMemory: null,
+        newestMemory: null,
+      }
+    }
     return {
       totalMemories: row.totalMemories,
       totalSessions: row.totalSessions,

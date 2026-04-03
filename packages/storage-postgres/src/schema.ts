@@ -23,8 +23,9 @@ export const memories = pgTable(
   ],
 )
 
-export const insertMemorySchema = createInsertSchema(memories, {
-  content: (schema) => schema.min(1, '空文字不可'),
-})
+export const insertMemorySchema: ReturnType<typeof createInsertSchema<typeof memories>> =
+  createInsertSchema(memories, {
+    content: (schema) => schema.min(1, '空文字不可'),
+  })
 
 export const selectMemorySchema = createSelectSchema(memories)
