@@ -6,5 +6,12 @@
     }
   },
   "ignore": ["**/*.test.ts"],
-  "ignoreDependencies": ["onnxruntime-common", "onnxruntime-node"]
+  "ignoreDependencies": [
+    "onnxruntime-common",
+    "onnxruntime-node",
+    "@claude-memory/core",
+    "drizzle-orm",
+    "drizzle-zod",
+    "postgres"
+  ]
 }
