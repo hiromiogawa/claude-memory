@@ -1,0 +1,28 @@
+{
+  "name": "@claude-memory/embedding-onnx",
+  "version": "0.0.1",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "scripts": {
+    "build": "tsc",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage"
+  },
+  "dependencies": {
+    "@claude-memory/core": "workspace:*",
+    "@huggingface/transformers": "3.4.1"
+  },
+  "devDependencies": {
+    "typescript": "5.7.3",
+    "vitest": "3.1.1",
+    "@vitest/coverage-v8": "3.1.1"
+  }
+}
