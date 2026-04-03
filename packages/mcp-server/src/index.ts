@@ -1,10 +1,8 @@
-export type { AppConfig } from './config.js'
-export { loadConfig } from './config.js'
-export type { Container } from './container.js'
-export { createContainer } from './container.js'
-export { registerMemoryClearTool } from './tools/memory-clear.js'
-export { registerMemoryDeleteTool } from './tools/memory-delete.js'
-export { registerMemoryListTool } from './tools/memory-list.js'
-export { registerMemorySaveTool } from './tools/memory-save.js'
-export { registerMemorySearchTool } from './tools/memory-search.js'
-export { registerMemoryStatsTool } from './tools/memory-stats.js'
+#!/usr/bin/env node
+// packages/mcp-server/src/index.ts
+import { startServer } from './server.js'
+
+startServer().catch((err) => {
+  console.error('Failed to start server:', err)
+  process.exit(1)
+})
