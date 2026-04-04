@@ -3,3 +3,7 @@ export const SEARCH_DEFAULTS = {
   decayHalfLifeDays: 30,
   maxResults: 20,
 } as const
+
+export const DEDUP_DEFAULTS = {
+  similarityThreshold: 0.95,
+} as const

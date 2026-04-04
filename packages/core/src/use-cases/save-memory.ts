@@ -1,4 +1,5 @@
 import { randomUUID } from 'node:crypto'
+import { DEDUP_DEFAULTS } from '../constants.js'
 import type { ConversationLog } from '../entities/conversation.js'
 import type { Memory } from '../entities/memory.js'
 import type { ChunkingStrategy } from '../interfaces/chunking-strategy.js'
@@ -21,6 +22,9 @@ export class SaveMemoryUseCase {
 
   async saveManual(input: SaveManualInput): Promise<void> {
     const embeddingVector = await this.embedding.embed(input.content)
+
+    if (await this.isDuplicate(embeddingVector)) return
+
     const now = new Date()
     const memory: Memory = {
       id: randomUUID(),
@@ -52,6 +56,8 @@ export class SaveMemoryUseCase {
       const embedding = embeddings[i]
       if (!embedding || embedding.length === 0) continue
 
+      if (await this.isDuplicate(embedding)) continue
+
       memories.push({
         id: randomUUID(),
         content: chunks[i]!.content,
@@ -65,5 +71,11 @@ export class SaveMemoryUseCase {
     if (memories.length > 0) {
       await this.storage.saveBatch(memories)
     }
+  }
+
+  private async isDuplicate(embedding: number[]): Promise<boolean> {
+    const results = await this.storage.searchByVector(embedding, 1)
+    if (results.length === 0 || !results[0]) return false
+    return results[0].score >= DEDUP_DEFAULTS.similarityThreshold
   }
 }
