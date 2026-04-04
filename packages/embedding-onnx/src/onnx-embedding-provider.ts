@@ -33,11 +33,12 @@ export class OnnxEmbeddingProvider implements EmbeddingProvider {
 
   async embedBatch(texts: string[]): Promise<number[][]> {
     const extractor = await this.getExtractor()
-    const results: number[][] = []
-    for (const text of texts) {
-      const output = await extractor(text, { pooling: 'mean', normalize: true })
-      results.push(Array.from(output.data as Float32Array))
-    }
+    const results = await Promise.all(
+      texts.map(async (text) => {
+        const output = await extractor(text, { pooling: 'mean', normalize: true })
+        return Array.from(output.data as Float32Array)
+      }),
+    )
     return results
   }
 
