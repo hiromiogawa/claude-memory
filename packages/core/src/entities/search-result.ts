@@ -9,4 +9,5 @@ export interface SearchResult {
 export interface SearchFilter {
   projectPath?: string
   source?: 'manual' | 'auto'
+  tags?: string[]
 }

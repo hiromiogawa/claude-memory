@@ -13,6 +13,14 @@ import { memories } from './schema.js'
 
 type DbRow = typeof memories.$inferSelect
 
+/** PostgreSQL配列オーバーラップ演算子(&&)で、いずれかのタグを含む行にフィルタ */
+function tagsOverlapCondition(tags: string[]) {
+  return sql`${memories.tags} && ARRAY[${sql.join(
+    tags.map((t) => sql`${t}`),
+    sql`, `,
+  )}]::text[]`
+}
+
 function toMemory(row: DbRow): Memory {
   return {
     id: row.id,
@@ -111,11 +119,22 @@ export class PostgresStorageRepository implements StorageRepository {
   }
 
   async list(options: ListOptions): Promise<Memory[]> {
-    const { limit, offset, source, sessionId, sortBy = 'createdAt', sortOrder = 'desc' } = options
+    const {
+      limit,
+      offset,
+      source,
+      tags,
+      sessionId,
+      sortBy = 'createdAt',
+      sortOrder = 'desc',
+    } = options
 
     const conditions = []
     if (source) conditions.push(eq(memories.source, source))
     if (sessionId) conditions.push(eq(memories.sessionId, sessionId))
+    if (tags && tags.length > 0) {
+      conditions.push(tagsOverlapCondition(tags))
+    }
 
     const orderCol = sortBy === 'updatedAt' ? memories.updatedAt : memories.createdAt
     const orderDir = sortOrder === 'asc' ? asc(orderCol) : desc(orderCol)
@@ -145,6 +164,9 @@ export class PostgresStorageRepository implements StorageRepository {
     }
     if (filter?.source) {
       conditions.push(eq(memories.source, filter.source))
+    }
+    if (filter?.tags && filter.tags.length > 0) {
+      conditions.push(tagsOverlapCondition(filter.tags))
     }
 
     const similarityExpr = sql<number>`bigm_similarity(${memories.content}, ${query}::text)`
@@ -187,6 +209,9 @@ export class PostgresStorageRepository implements StorageRepository {
     }
     if (filter?.source) {
       conditions.push(eq(memories.source, filter.source))
+    }
+    if (filter?.tags && filter.tags.length > 0) {
+      conditions.push(tagsOverlapCondition(filter.tags))
     }
 
     const distanceExpr = sql<number>`${memories.embedding} <=> ${sql.raw(`'${embeddingLiteral}'`)}::vector`
