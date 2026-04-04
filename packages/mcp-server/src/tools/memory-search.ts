@@ -1,3 +1,4 @@
+import type { SearchFilter } from '@claude-memory/core'
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js'
 import { z } from 'zod'
 import type { Container } from '../container.js'
@@ -10,9 +11,17 @@ export function registerMemorySearchTool(server: McpServer, container: Container
       query: z.string().min(1),
       limit: z.number().optional().default(20),
       projectPath: z.string().optional(),
+      allProjects: z
+        .boolean()
+        .optional()
+        .default(false)
+        .describe('Search across all projects instead of scoping to projectPath'),
     },
     async (args) => {
-      const filter = args.projectPath ? { projectPath: args.projectPath } : undefined
+      let filter: SearchFilter | undefined
+      if (!args.allProjects && args.projectPath) {
+        filter = { projectPath: args.projectPath }
+      }
       const results = await container.searchMemory.search(args.query, args.limit, filter)
 
       if (results.length === 0) {
