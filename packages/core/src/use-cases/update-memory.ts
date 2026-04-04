@@ -14,6 +14,7 @@ export class UpdateMemoryUseCase {
     private readonly embedding: EmbeddingProvider,
   ) {}
 
+  /** content変更時のみ再embeddingを実行。tag変更のみならembeddingはそのまま保持 */
   async execute(input: UpdateMemoryInput): Promise<void> {
     const existing = await this.storage.findById(input.id)
     if (!existing) throw new MemoryNotFoundError(input.id)
