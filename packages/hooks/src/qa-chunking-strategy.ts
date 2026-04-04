@@ -1,7 +1,39 @@
 import type { Chunk, ChunkingStrategy, ConversationLog } from '@claude-memory/core'
 
+/** 埋め込みモデル（multilingual-e5-small）の最大入力512トークン ≈ 日本語1000文字 */
+const DEFAULT_MAX_CHUNK_CHARS = 1000
+const QA_PREFIX_USER = 'Q: '
+const QA_PREFIX_ASSISTANT = '\nA: '
+/** 文末句読点で分割する正規表現（日本語・英語対応） */
+const SENTENCE_BOUNDARY_REGEX = /[^。.!！?？\n]+[。.!！?？\n]?/g
+
+interface QAChunkingOptions {
+  maxChunkChars?: number
+}
+
 export class QAChunkingStrategy implements ChunkingStrategy {
+  private readonly maxChunkChars: number
+
+  constructor(options?: QAChunkingOptions) {
+    this.maxChunkChars = options?.maxChunkChars ?? DEFAULT_MAX_CHUNK_CHARS
+  }
+
   chunk(conversation: ConversationLog): Chunk[] {
+    const rawChunks = this.extractQAPairs(conversation)
+    const result: Chunk[] = []
+
+    for (const chunk of rawChunks) {
+      if (chunk.content.length <= this.maxChunkChars) {
+        result.push(chunk)
+      } else {
+        result.push(...this.splitChunk(chunk))
+      }
+    }
+
+    return result
+  }
+
+  private extractQAPairs(conversation: ConversationLog): Chunk[] {
     const chunks: Chunk[] = []
     const messages = conversation.messages
     let i = 0
@@ -21,7 +53,7 @@ export class QAChunkingStrategy implements ChunkingStrategy {
 
       if (userParts.length > 0 && assistantParts.length > 0) {
         chunks.push({
-          content: `Q: ${userParts.join('\n')}\nA: ${assistantParts.join('\n')}`,
+          content: `${QA_PREFIX_USER}${userParts.join('\n')}${QA_PREFIX_ASSISTANT}${assistantParts.join('\n')}`,
           metadata: {
             sessionId: conversation.sessionId,
             projectPath: conversation.projectPath,
@@ -31,5 +63,47 @@ export class QAChunkingStrategy implements ChunkingStrategy {
       }
     }
     return chunks
+  }
+
+  private splitChunk(chunk: Chunk): Chunk[] {
+    const text = chunk.content
+    const sentences = this.splitIntoSentences(text)
+    const result: Chunk[] = []
+    let current = ''
+
+    for (const sentence of sentences) {
+      if (sentence.length > this.maxChunkChars) {
+        // Single sentence exceeds limit — force split by character
+        if (current.length > 0) {
+          result.push({ content: current.trim(), metadata: chunk.metadata })
+          current = ''
+        }
+        for (let j = 0; j < sentence.length; j += this.maxChunkChars) {
+          const slice = sentence.slice(j, j + this.maxChunkChars)
+          result.push({ content: slice, metadata: chunk.metadata })
+        }
+        continue
+      }
+
+      const joined = current.length > 0 ? `${current} ${sentence}` : sentence
+      if (joined.length > this.maxChunkChars) {
+        result.push({ content: current.trim(), metadata: chunk.metadata })
+        current = sentence
+      } else {
+        current = joined
+      }
+    }
+
+    if (current.trim().length > 0) {
+      result.push({ content: current.trim(), metadata: chunk.metadata })
+    }
+
+    return result
+  }
+
+  private splitIntoSentences(text: string): string[] {
+    // Split on sentence-ending punctuation (Japanese and English)
+    // Keep the delimiter attached to the preceding text
+    return text.match(SENTENCE_BOUNDARY_REGEX) ?? [text]
   }
 }

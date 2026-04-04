@@ -58,4 +58,67 @@ describe('QAChunkingStrategy', () => {
     expect(chunks[0]!.content).toContain('q2')
     expect(chunks[0]!.content).toContain('a1')
   })
+
+  it('should split chunks that exceed max character limit', () => {
+    const longAnswer = 'これは長い回答です。'.repeat(150) // ~1500 chars
+    const log: ConversationLog = {
+      sessionId: 's1',
+      projectPath: '/project',
+      messages: [
+        { role: 'user', content: '質問', timestamp: new Date() },
+        { role: 'assistant', content: longAnswer, timestamp: new Date() },
+      ],
+    }
+    const strategy = new QAChunkingStrategy({ maxChunkChars: 500 })
+    const chunks = strategy.chunk(log)
+    expect(chunks.length).toBeGreaterThan(1)
+    for (const chunk of chunks) {
+      expect(chunk.content.length).toBeLessThanOrEqual(500)
+      expect(chunk.metadata.sessionId).toBe('s1')
+      expect(chunk.metadata.projectPath).toBe('/project')
+      expect(chunk.metadata.source).toBe('auto')
+    }
+  })
+
+  it('should split at sentence boundaries when possible', () => {
+    const sentences = [
+      'First sentence here.',
+      'Second sentence here.',
+      'Third sentence here.',
+      'Fourth sentence here.',
+      'Fifth sentence here.',
+    ]
+    const longAnswer = sentences.join(' ')
+    const log: ConversationLog = {
+      sessionId: 's1',
+      messages: [
+        { role: 'user', content: 'question', timestamp: new Date() },
+        { role: 'assistant', content: longAnswer, timestamp: new Date() },
+      ],
+    }
+    // Set limit so that ~2-3 sentences fit per chunk
+    const strategy = new QAChunkingStrategy({ maxChunkChars: 80 })
+    const chunks = strategy.chunk(log)
+    expect(chunks.length).toBeGreaterThan(1)
+    for (const chunk of chunks) {
+      expect(chunk.content.length).toBeLessThanOrEqual(80)
+    }
+  })
+
+  it('should use default maxChunkChars of 1000 when not specified', () => {
+    const longAnswer = 'A'.repeat(2500)
+    const log: ConversationLog = {
+      sessionId: 's1',
+      messages: [
+        { role: 'user', content: 'q', timestamp: new Date() },
+        { role: 'assistant', content: longAnswer, timestamp: new Date() },
+      ],
+    }
+    const strategy = new QAChunkingStrategy()
+    const chunks = strategy.chunk(log)
+    expect(chunks.length).toBeGreaterThan(1)
+    for (const chunk of chunks) {
+      expect(chunk.content.length).toBeLessThanOrEqual(1000)
+    }
+  })
 })
