@@ -167,6 +167,17 @@ describe('PostgresStorageRepository', () => {
       expect(results[0]!.embedding).toBeNull()
     })
 
+    it('filters by tags', async () => {
+      await repo.clear()
+      await repo.saveBatch([
+        makeMemory({ metadata: { sessionId: 's1', tags: ['design'], source: 'manual' } }),
+        makeMemory({ metadata: { sessionId: 's1', tags: ['bug'], source: 'manual' } }),
+        makeMemory({ metadata: { sessionId: 's1', tags: ['design', 'bug'], source: 'manual' } }),
+      ])
+      const results = await repo.list({ limit: 10, offset: 0, tags: ['design'] })
+      expect(results).toHaveLength(2)
+    })
+
     it('sorts by createdAt desc', async () => {
       const results = await repo.list({
         limit: 10,
@@ -214,6 +225,23 @@ describe('PostgresStorageRepository', () => {
     it('has matchType set to keyword', async () => {
       const results = await repo.searchByKeyword('Python', 10)
       expect(results[0].matchType).toBe('keyword')
+    })
+
+    it('filters by tags', async () => {
+      await repo.clear()
+      await repo.saveBatch([
+        makeMemory({
+          content: 'TypeScript with tag',
+          metadata: { sessionId: 's1', tags: ['frontend', 'typescript'], source: 'manual' },
+        }),
+        makeMemory({
+          content: 'TypeScript without tag',
+          metadata: { sessionId: 's1', tags: ['backend'], source: 'manual' },
+        }),
+      ])
+      const results = await repo.searchByKeyword('TypeScript', 10, { tags: ['frontend'] })
+      expect(results).toHaveLength(1)
+      expect(results[0]!.memory.metadata.tags).toContain('frontend')
     })
 
     it('filters by projectPath', async () => {

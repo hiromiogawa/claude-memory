@@ -23,6 +23,7 @@ export interface ListOptions {
   /** オフセット。デフォルト: 0 */
   offset: number
   source?: 'manual' | 'auto'
+  tags?: string[]
   sessionId?: string
   sortBy?: 'createdAt' | 'updatedAt'
   sortOrder?: 'asc' | 'desc'

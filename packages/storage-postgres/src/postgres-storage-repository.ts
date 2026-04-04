@@ -111,11 +111,24 @@ export class PostgresStorageRepository implements StorageRepository {
   }
 
   async list(options: ListOptions): Promise<Memory[]> {
-    const { limit, offset, source, sessionId, sortBy = 'createdAt', sortOrder = 'desc' } = options
+    const {
+      limit,
+      offset,
+      source,
+      tags,
+      sessionId,
+      sortBy = 'createdAt',
+      sortOrder = 'desc',
+    } = options
 
     const conditions = []
     if (source) conditions.push(eq(memories.source, source))
     if (sessionId) conditions.push(eq(memories.sessionId, sessionId))
+    if (tags && tags.length > 0) {
+      conditions.push(
+        sql`${memories.tags} && ${sql.raw(`ARRAY[${tags.map((t) => `'${t.replace(/'/g, "''")}'`).join(',')}]::text[]`)}`,
+      )
+    }
 
     const orderCol = sortBy === 'updatedAt' ? memories.updatedAt : memories.createdAt
     const orderDir = sortOrder === 'asc' ? asc(orderCol) : desc(orderCol)
@@ -145,6 +158,11 @@ export class PostgresStorageRepository implements StorageRepository {
     }
     if (filter?.source) {
       conditions.push(eq(memories.source, filter.source))
+    }
+    if (filter?.tags && filter.tags.length > 0) {
+      conditions.push(
+        sql`${memories.tags} && ${sql.raw(`ARRAY[${filter.tags.map((t) => `'${t.replace(/'/g, "''")}'`).join(',')}]::text[]`)}`,
+      )
     }
 
     const similarityExpr = sql<number>`bigm_similarity(${memories.content}, ${query}::text)`
@@ -187,6 +205,11 @@ export class PostgresStorageRepository implements StorageRepository {
     }
     if (filter?.source) {
       conditions.push(eq(memories.source, filter.source))
+    }
+    if (filter?.tags && filter.tags.length > 0) {
+      conditions.push(
+        sql`${memories.tags} && ${sql.raw(`ARRAY[${filter.tags.map((t) => `'${t.replace(/'/g, "''")}'`).join(',')}]::text[]`)}`,
+      )
     }
 
     const distanceExpr = sql<number>`${memories.embedding} <=> ${sql.raw(`'${embeddingLiteral}'`)}::vector`

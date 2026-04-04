@@ -10,12 +10,14 @@ export function registerMemoryListTool(server: McpServer, container: Container):
       limit: z.number().optional().default(20),
       offset: z.number().optional().default(0),
       source: z.enum(['manual', 'auto']).optional(),
+      tags: z.array(z.string()).optional(),
     },
     async (args) => {
       const memories = await container.listMemories.execute({
         limit: args.limit,
         offset: args.offset,
         source: args.source,
+        tags: args.tags,
       })
 
       if (memories.length === 0) {

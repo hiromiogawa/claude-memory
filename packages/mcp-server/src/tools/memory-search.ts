@@ -11,6 +11,7 @@ export function registerMemorySearchTool(server: McpServer, container: Container
       query: z.string().min(1),
       limit: z.number().optional().default(20),
       projectPath: z.string().optional(),
+      tags: z.array(z.string()).optional(),
       allProjects: z
         .boolean()
         .optional()
@@ -18,11 +19,19 @@ export function registerMemorySearchTool(server: McpServer, container: Container
         .describe('Search across all projects instead of scoping to projectPath'),
     },
     async (args) => {
-      let filter: SearchFilter | undefined
+      const filter: SearchFilter = {}
       if (!args.allProjects && args.projectPath) {
-        filter = { projectPath: args.projectPath }
+        filter.projectPath = args.projectPath
       }
-      const results = await container.searchMemory.search(args.query, args.limit, filter)
+      if (args.tags) {
+        filter.tags = args.tags
+      }
+      const hasFilter = Object.keys(filter).length > 0
+      const results = await container.searchMemory.search(
+        args.query,
+        args.limit,
+        hasFilter ? filter : undefined,
+      )
 
       if (results.length === 0) {
         return {
