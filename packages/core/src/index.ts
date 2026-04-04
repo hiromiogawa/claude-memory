@@ -25,4 +25,5 @@ export {
   ListMemoriesUseCase,
   SaveMemoryUseCase,
   SearchMemoryUseCase,
+  UpdateMemoryUseCase,
 } from './use-cases/index.js'
