@@ -135,7 +135,9 @@ export class PostgresStorageRepository implements StorageRepository {
     limit: number,
     filter?: SearchFilter,
   ): Promise<SearchResult[]> {
-    const conditions = [sql`${memories.content} LIKE ${'%' + query + '%'}`]
+    // LIKE filters rows containing the query; bigm_similarity scores relevance
+    const escapedQuery = query.replace(/[%_\\]/g, '\\$&')
+    const conditions = [sql`${memories.content} LIKE ${'%' + escapedQuery + '%'}`]
 
     if (filter?.projectPath) {
       conditions.push(eq(memories.projectPath, filter.projectPath))
