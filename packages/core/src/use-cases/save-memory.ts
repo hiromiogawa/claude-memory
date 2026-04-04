@@ -87,6 +87,7 @@ export class SaveMemoryUseCase {
     }
   }
 
+  /** 最近傍1件のコサイン類似度が閾値以上なら重複とみなす */
   private async isDuplicate(embedding: number[]): Promise<boolean> {
     const results = await this.storage.searchByVector(embedding, 1)
     if (results.length === 0 || !results[0]) return false

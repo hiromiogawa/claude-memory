@@ -5,5 +5,6 @@ export const SEARCH_DEFAULTS = {
 } as const
 
 export const DEDUP_DEFAULTS = {
+  /** コサイン類似度の閾値。0.95以上は実質同一内容とみなす */
   similarityThreshold: 0.95,
 } as const
