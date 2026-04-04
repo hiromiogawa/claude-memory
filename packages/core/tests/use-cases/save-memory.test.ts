@@ -49,12 +49,13 @@ describe('SaveMemoryUseCase', () => {
     vi.mocked(storage.searchByVector).mockResolvedValue([])
     const useCase = new SaveMemoryUseCase(storage, embedding, chunking)
 
-    await useCase.saveManual({
+    const result = await useCase.saveManual({
       content: 'test content',
       sessionId: 'session-1',
       projectPath: '/project',
     })
 
+    expect(result.saved).toBe(true)
     expect(embedding.embed).toHaveBeenCalledWith('test content')
     expect(storage.save).toHaveBeenCalledTimes(1)
     const savedMemory = vi.mocked(storage.save).mock.calls[0]![0]
@@ -133,11 +134,12 @@ describe('SaveMemoryUseCase', () => {
     ])
 
     const useCase = new SaveMemoryUseCase(storage, embedding, chunking)
-    await useCase.saveManual({
+    const result = await useCase.saveManual({
       content: 'very similar content!',
       sessionId: 'session-1',
     })
 
+    expect(result.saved).toBe(false)
     expect(storage.searchByVector).toHaveBeenCalledWith([0.1, 0.2, 0.3], 1)
     expect(storage.save).not.toHaveBeenCalled()
   })

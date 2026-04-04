@@ -13,17 +13,30 @@ interface SaveManualInput {
   tags?: string[]
 }
 
+interface SaveMemoryOptions {
+  similarityThreshold?: number
+}
+
+export interface SaveResult {
+  saved: boolean
+}
+
 export class SaveMemoryUseCase {
+  private readonly similarityThreshold: number
+
   constructor(
     private readonly storage: StorageRepository,
     private readonly embedding: EmbeddingProvider,
     private readonly chunking: ChunkingStrategy,
-  ) {}
+    options?: SaveMemoryOptions,
+  ) {
+    this.similarityThreshold = options?.similarityThreshold ?? DEDUP_DEFAULTS.similarityThreshold
+  }
 
-  async saveManual(input: SaveManualInput): Promise<void> {
+  async saveManual(input: SaveManualInput): Promise<SaveResult> {
     const embeddingVector = await this.embedding.embed(input.content)
 
-    if (await this.isDuplicate(embeddingVector)) return
+    if (await this.isDuplicate(embeddingVector)) return { saved: false }
 
     const now = new Date()
     const memory: Memory = {
@@ -40,6 +53,7 @@ export class SaveMemoryUseCase {
       updatedAt: now,
     }
     await this.storage.save(memory)
+    return { saved: true }
   }
 
   async saveConversation(log: ConversationLog): Promise<void> {
@@ -76,6 +90,6 @@ export class SaveMemoryUseCase {
   private async isDuplicate(embedding: number[]): Promise<boolean> {
     const results = await this.storage.searchByVector(embedding, 1)
     if (results.length === 0 || !results[0]) return false
-    return results[0].score >= DEDUP_DEFAULTS.similarityThreshold
+    return results[0].score >= this.similarityThreshold
   }
 }

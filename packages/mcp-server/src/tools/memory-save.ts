@@ -13,9 +13,10 @@ export function registerMemorySaveTool(server: McpServer, container: Container):
       tags: z.array(z.string()).optional(),
     },
     async (args) => {
-      await container.saveMemory.saveManual(args)
+      const result = await container.saveMemory.saveManual(args)
+      const text = result.saved ? 'Memory saved successfully.' : 'Duplicate memory skipped.'
       return {
-        content: [{ type: 'text', text: 'Memory saved successfully.' }],
+        content: [{ type: 'text', text }],
       }
     },
   )
