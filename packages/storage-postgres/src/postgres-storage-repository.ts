@@ -17,7 +17,7 @@ function toMemory(row: DbRow): Memory {
   return {
     id: row.id,
     content: row.content,
-    embedding: [], // embeddings not fetched by default (large payload)
+    embedding: null, // embeddings not fetched by default (large payload)
     metadata: {
       sessionId: row.sessionId ?? '',
       projectPath: row.projectPath ?? undefined,
@@ -59,6 +59,7 @@ export class PostgresStorageRepository implements StorageRepository {
   }
 
   async save(memory: Memory): Promise<void> {
+    if (!memory.embedding) throw new Error('Cannot save memory without embedding')
     const embeddingLiteral = `[${memory.embedding.join(',')}]`
 
     await this.db
