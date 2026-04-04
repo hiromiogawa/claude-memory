@@ -43,6 +43,18 @@ describe('OnnxEmbeddingProvider', () => {
       expect(vectors).toHaveLength(3)
       expect(vectors.every((v) => v.length === 384)).toBe(true)
     })
+
+    it('embedBatch should produce same results as individual embed calls', async () => {
+      const texts = ['hello', 'world']
+      const [single1, single2] = await Promise.all([
+        provider.embed('hello'),
+        provider.embed('world'),
+      ])
+      const batch = await provider.embedBatch(texts)
+      expect(batch).toHaveLength(2)
+      expect(batch[0]).toEqual(single1)
+      expect(batch[1]).toEqual(single2)
+    })
   })
 })
 
