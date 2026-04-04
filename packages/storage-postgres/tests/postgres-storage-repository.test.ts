@@ -123,12 +123,33 @@ describe('PostgresStorageRepository', () => {
 
   describe('list', () => {
     beforeEach(async () => {
+      const now = Date.now()
       const memories = [
-        makeMemory({ metadata: { sessionId: 's1', source: 'manual' } }),
-        makeMemory({ metadata: { sessionId: 's1', source: 'auto' } }),
-        makeMemory({ metadata: { sessionId: 's2', source: 'manual' } }),
-        makeMemory({ metadata: { sessionId: 's2', source: 'auto' } }),
-        makeMemory({ metadata: { sessionId: 's3', source: 'manual' } }),
+        makeMemory({
+          metadata: { sessionId: 's1', source: 'manual' },
+          createdAt: new Date(now - 4000),
+          updatedAt: new Date(now - 4000),
+        }),
+        makeMemory({
+          metadata: { sessionId: 's1', source: 'auto' },
+          createdAt: new Date(now - 3000),
+          updatedAt: new Date(now - 3000),
+        }),
+        makeMemory({
+          metadata: { sessionId: 's2', source: 'manual' },
+          createdAt: new Date(now - 2000),
+          updatedAt: new Date(now - 2000),
+        }),
+        makeMemory({
+          metadata: { sessionId: 's2', source: 'auto' },
+          createdAt: new Date(now - 1000),
+          updatedAt: new Date(now - 1000),
+        }),
+        makeMemory({
+          metadata: { sessionId: 's3', source: 'manual' },
+          createdAt: new Date(now),
+          updatedAt: new Date(now),
+        }),
       ]
       await repo.saveBatch(memories)
     })
@@ -139,14 +160,14 @@ describe('PostgresStorageRepository', () => {
     })
 
     it('applies limit and offset for pagination', async () => {
+      const all = await repo.list({ limit: 10, offset: 0 })
       const page1 = await repo.list({ limit: 2, offset: 0 })
       const page2 = await repo.list({ limit: 2, offset: 2 })
       expect(page1).toHaveLength(2)
       expect(page2).toHaveLength(2)
-      // Pages should not overlap
-      const ids1 = page1.map((m) => m.id)
-      const ids2 = page2.map((m) => m.id)
-      expect(ids1.filter((id) => ids2.includes(id))).toHaveLength(0)
+      // Pages should contain different items from the full list
+      expect(page1[0]!.id).toBe(all[0]!.id)
+      expect(page2[0]!.id).toBe(all[2]!.id)
     })
 
     it('filters by source', async () => {
