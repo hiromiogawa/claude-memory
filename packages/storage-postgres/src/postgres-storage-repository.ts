@@ -13,6 +13,14 @@ import { memories } from './schema.js'
 
 type DbRow = typeof memories.$inferSelect
 
+/** PostgreSQL配列オーバーラップ演算子(&&)で、いずれかのタグを含む行にフィルタ */
+function tagsOverlapCondition(tags: string[]) {
+  return sql`${memories.tags} && ARRAY[${sql.join(
+    tags.map((t) => sql`${t}`),
+    sql`, `,
+  )}]::text[]`
+}
+
 function toMemory(row: DbRow): Memory {
   return {
     id: row.id,
@@ -125,9 +133,7 @@ export class PostgresStorageRepository implements StorageRepository {
     if (source) conditions.push(eq(memories.source, source))
     if (sessionId) conditions.push(eq(memories.sessionId, sessionId))
     if (tags && tags.length > 0) {
-      conditions.push(
-        sql`${memories.tags} && ${sql.raw(`ARRAY[${tags.map((t) => `'${t.replace(/'/g, "''")}'`).join(',')}]::text[]`)}`,
-      )
+      conditions.push(tagsOverlapCondition(tags))
     }
 
     const orderCol = sortBy === 'updatedAt' ? memories.updatedAt : memories.createdAt
@@ -160,9 +166,7 @@ export class PostgresStorageRepository implements StorageRepository {
       conditions.push(eq(memories.source, filter.source))
     }
     if (filter?.tags && filter.tags.length > 0) {
-      conditions.push(
-        sql`${memories.tags} && ${sql.raw(`ARRAY[${filter.tags.map((t) => `'${t.replace(/'/g, "''")}'`).join(',')}]::text[]`)}`,
-      )
+      conditions.push(tagsOverlapCondition(filter.tags))
     }
 
     const similarityExpr = sql<number>`bigm_similarity(${memories.content}, ${query}::text)`
@@ -207,9 +211,7 @@ export class PostgresStorageRepository implements StorageRepository {
       conditions.push(eq(memories.source, filter.source))
     }
     if (filter?.tags && filter.tags.length > 0) {
-      conditions.push(
-        sql`${memories.tags} && ${sql.raw(`ARRAY[${filter.tags.map((t) => `'${t.replace(/'/g, "''")}'`).join(',')}]::text[]`)}`,
-      )
+      conditions.push(tagsOverlapCondition(filter.tags))
     }
 
     const distanceExpr = sql<number>`${memories.embedding} <=> ${sql.raw(`'${embeddingLiteral}'`)}::vector`
