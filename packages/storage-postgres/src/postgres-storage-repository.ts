@@ -144,15 +144,29 @@ export class PostgresStorageRepository implements StorageRepository {
       conditions.push(eq(memories.source, filter.source))
     }
 
+    const similarityExpr = sql<number>`bigm_similarity(${memories.content}, ${query}::text)`
+
     const rows = await this.db
-      .select()
+      .select({
+        id: memories.id,
+        content: memories.content,
+        embedding: memories.embedding,
+        sessionId: memories.sessionId,
+        projectPath: memories.projectPath,
+        tags: memories.tags,
+        source: memories.source,
+        createdAt: memories.createdAt,
+        updatedAt: memories.updatedAt,
+        similarity: similarityExpr,
+      })
       .from(memories)
       .where(and(...conditions))
+      .orderBy(sql`${similarityExpr} DESC`)
       .limit(limit)
 
     return rows.map((row) => ({
-      memory: toMemory(row),
-      score: 1.0,
+      memory: toMemory(row as DbRow),
+      score: row.similarity ?? 0,
       matchType: 'keyword' as const,
     }))
   }

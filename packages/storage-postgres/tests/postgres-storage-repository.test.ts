@@ -210,6 +210,26 @@ describe('PostgresStorageRepository', () => {
       expect(results).toHaveLength(1)
       expect(results[0].memory.content).toContain('TypeScript and JavaScript')
     })
+
+    it('returns results ordered by bigm similarity score', async () => {
+      await repo.clear()
+      await repo.saveBatch([
+        makeMemory({ content: 'TypeScript is a strongly typed language' }),
+        makeMemory({ content: 'TypeScript and JavaScript are related to TypeScript' }),
+        makeMemory({ content: 'Python is great for data science' }),
+      ])
+
+      const results = await repo.searchByKeyword('TypeScript', 10)
+      expect(results.length).toBeGreaterThanOrEqual(2)
+      // Results should be ordered by score descending
+      for (let i = 1; i < results.length; i++) {
+        expect(results[i - 1]!.score).toBeGreaterThanOrEqual(results[i]!.score)
+      }
+      // Scores should NOT all be identical
+      const scores = results.map((r) => r.score)
+      const uniqueScores = new Set(scores)
+      expect(uniqueScores.size).toBeGreaterThan(1)
+    })
   })
 
   describe('searchByVector', () => {
