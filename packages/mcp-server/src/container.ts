@@ -6,6 +6,7 @@ import {
   ListMemoriesUseCase,
   SaveMemoryUseCase,
   SearchMemoryUseCase,
+  UpdateMemoryUseCase,
 } from '@claude-memory/core'
 import { OnnxEmbeddingProvider } from '@claude-memory/embedding-onnx'
 import { QAChunkingStrategy } from '@claude-memory/hooks'
@@ -27,6 +28,7 @@ export function createContainer(config: AppConfig) {
     listMemories: new ListMemoriesUseCase(storage),
     getStats: new GetStatsUseCase(storage),
     clearMemory: new ClearMemoryUseCase(storage),
+    updateMemory: new UpdateMemoryUseCase(storage, embedding),
   }
 }
 
