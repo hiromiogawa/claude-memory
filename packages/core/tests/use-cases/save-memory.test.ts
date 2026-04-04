@@ -46,14 +46,16 @@ describe('SaveMemoryUseCase', () => {
     const storage = createMockStorage()
     const embedding = createMockEmbedding()
     const chunking = createMockChunking()
+    vi.mocked(storage.searchByVector).mockResolvedValue([])
     const useCase = new SaveMemoryUseCase(storage, embedding, chunking)
 
-    await useCase.saveManual({
+    const result = await useCase.saveManual({
       content: 'test content',
       sessionId: 'session-1',
       projectPath: '/project',
     })
 
+    expect(result.saved).toBe(true)
     expect(embedding.embed).toHaveBeenCalledWith('test content')
     expect(storage.save).toHaveBeenCalledTimes(1)
     const savedMemory = vi.mocked(storage.save).mock.calls[0]![0]
@@ -66,6 +68,7 @@ describe('SaveMemoryUseCase', () => {
     const storage = createMockStorage()
     const embedding = createMockEmbedding()
     const chunking = createMockChunking()
+    vi.mocked(storage.searchByVector).mockResolvedValue([])
     const useCase = new SaveMemoryUseCase(storage, embedding, chunking)
 
     const log: ConversationLog = {
@@ -92,6 +95,7 @@ describe('SaveMemoryUseCase', () => {
       { content: 'chunk2', metadata: { sessionId: 's1', source: 'auto' as const } },
     ])
     vi.mocked(embedding.embedBatch).mockResolvedValue([[0.1, 0.2], []])
+    vi.mocked(storage.searchByVector).mockResolvedValue([])
 
     const useCase = new SaveMemoryUseCase(storage, embedding, chunking)
     const log: ConversationLog = {
@@ -107,5 +111,128 @@ describe('SaveMemoryUseCase', () => {
     await useCase.saveConversation(log)
     const savedMemories = vi.mocked(storage.saveBatch).mock.calls[0]![0]
     expect(savedMemories.length).toBe(1)
+  })
+
+  it('should skip saving when a similar memory already exists', async () => {
+    const storage = createMockStorage()
+    const embedding = createMockEmbedding()
+    const chunking = createMockChunking()
+
+    vi.mocked(storage.searchByVector).mockResolvedValue([
+      {
+        memory: {
+          id: 'existing-id',
+          content: 'very similar content',
+          embedding: [0.1, 0.2, 0.3],
+          metadata: { sessionId: 's0', source: 'manual' },
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
+        score: 0.96,
+        matchType: 'vector',
+      },
+    ])
+
+    const useCase = new SaveMemoryUseCase(storage, embedding, chunking)
+    const result = await useCase.saveManual({
+      content: 'very similar content!',
+      sessionId: 'session-1',
+    })
+
+    expect(result.saved).toBe(false)
+    expect(storage.searchByVector).toHaveBeenCalledWith([0.1, 0.2, 0.3], 1)
+    expect(storage.save).not.toHaveBeenCalled()
+  })
+
+  it('should save when no similar memory exists', async () => {
+    const storage = createMockStorage()
+    const embedding = createMockEmbedding()
+    const chunking = createMockChunking()
+
+    vi.mocked(storage.searchByVector).mockResolvedValue([])
+
+    const useCase = new SaveMemoryUseCase(storage, embedding, chunking)
+    await useCase.saveManual({
+      content: 'unique content',
+      sessionId: 'session-1',
+    })
+
+    expect(storage.save).toHaveBeenCalledTimes(1)
+  })
+
+  it('should save when existing memory similarity is below threshold', async () => {
+    const storage = createMockStorage()
+    const embedding = createMockEmbedding()
+    const chunking = createMockChunking()
+
+    vi.mocked(storage.searchByVector).mockResolvedValue([
+      {
+        memory: {
+          id: 'existing-id',
+          content: 'somewhat related content',
+          embedding: [0.1, 0.2, 0.3],
+          metadata: { sessionId: 's0', source: 'manual' },
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
+        score: 0.8,
+        matchType: 'vector',
+      },
+    ])
+
+    const useCase = new SaveMemoryUseCase(storage, embedding, chunking)
+    await useCase.saveManual({
+      content: 'different content',
+      sessionId: 'session-1',
+    })
+
+    expect(storage.save).toHaveBeenCalledTimes(1)
+  })
+
+  it('should skip duplicate chunks during conversation save', async () => {
+    const storage = createMockStorage()
+    const embedding = createMockEmbedding()
+    const chunking = createMockChunking()
+
+    vi.mocked(chunking.chunk).mockReturnValue([
+      { content: 'chunk1', metadata: { sessionId: 's1', source: 'auto' as const } },
+      { content: 'chunk2', metadata: { sessionId: 's1', source: 'auto' as const } },
+    ])
+    vi.mocked(embedding.embedBatch).mockResolvedValue([
+      [0.1, 0.2, 0.3],
+      [0.4, 0.5, 0.6],
+    ])
+
+    // First chunk: duplicate exists. Second chunk: no duplicate.
+    vi.mocked(storage.searchByVector)
+      .mockResolvedValueOnce([
+        {
+          memory: {
+            id: 'dup',
+            content: 'chunk1 dup',
+            embedding: [0.1, 0.2, 0.3],
+            metadata: { sessionId: 's0', source: 'auto' },
+            createdAt: new Date(),
+            updatedAt: new Date(),
+          },
+          score: 0.97,
+          matchType: 'vector',
+        },
+      ])
+      .mockResolvedValueOnce([])
+
+    const useCase = new SaveMemoryUseCase(storage, embedding, chunking)
+    const log = {
+      sessionId: 's1',
+      messages: [
+        { role: 'user' as const, content: 'q', timestamp: new Date() },
+        { role: 'assistant' as const, content: 'a', timestamp: new Date() },
+      ],
+    }
+    await useCase.saveConversation(log)
+
+    const savedMemories = vi.mocked(storage.saveBatch).mock.calls[0]![0]
+    expect(savedMemories).toHaveLength(1)
+    expect(savedMemories[0]!.content).toBe('chunk2')
   })
 })

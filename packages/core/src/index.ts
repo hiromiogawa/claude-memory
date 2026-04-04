@@ -1,4 +1,4 @@
-export { SEARCH_DEFAULTS } from './constants.js'
+export { DEDUP_DEFAULTS, SEARCH_DEFAULTS } from './constants.js'
 export type {
   Chunk,
   ConversationLog,
@@ -17,6 +17,7 @@ export {
   StorageConnectionError,
 } from './errors/index.js'
 export type { ChunkingStrategy, EmbeddingProvider, StorageRepository } from './interfaces/index.js'
+export type { SaveResult } from './use-cases/index.js'
 export {
   ClearMemoryUseCase,
   DeleteMemoryUseCase,
