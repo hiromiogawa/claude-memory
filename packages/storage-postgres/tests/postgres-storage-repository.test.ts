@@ -71,6 +71,13 @@ describe('PostgresStorageRepository', () => {
       const result = await repo.findById(randomUUID())
       expect(result).toBeNull()
     })
+
+    it('returns null embedding for found memory', async () => {
+      const memory = makeMemory()
+      await repo.save(memory)
+      const found = await repo.findById(memory.id)
+      expect(found!.embedding).toBeNull()
+    })
   })
 
   describe('saveBatch', () => {
@@ -152,6 +159,12 @@ describe('PostgresStorageRepository', () => {
       const session1 = await repo.list({ limit: 10, offset: 0, sessionId: 's1' })
       expect(session1).toHaveLength(2)
       expect(session1.every((m) => m.metadata.sessionId === 's1')).toBe(true)
+    })
+
+    it('returns null embedding for listed memories', async () => {
+      await repo.save(makeMemory())
+      const results = await repo.list({ limit: 10, offset: 0 })
+      expect(results[0]!.embedding).toBeNull()
     })
 
     it('sorts by createdAt desc', async () => {

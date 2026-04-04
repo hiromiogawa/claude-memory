@@ -3,8 +3,8 @@ export interface Memory {
   id: string
   /** Q&Aペアのテキスト。空文字不可 */
   content: string
-  /** ベクトル表現 */
-  embedding: number[]
+  /** ベクトル表現。list取得時はnull（大きなペイロードのため） */
+  embedding: number[] | null
   metadata: MemoryMetadata
   createdAt: Date
   updatedAt: Date
