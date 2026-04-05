@@ -93,6 +93,8 @@ docker compose ps
 - 保存時は tags を付けて検索しやすくする
 ```
 
+テンプレートは [templates/CLAUDE.md.example](templates/CLAUDE.md.example) を参考にしてください。
+
 ## 記憶の保存と検索
 
 ### 保存フロー
