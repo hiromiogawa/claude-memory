@@ -194,6 +194,40 @@ describe('SaveMemoryUseCase', () => {
     expect(storage.save).toHaveBeenCalledTimes(1)
   })
 
+  it('should check duplicates in parallel (not sequentially)', async () => {
+    const storage = createMockStorage()
+    const embedding = createMockEmbedding()
+    const chunking = createMockChunking()
+
+    vi.mocked(chunking.chunk).mockReturnValue([
+      { content: 'chunk1', metadata: { sessionId: 's1', source: 'auto' as const } },
+      { content: 'chunk2', metadata: { sessionId: 's1', source: 'auto' as const } },
+      { content: 'chunk3', metadata: { sessionId: 's1', source: 'auto' as const } },
+    ])
+    vi.mocked(embedding.embedBatch).mockResolvedValue([
+      [0.1, 0.2, 0.3],
+      [0.4, 0.5, 0.6],
+      [0.7, 0.8, 0.9],
+    ])
+    vi.mocked(storage.searchByVector).mockResolvedValue([])
+
+    const useCase = new SaveMemoryUseCase(storage, embedding, chunking)
+    const log = {
+      sessionId: 's1',
+      messages: [
+        { role: 'user' as const, content: 'q', timestamp: new Date() },
+        { role: 'assistant' as const, content: 'a', timestamp: new Date() },
+      ],
+    }
+    await useCase.saveConversation(log)
+
+    // All 3 dedup checks should have been made
+    expect(storage.searchByVector).toHaveBeenCalledTimes(3)
+    // All 3 non-duplicate chunks should be saved
+    const saved = vi.mocked(storage.saveBatch).mock.calls[0]![0]
+    expect(saved).toHaveLength(3)
+  })
+
   it('should skip duplicate chunks during conversation save', async () => {
     const storage = createMockStorage()
     const embedding = createMockEmbedding()
