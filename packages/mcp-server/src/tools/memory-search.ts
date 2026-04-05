@@ -1,12 +1,17 @@
 import { SEARCH_DEFAULTS, type SearchFilter } from '@claude-memory/core'
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js'
+import type { Logger } from 'pino'
 import { z } from 'zod'
 import type { Container } from '../container.js'
 import { handleToolError } from './error-handler.js'
 
 const SCORE_DECIMAL_PLACES = 4
 
-export function registerMemorySearchTool(server: McpServer, container: Container): void {
+export function registerMemorySearchTool(
+  server: McpServer,
+  container: Container,
+  logger: Logger,
+): void {
   server.tool(
     'memory_search',
     'Search memories with hybrid search (keyword + vector)',
@@ -38,6 +43,10 @@ export function registerMemorySearchTool(server: McpServer, container: Container
           hasFilter ? filter : undefined,
         )
         const durationMs = Math.round(performance.now() - start)
+        logger.info(
+          { tool: 'memory_search', durationMs, count: results.length },
+          'memory_search completed',
+        )
 
         if (results.length === 0) {
           return {
@@ -58,7 +67,7 @@ export function registerMemorySearchTool(server: McpServer, container: Container
         return {
           content: [{ type: 'text', text: `${formatted}\n\n(${durationMs}ms)` }],
         }
-      })
+      }, logger)
     },
   )
 }
