@@ -28,6 +28,7 @@
 | ドキュメント戦略 | [docs/engineer/documentation-strategy.md](docs/engineer/documentation-strategy.md) | Why/What/Howの分類方針、自動生成ルール |
 | MCPツール | [docs/engineer/mcp-tools.md](docs/engineer/mcp-tools.md) | 全10ツールの詳細仕様 |
 | パッケージ詳細 | [docs/engineer/packages/](docs/engineer/packages/) | 各パッケージの設計意図、API、実装詳細 |
+| セキュリティ | [docs/engineer/security.md](docs/engineer/security.md) | SQLインジェクション対策、認証情報管理 |
 | ADR | [docs/adr/](docs/adr/) | 設計判断記録 |
 
 ## コマンド
