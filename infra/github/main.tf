@@ -6,7 +6,7 @@ provider "github" {
 resource "github_repository" "claude_memory" {
   name        = var.repository_name
   description = "Long-term memory MCP Server for Claude Code — hybrid search with pgvector + pg_bigm"
-  visibility  = "private"
+  visibility  = "public"
 
   has_issues   = true
   has_projects = true
