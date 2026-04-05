@@ -58,7 +58,10 @@ export class PostgresStorageRepository implements StorageRepository {
   private readonly db: ReturnType<typeof drizzle>
 
   constructor(connectionString: string, options?: { maxConnections?: number }) {
-    this.client = postgres(connectionString, { max: options?.maxConnections ?? 10 })
+    const DEFAULT_MAX_CONNECTIONS = 10
+    this.client = postgres(connectionString, {
+      max: options?.maxConnections ?? DEFAULT_MAX_CONNECTIONS,
+    })
     this.db = drizzle(this.client)
   }
 
