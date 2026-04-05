@@ -13,7 +13,7 @@
     "lint": "oxlint -c .oxlintrc.json packages/*/src && biome check packages/*/src",
     "format": "biome check --write .",
     "knip": "knip",
-    "dep-check": "depcruise --validate packages/",
+    "dep-check": "depcruise --config .dependency-cruiser.cjs packages/",
     "prepare": "husky"
   },
   "pnpm": {
