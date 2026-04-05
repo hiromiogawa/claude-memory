@@ -1,3 +1,5 @@
+export type { CleanupResult } from './cleanup-memory.js'
+export { CleanupMemoryUseCase } from './cleanup-memory.js'
 export { ClearMemoryUseCase } from './clear-memory.js'
 export { DeleteMemoryUseCase } from './delete-memory.js'
 export type { ExportedMemory } from './export-memory.js'

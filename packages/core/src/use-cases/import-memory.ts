@@ -28,6 +28,7 @@ export class ImportMemoryUseCase {
         },
         createdAt: new Date(item.createdAt),
         updatedAt: now,
+        lastAccessedAt: now,
       }
       await this.storage.save(memory)
       imported++

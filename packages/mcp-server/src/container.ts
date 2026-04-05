@@ -1,5 +1,6 @@
 // packages/mcp-server/src/container.ts
 import {
+  CleanupMemoryUseCase,
   ClearMemoryUseCase,
   DeleteMemoryUseCase,
   ExportMemoryUseCase,
@@ -35,6 +36,7 @@ export function createContainer(config: AppConfig) {
     updateMemory: new UpdateMemoryUseCase(storage, embedding),
     exportMemory: new ExportMemoryUseCase(storage),
     importMemory: new ImportMemoryUseCase(storage, embedding),
+    cleanupMemory: new CleanupMemoryUseCase(storage),
   }
 }
 

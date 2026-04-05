@@ -8,6 +8,8 @@ export interface Memory {
   metadata: MemoryMetadata
   createdAt: Date
   updatedAt: Date
+  /** 最終アクセス日時。検索結果として返された際に更新される */
+  lastAccessedAt: Date
 }
 
 export interface MemoryMetadata {

@@ -16,6 +16,7 @@ export const memories = pgTable(
     source: text('source').$type<'manual' | 'auto'>(),
     createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
     updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),
+    lastAccessedAt: timestamp('last_accessed_at', { withTimezone: true }).defaultNow().notNull(),
   },
   (table) => [
     index('idx_memories_bigm').using('gin', sql`${table.content} gin_bigm_ops`),

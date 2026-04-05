@@ -15,6 +15,8 @@ function createMockStorage(): StorageRepository {
     clear: vi.fn(),
     getStats: vi.fn(),
     exportAll: vi.fn(),
+    deleteOlderThan: vi.fn(),
+    countOlderThan: vi.fn(),
   }
 }
 
@@ -37,6 +39,7 @@ describe('UpdateMemoryUseCase', () => {
       metadata: { sessionId: 's1', tags: ['old'], source: 'manual' as const },
       createdAt: new Date('2026-01-01'),
       updatedAt: new Date('2026-01-01'),
+      lastAccessedAt: new Date('2026-01-01'),
     }
     vi.mocked(storage.findById).mockResolvedValue(existing)
 
@@ -62,6 +65,7 @@ describe('UpdateMemoryUseCase', () => {
       metadata: { sessionId: 's1', tags: ['old'], source: 'manual' as const },
       createdAt: new Date('2026-01-01'),
       updatedAt: new Date('2026-01-01'),
+      lastAccessedAt: new Date('2026-01-01'),
     }
     vi.mocked(storage.findById).mockResolvedValue(existing)
 

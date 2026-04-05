@@ -15,6 +15,7 @@ describe('Memory entity', () => {
       metadata,
       createdAt: new Date(),
       updatedAt: new Date(),
+      lastAccessedAt: new Date(),
     }
     expect(memory.id).toBe('uuid-1')
     expect(memory.content).toBe('test content')
