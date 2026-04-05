@@ -10,6 +10,7 @@ export class ImportMemoryUseCase {
     private readonly embedding: EmbeddingProvider,
   ) {}
 
+  /** 各記憶のembeddingを再計算して保存。createdAtはエクスポート時の値を保持 */
   async execute(data: ExportedMemory[]): Promise<{ imported: number }> {
     let imported = 0
     for (const item of data) {
