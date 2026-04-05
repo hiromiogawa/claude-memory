@@ -39,6 +39,20 @@ describe('PostgresStorageRepository', () => {
     await repo.close()
   })
 
+  describe('constructor options', () => {
+    it('accepts custom pool size option', async () => {
+      const customRepo = new PostgresStorageRepository(DATABASE_URL, { maxConnections: 5 })
+      expect(customRepo).toBeDefined()
+      await customRepo.close()
+    })
+
+    it('works with default pool size when no options given', async () => {
+      const defaultRepo = new PostgresStorageRepository(DATABASE_URL)
+      expect(defaultRepo).toBeDefined()
+      await defaultRepo.close()
+    })
+  })
+
   describe('save and findById', () => {
     it('saves a memory and retrieves it by ID', async () => {
       const memory = makeMemory({ content: 'Hello, world!' })

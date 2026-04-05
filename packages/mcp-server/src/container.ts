@@ -14,7 +14,9 @@ import { PostgresStorageRepository } from '@claude-memory/storage-postgres'
 import type { AppConfig } from './config.js'
 
 export function createContainer(config: AppConfig) {
-  const storage = new PostgresStorageRepository(config.databaseUrl)
+  const storage = new PostgresStorageRepository(config.databaseUrl, {
+    maxConnections: config.dbPoolSize,
+  })
   const embedding = new OnnxEmbeddingProvider({ modelName: config.embeddingModel })
   const chunking = new QAChunkingStrategy()
 

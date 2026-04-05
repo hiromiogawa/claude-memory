@@ -27,6 +27,7 @@ services:
       DATABASE_URL: postgresql://memory:memory@db:5432/claude_memory
       EMBEDDING_MODEL: intfloat/multilingual-e5-small
       EMBEDDING_DIMENSION: "384"
+      DB_POOL_SIZE: "10"
 
 volumes:
   pgdata:
