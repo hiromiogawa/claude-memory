@@ -14,6 +14,7 @@ function makeMemory(id: string, daysAgo: number = 0): Memory {
     metadata: { sessionId: 's1', source: 'manual' },
     createdAt: date,
     updatedAt: date,
+    lastAccessedAt: date,
   }
 }
 
@@ -29,6 +30,8 @@ function createMockStorage(): StorageRepository {
     clear: vi.fn(),
     getStats: vi.fn(),
     exportAll: vi.fn(),
+    deleteOlderThan: vi.fn(),
+    countOlderThan: vi.fn(),
   }
 }
 

@@ -4,6 +4,7 @@ import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js'
 import { pino } from 'pino'
 import { loadConfig } from './config.js'
 import { createContainer } from './container.js'
+import { registerMemoryCleanupTool } from './tools/memory-cleanup.js'
 import { registerMemoryClearTool } from './tools/memory-clear.js'
 import { registerMemoryDeleteTool } from './tools/memory-delete.js'
 import { registerMemoryExportTool } from './tools/memory-export.js'
@@ -26,6 +27,7 @@ export async function startServer() {
     version: '0.0.1',
   })
 
+  registerMemoryCleanupTool(server, container)
   registerMemorySaveTool(server, container)
   registerMemorySearchTool(server, container)
   registerMemoryDeleteTool(server, container)

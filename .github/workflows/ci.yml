@@ -46,7 +46,8 @@ jobs:
               tags TEXT[],
               source TEXT,
               created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
-              updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+              updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+              last_accessed_at TIMESTAMPTZ NOT NULL DEFAULT now()
             );
             CREATE INDEX IF NOT EXISTS idx_memories_bigm ON memories USING gin(content gin_bigm_ops);
             CREATE INDEX IF NOT EXISTS idx_memories_vector ON memories USING hnsw(embedding vector_cosine_ops);

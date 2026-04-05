@@ -12,4 +12,6 @@ export interface StorageRepository {
   clear(): Promise<void>
   getStats(): Promise<StorageStats>
   exportAll(): Promise<Memory[]>
+  deleteOlderThan(field: 'lastAccessedAt' | 'createdAt', olderThanDays: number): Promise<number>
+  countOlderThan(field: 'lastAccessedAt' | 'createdAt', olderThanDays: number): Promise<number>
 }

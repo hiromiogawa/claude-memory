@@ -34,6 +34,7 @@ function toMemory(row: DbRow): Memory {
     },
     createdAt: row.createdAt,
     updatedAt: row.updatedAt,
+    lastAccessedAt: row.lastAccessedAt,
   }
 }
 
@@ -50,6 +51,7 @@ function toMemoryWithEmbedding(row: DbRow & { embedding: number[] }): Memory {
     },
     createdAt: row.createdAt,
     updatedAt: row.updatedAt,
+    lastAccessedAt: row.lastAccessedAt,
   }
 }
 
@@ -85,6 +87,7 @@ export class PostgresStorageRepository implements StorageRepository {
         source: memory.metadata.source,
         createdAt: memory.createdAt,
         updatedAt: memory.updatedAt,
+        lastAccessedAt: memory.lastAccessedAt,
       })
       .onConflictDoUpdate({
         target: memories.id,
@@ -96,6 +99,7 @@ export class PostgresStorageRepository implements StorageRepository {
           tags: memory.metadata.tags ?? null,
           source: memory.metadata.source,
           updatedAt: memory.updatedAt,
+          lastAccessedAt: memory.lastAccessedAt,
         },
       })
   }
@@ -185,12 +189,15 @@ export class PostgresStorageRepository implements StorageRepository {
         source: memories.source,
         createdAt: memories.createdAt,
         updatedAt: memories.updatedAt,
+        lastAccessedAt: memories.lastAccessedAt,
         similarity: similarityExpr,
       })
       .from(memories)
       .where(and(...conditions))
       .orderBy(sql`${similarityExpr} DESC`)
       .limit(limit)
+
+    await this.touchLastAccessed(rows.map((r) => r.id))
 
     return rows.map((row) => ({
       memory: toMemory(row as DbRow),
@@ -230,12 +237,15 @@ export class PostgresStorageRepository implements StorageRepository {
         source: memories.source,
         createdAt: memories.createdAt,
         updatedAt: memories.updatedAt,
+        lastAccessedAt: memories.lastAccessedAt,
         distance: distanceExpr,
       })
       .from(memories)
       .where(conditions.length > 0 ? and(...conditions) : undefined)
       .orderBy(distanceExpr)
       .limit(limit)
+
+    await this.touchLastAccessed(rows.map((r) => r.id))
 
     return rows.map((row) => ({
       memory: toMemoryWithEmbedding(row as DbRow & { embedding: number[] }),
@@ -283,5 +293,46 @@ export class PostgresStorageRepository implements StorageRepository {
       manualCount: row.manualCount,
       autoCount: row.autoCount,
     }
+  }
+
+  async deleteOlderThan(
+    field: 'lastAccessedAt' | 'createdAt',
+    olderThanDays: number,
+  ): Promise<number> {
+    const col = field === 'lastAccessedAt' ? memories.lastAccessedAt : memories.createdAt
+    const cutoff = new Date()
+    cutoff.setDate(cutoff.getDate() - olderThanDays)
+    const result = await this.db
+      .delete(memories)
+      .where(sql`${col} < ${cutoff}`)
+      .returning({ id: memories.id })
+    return result.length
+  }
+
+  async countOlderThan(
+    field: 'lastAccessedAt' | 'createdAt',
+    olderThanDays: number,
+  ): Promise<number> {
+    const col = field === 'lastAccessedAt' ? memories.lastAccessedAt : memories.createdAt
+    const cutoff = new Date()
+    cutoff.setDate(cutoff.getDate() - olderThanDays)
+    const result = await this.db
+      .select({ count: sql<number>`COUNT(*)::int` })
+      .from(memories)
+      .where(sql`${col} < ${cutoff}`)
+    return result[0]?.count ?? 0
+  }
+
+  private async touchLastAccessed(ids: string[]): Promise<void> {
+    if (ids.length === 0) return
+    await this.db
+      .update(memories)
+      .set({ lastAccessedAt: new Date() })
+      .where(
+        sql`${memories.id} = ANY(ARRAY[${sql.join(
+          ids.map((id) => sql`${id}::uuid`),
+          sql`, `,
+        )}])`,
+      )
   }
 }

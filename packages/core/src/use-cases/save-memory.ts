@@ -51,6 +51,7 @@ export class SaveMemoryUseCase {
       },
       createdAt: now,
       updatedAt: now,
+      lastAccessedAt: now,
     }
     await this.storage.save(memory)
     return { saved: true }
@@ -79,6 +80,7 @@ export class SaveMemoryUseCase {
         metadata: chunks[i]!.metadata,
         createdAt: now,
         updatedAt: now,
+        lastAccessedAt: now,
       })
     }
 

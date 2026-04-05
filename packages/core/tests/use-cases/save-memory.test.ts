@@ -17,6 +17,8 @@ function createMockStorage(): StorageRepository {
     clear: vi.fn(),
     getStats: vi.fn(),
     exportAll: vi.fn(),
+    deleteOlderThan: vi.fn(),
+    countOlderThan: vi.fn(),
   }
 }
 
@@ -128,6 +130,7 @@ describe('SaveMemoryUseCase', () => {
           metadata: { sessionId: 's0', source: 'manual' },
           createdAt: new Date(),
           updatedAt: new Date(),
+          lastAccessedAt: new Date(),
         },
         score: 0.96,
         matchType: 'vector',
@@ -175,6 +178,7 @@ describe('SaveMemoryUseCase', () => {
           metadata: { sessionId: 's0', source: 'manual' },
           createdAt: new Date(),
           updatedAt: new Date(),
+          lastAccessedAt: new Date(),
         },
         score: 0.8,
         matchType: 'vector',
