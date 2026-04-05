@@ -323,6 +323,7 @@ export class PostgresStorageRepository implements StorageRepository {
     return result[0]?.count ?? 0
   }
 
+  /** 検索ヒットした記憶のlastAccessedAtを現在時刻に更新（クリーンアップの判定基準） */
   private async touchLastAccessed(ids: string[]): Promise<void> {
     if (ids.length === 0) return
     await this.db
