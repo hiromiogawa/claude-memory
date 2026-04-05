@@ -241,6 +241,11 @@ export class PostgresStorageRepository implements StorageRepository {
     }))
   }
 
+  async exportAll(): Promise<Memory[]> {
+    const rows = await this.db.select().from(memories).orderBy(asc(memories.createdAt))
+    return rows.map(toMemory)
+  }
+
   async getStats(): Promise<StorageStats> {
     const result = await this.db
       .select({

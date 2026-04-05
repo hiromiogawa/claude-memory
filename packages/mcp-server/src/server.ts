@@ -6,6 +6,8 @@ import { loadConfig } from './config.js'
 import { createContainer } from './container.js'
 import { registerMemoryClearTool } from './tools/memory-clear.js'
 import { registerMemoryDeleteTool } from './tools/memory-delete.js'
+import { registerMemoryExportTool } from './tools/memory-export.js'
+import { registerMemoryImportTool } from './tools/memory-import.js'
 import { registerMemoryListTool } from './tools/memory-list.js'
 import { registerMemorySaveTool } from './tools/memory-save.js'
 import { registerMemorySearchTool } from './tools/memory-search.js'
@@ -31,6 +33,8 @@ export async function startServer() {
   registerMemoryStatsTool(server, container)
   registerMemoryClearTool(server, container)
   registerMemoryUpdateTool(server, container)
+  registerMemoryExportTool(server, container)
+  registerMemoryImportTool(server, container)
 
   const transport = new StdioServerTransport()
   await server.connect(transport)
