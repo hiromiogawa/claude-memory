@@ -4,8 +4,10 @@ import {
   StorageConnectionError,
 } from '@claude-memory/core'
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js'
+import type { Logger } from 'pino'
 import { describe, expect, it, vi } from 'vitest'
 import type { Container } from '../src/container.js'
+import { handleToolError } from '../src/tools/error-handler.js'
 import { registerMemoryCleanupTool } from '../src/tools/memory-cleanup.js'
 import { registerMemoryClearTool } from '../src/tools/memory-clear.js'
 import { registerMemoryDeleteTool } from '../src/tools/memory-delete.js'
@@ -16,6 +18,19 @@ import { registerMemorySaveTool } from '../src/tools/memory-save.js'
 import { registerMemorySearchTool } from '../src/tools/memory-search.js'
 import { registerMemoryStatsTool } from '../src/tools/memory-stats.js'
 import { registerMemoryUpdateTool } from '../src/tools/memory-update.js'
+
+/** Mock Pino logger */
+function createMockLogger() {
+  return {
+    info: vi.fn(),
+    error: vi.fn(),
+    warn: vi.fn(),
+    debug: vi.fn(),
+    trace: vi.fn(),
+    fatal: vi.fn(),
+    child: vi.fn(),
+  } as unknown as Logger
+}
 
 /** Mock McpServer that captures tool registrations */
 function createMockServer() {
@@ -67,11 +82,39 @@ function createMockContainer(overrides: Record<string, unknown> = {}) {
   } as unknown as Container
 }
 
+describe('handleToolError', () => {
+  it('returns result on success', async () => {
+    const result = await handleToolError(async () => ({
+      content: [{ type: 'text' as const, text: 'ok' }],
+    }))
+    expect(result.content[0].text).toBe('ok')
+  })
+
+  it('catches errors and returns error message', async () => {
+    const logger = createMockLogger()
+    const result = await handleToolError(async () => {
+      throw new Error('boom')
+    }, logger)
+    expect(result.content[0].text).toBe('Internal error: boom')
+    expect(result.isError).toBe(true)
+    expect(logger.error).toHaveBeenCalledWith({ error: 'boom' }, 'tool error')
+  })
+
+  it('handles non-Error throws', async () => {
+    const result = await handleToolError(async () => {
+      throw 'string error'
+    })
+    expect(result.content[0].text).toBe('Internal error: Unknown error')
+    expect(result.isError).toBe(true)
+  })
+})
+
 describe('memory_save tool', () => {
   it('registers with correct name and description', () => {
     const server = createMockServer()
     const container = createMockContainer()
-    registerMemorySaveTool(server as unknown as McpServer, container)
+    const logger = createMockLogger()
+    registerMemorySaveTool(server as unknown as McpServer, container, logger)
 
     expect(server.tool).toHaveBeenCalledOnce()
     expect(server.tools.has('memory_save')).toBe(true)
@@ -81,7 +124,8 @@ describe('memory_save tool', () => {
   it('calls saveManual and returns success message when saved=true', async () => {
     const server = createMockServer()
     const container = createMockContainer()
-    registerMemorySaveTool(server as unknown as McpServer, container)
+    const logger = createMockLogger()
+    registerMemorySaveTool(server as unknown as McpServer, container, logger)
 
     const handler = server.tools.get('memory_save')!.handler
     const result = await handler({ content: 'test', sessionId: 'sess-1' })
@@ -91,6 +135,10 @@ describe('memory_save tool', () => {
       sessionId: 'sess-1',
     })
     expect(result.content[0].text).toMatch(/^Memory saved successfully\./)
+    expect(logger.info).toHaveBeenCalledWith(
+      expect.objectContaining({ tool: 'memory_save', saved: true }),
+      'memory_save completed',
+    )
   })
 
   it('returns "Duplicate memory skipped." when saved=false', async () => {
@@ -98,7 +146,8 @@ describe('memory_save tool', () => {
       saveMemory: { saveManual: vi.fn().mockResolvedValue({ saved: false }) },
     })
     const server = createMockServer()
-    registerMemorySaveTool(server as unknown as McpServer, container)
+    const logger = createMockLogger()
+    registerMemorySaveTool(server as unknown as McpServer, container, logger)
 
     const handler = server.tools.get('memory_save')!.handler
     const result = await handler({ content: 'dup', sessionId: 'sess-1' })
@@ -111,7 +160,8 @@ describe('memory_search tool', () => {
   it('registers with correct name', () => {
     const server = createMockServer()
     const container = createMockContainer()
-    registerMemorySearchTool(server as unknown as McpServer, container)
+    const logger = createMockLogger()
+    registerMemorySearchTool(server as unknown as McpServer, container, logger)
 
     expect(server.tools.has('memory_search')).toBe(true)
   })
@@ -119,7 +169,8 @@ describe('memory_search tool', () => {
   it('returns "No memories found." for empty results', async () => {
     const server = createMockServer()
     const container = createMockContainer()
-    registerMemorySearchTool(server as unknown as McpServer, container)
+    const logger = createMockLogger()
+    registerMemorySearchTool(server as unknown as McpServer, container, logger)
 
     const handler = server.tools.get('memory_search')!.handler
     const result = await handler({ query: 'test', limit: 5, allProjects: false })
@@ -140,7 +191,8 @@ describe('memory_search tool', () => {
       },
     })
     const server = createMockServer()
-    registerMemorySearchTool(server as unknown as McpServer, container)
+    const logger = createMockLogger()
+    registerMemorySearchTool(server as unknown as McpServer, container, logger)
 
     const handler = server.tools.get('memory_search')!.handler
     const result = await handler({ query: 'test', limit: 5, allProjects: false })
@@ -154,7 +206,8 @@ describe('memory_delete tool', () => {
   it('calls deleteMemory.execute with the given id', async () => {
     const server = createMockServer()
     const container = createMockContainer()
-    registerMemoryDeleteTool(server as unknown as McpServer, container)
+    const logger = createMockLogger()
+    registerMemoryDeleteTool(server as unknown as McpServer, container, logger)
 
     const handler = server.tools.get('memory_delete')!.handler
     const testId = '550e8400-e29b-41d4-a716-446655440000'
@@ -168,6 +221,7 @@ describe('memory_delete tool', () => {
 describe('memory_stats tool', () => {
   it('returns formatted statistics', async () => {
     const server = createMockServer()
+    const logger = createMockLogger()
     const container = createMockContainer({
       getStats: {
         execute: vi.fn().mockResolvedValue({
@@ -181,7 +235,7 @@ describe('memory_stats tool', () => {
         }),
       },
     })
-    registerMemoryStatsTool(server as unknown as McpServer, container)
+    registerMemoryStatsTool(server as unknown as McpServer, container, logger)
 
     const handler = server.tools.get('memory_stats')!.handler
     const result = await handler()
@@ -203,7 +257,8 @@ describe('memory_export tool', () => {
       exportMemory: { execute: vi.fn().mockResolvedValue(exportData) },
     })
     const server = createMockServer()
-    registerMemoryExportTool(server as unknown as McpServer, container)
+    const logger = createMockLogger()
+    registerMemoryExportTool(server as unknown as McpServer, container, logger)
 
     const handler = server.tools.get('memory_export')!.handler
     const result = await handler()
@@ -218,7 +273,8 @@ describe('memory_cleanup tool', () => {
       cleanupMemory: { execute: vi.fn().mockResolvedValue({ deletedCount: 5, dryRun: true }) },
     })
     const server = createMockServer()
-    registerMemoryCleanupTool(server as unknown as McpServer, container)
+    const logger = createMockLogger()
+    registerMemoryCleanupTool(server as unknown as McpServer, container, logger)
 
     const handler = server.tools.get('memory_cleanup')!.handler
     const result = await handler({ olderThanDays: 30, dryRun: true })
@@ -235,7 +291,8 @@ describe('memory_cleanup tool', () => {
       cleanupMemory: { execute: vi.fn().mockResolvedValue({ deletedCount: 3, dryRun: false }) },
     })
     const server = createMockServer()
-    registerMemoryCleanupTool(server as unknown as McpServer, container)
+    const logger = createMockLogger()
+    registerMemoryCleanupTool(server as unknown as McpServer, container, logger)
 
     const handler = server.tools.get('memory_cleanup')!.handler
     const result = await handler({ olderThanDays: 60, dryRun: false })

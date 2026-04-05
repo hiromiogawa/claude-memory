@@ -1,4 +1,5 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js'
+import type { Logger } from 'pino'
 import { z } from 'zod'
 import type { Container } from '../container.js'
 import { handleToolError } from './error-handler.js'
@@ -16,7 +17,11 @@ const exportedMemorySchema = z.array(
   }),
 )
 
-export function registerMemoryImportTool(server: McpServer, container: Container): void {
+export function registerMemoryImportTool(
+  server: McpServer,
+  container: Container,
+  logger: Logger,
+): void {
   server.tool(
     'memory_import',
     'Import memories from JSON backup (re-computes embeddings)',
@@ -25,12 +30,18 @@ export function registerMemoryImportTool(server: McpServer, container: Container
     },
     async (args) => {
       return handleToolError(async () => {
+        const start = performance.now()
         const parsed = exportedMemorySchema.parse(JSON.parse(args.data))
         const result = await container.importMemory.execute(parsed)
+        const durationMs = Math.round(performance.now() - start)
+        logger.info(
+          { tool: 'memory_import', durationMs, imported: result.imported },
+          'memory_import completed',
+        )
         return {
           content: [{ type: 'text', text: `Imported ${result.imported} memories.` }],
         }
-      })
+      }, logger)
     },
   )
 }

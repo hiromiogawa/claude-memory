@@ -1,10 +1,15 @@
 import { SEARCH_DEFAULTS } from '@claude-memory/core'
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js'
+import type { Logger } from 'pino'
 import { z } from 'zod'
 import type { Container } from '../container.js'
 import { handleToolError } from './error-handler.js'
 
-export function registerMemoryListTool(server: McpServer, container: Container): void {
+export function registerMemoryListTool(
+  server: McpServer,
+  container: Container,
+  logger: Logger,
+): void {
   server.tool(
     'memory_list',
     'List memories with pagination',
@@ -16,12 +21,18 @@ export function registerMemoryListTool(server: McpServer, container: Container):
     },
     async (args) => {
       return handleToolError(async () => {
+        const start = performance.now()
         const memories = await container.listMemories.execute({
           limit: args.limit,
           offset: args.offset,
           source: args.source,
           tags: args.tags,
         })
+        const durationMs = Math.round(performance.now() - start)
+        logger.info(
+          { tool: 'memory_list', durationMs, count: memories.length },
+          'memory_list completed',
+        )
 
         if (memories.length === 0) {
           return {
@@ -42,7 +53,7 @@ export function registerMemoryListTool(server: McpServer, container: Container):
         return {
           content: [{ type: 'text', text: formatted }],
         }
-      })
+      }, logger)
     },
   )
 }
