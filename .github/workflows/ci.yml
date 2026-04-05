@@ -37,9 +37,9 @@ jobs:
           PGPASSWORD=test psql -h localhost -p 5434 -U test -d claude_memory_test \
             -c "CREATE EXTENSION IF NOT EXISTS vector; CREATE EXTENSION IF NOT EXISTS pg_bigm;"
       - name: Setup DB schema
-        run: cd packages/storage-postgres && pnpm db:push
-        env:
-          DATABASE_URL: postgresql://test:test@localhost:5434/claude_memory_test
+        run: |
+          PGPASSWORD=test psql -h localhost -p 5434 -U test -d claude_memory_test \
+            -f packages/storage-postgres/drizzle/0000_nice_ultron.sql
       - name: Run tests
         run: pnpm test
         env:
