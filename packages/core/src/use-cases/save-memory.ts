@@ -64,20 +64,32 @@ export class SaveMemoryUseCase {
     const contents = chunks.map((c) => c.content)
     const embeddings = await this.embedding.embedBatch(contents)
 
-    const now = new Date()
-    const memories: Memory[] = []
-
+    // Filter out failed embeddings
+    const validChunks: { chunk: (typeof chunks)[0]; embedding: number[] }[] = []
     for (let i = 0; i < chunks.length; i++) {
       const embedding = embeddings[i]
-      if (!embedding || embedding.length === 0) continue
+      if (embedding && embedding.length > 0) {
+        validChunks.push({ chunk: chunks[i]!, embedding })
+      }
+    }
 
-      if (await this.isDuplicate(embedding)) continue
+    if (validChunks.length === 0) return
 
+    // Parallel dedup check — all at once instead of sequential N+1
+    const dupResults = await Promise.all(
+      validChunks.map(({ embedding }) => this.isDuplicate(embedding)),
+    )
+
+    const now = new Date()
+    const memories: Memory[] = []
+    for (let i = 0; i < validChunks.length; i++) {
+      if (dupResults[i]) continue
+      const { chunk, embedding } = validChunks[i]!
       memories.push({
         id: randomUUID(),
-        content: chunks[i]!.content,
+        content: chunk.content,
         embedding,
-        metadata: chunks[i]!.metadata,
+        metadata: chunk.metadata,
         createdAt: now,
         updatedAt: now,
         lastAccessedAt: now,
