@@ -29,6 +29,16 @@ cd claude-memory
 docker compose up -d
 ```
 
+このコマンドで PostgreSQL と MCP Server の両コンテナが起動する。MCP Server は常駐プロセスではなく、Claude Code が `docker exec` で呼び出すたびにプロセスが起動する仕組みのため、別途サーバー起動コマンドは不要。
+
+起動確認：
+
+```bash
+docker compose ps
+# db         ... healthy
+# mcp-server ... running
+```
+
 ### 2. Claude Code の設定（MCP + Hooks）
 
 `~/.claude/settings.json`（グローバル設定）に以下を追加：
