@@ -9,6 +9,8 @@ describe('GetStatsUseCase', () => {
       oldestMemory: null,
       newestMemory: null,
       averageContentLength: 150,
+      manualCount: 30,
+      autoCount: 12,
     }
     const storage = { getStats: vi.fn().mockResolvedValue(stats) } as any
     const useCase = new GetStatsUseCase(storage)

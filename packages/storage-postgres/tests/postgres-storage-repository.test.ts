@@ -356,6 +356,8 @@ describe('PostgresStorageRepository', () => {
       expect(stats.averageContentLength).toBe(0)
       expect(stats.oldestMemory).toBeNull()
       expect(stats.newestMemory).toBeNull()
+      expect(stats.manualCount).toBe(0)
+      expect(stats.autoCount).toBe(0)
     })
 
     it('returns correct stats with data', async () => {
@@ -374,6 +376,8 @@ describe('PostgresStorageRepository', () => {
       expect(stats.averageContentLength).toBeGreaterThan(0)
       expect(stats.oldestMemory).toBeInstanceOf(Date)
       expect(stats.newestMemory).toBeInstanceOf(Date)
+      expect(stats.manualCount).toBe(2)
+      expect(stats.autoCount).toBe(1)
     })
   })
 })
