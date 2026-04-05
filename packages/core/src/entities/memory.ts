@@ -35,4 +35,8 @@ export interface StorageStats {
   oldestMemory: Date | null
   newestMemory: Date | null
   averageContentLength: number
+  /** Total count of manual memories */
+  manualCount: number
+  /** Total count of auto memories */
+  autoCount: number
 }

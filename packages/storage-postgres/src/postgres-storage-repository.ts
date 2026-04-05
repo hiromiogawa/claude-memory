@@ -249,6 +249,8 @@ export class PostgresStorageRepository implements StorageRepository {
         averageContentLength: sql<number>`COALESCE(AVG(LENGTH(${memories.content})), 0)::float`,
         oldestMemory: sql<Date | null>`MIN(${memories.createdAt})`,
         newestMemory: sql<Date | null>`MAX(${memories.createdAt})`,
+        manualCount: sql<number>`COUNT(*) FILTER (WHERE ${memories.source} = 'manual')::int`,
+        autoCount: sql<number>`COUNT(*) FILTER (WHERE ${memories.source} = 'auto')::int`,
       })
       .from(memories)
 
@@ -260,6 +262,8 @@ export class PostgresStorageRepository implements StorageRepository {
         averageContentLength: 0,
         oldestMemory: null,
         newestMemory: null,
+        manualCount: 0,
+        autoCount: 0,
       }
     }
     return {
@@ -268,6 +272,8 @@ export class PostgresStorageRepository implements StorageRepository {
       averageContentLength: row.averageContentLength,
       oldestMemory: row.oldestMemory ? new Date(row.oldestMemory) : null,
       newestMemory: row.newestMemory ? new Date(row.newestMemory) : null,
+      manualCount: row.manualCount,
+      autoCount: row.autoCount,
     }
   }
 }

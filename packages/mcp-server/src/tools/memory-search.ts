@@ -19,6 +19,7 @@ export function registerMemorySearchTool(server: McpServer, container: Container
         .describe('Search across all projects instead of scoping to projectPath'),
     },
     async (args) => {
+      const start = performance.now()
       const filter: SearchFilter = {}
       if (!args.allProjects && args.projectPath) {
         filter.projectPath = args.projectPath
@@ -32,10 +33,11 @@ export function registerMemorySearchTool(server: McpServer, container: Container
         args.limit,
         hasFilter ? filter : undefined,
       )
+      const durationMs = Math.round(performance.now() - start)
 
       if (results.length === 0) {
         return {
-          content: [{ type: 'text', text: 'No memories found.' }],
+          content: [{ type: 'text', text: `No memories found. (${durationMs}ms)` }],
         }
       }
 
@@ -50,7 +52,7 @@ export function registerMemorySearchTool(server: McpServer, container: Container
         .join('\n\n')
 
       return {
-        content: [{ type: 'text', text: formatted }],
+        content: [{ type: 'text', text: `${formatted}\n\n(${durationMs}ms)` }],
       }
     },
   )
