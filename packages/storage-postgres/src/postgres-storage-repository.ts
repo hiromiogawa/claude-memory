@@ -21,28 +21,11 @@ function tagsOverlapCondition(tags: string[]) {
   )}]::text[]`
 }
 
-function toMemory(row: DbRow): Memory {
+function toMemory(row: DbRow, embedding: number[] | null = null): Memory {
   return {
     id: row.id,
     content: row.content,
-    embedding: null, // embeddings not fetched by default (large payload)
-    metadata: {
-      sessionId: row.sessionId ?? '',
-      projectPath: row.projectPath ?? undefined,
-      tags: row.tags ?? undefined,
-      source: (row.source as 'manual' | 'auto') ?? 'manual',
-    },
-    createdAt: row.createdAt,
-    updatedAt: row.updatedAt,
-    lastAccessedAt: row.lastAccessedAt,
-  }
-}
-
-function toMemoryWithEmbedding(row: DbRow & { embedding: number[] }): Memory {
-  return {
-    id: row.id,
-    content: row.content,
-    embedding: row.embedding,
+    embedding,
     metadata: {
       sessionId: row.sessionId ?? '',
       projectPath: row.projectPath ?? undefined,
@@ -154,7 +137,7 @@ export class PostgresStorageRepository implements StorageRepository {
       .limit(limit)
       .offset(offset)
 
-    return rows.map(toMemory)
+    return rows.map((row) => toMemory(row))
   }
 
   async searchByKeyword(
@@ -248,7 +231,7 @@ export class PostgresStorageRepository implements StorageRepository {
     await this.touchLastAccessed(rows.map((r) => r.id))
 
     return rows.map((row) => ({
-      memory: toMemoryWithEmbedding(row as DbRow & { embedding: number[] }),
+      memory: toMemory(row as DbRow, row.embedding as number[]),
       score: 1 - (row.distance ?? 0),
       matchType: 'vector' as const,
     }))
@@ -256,7 +239,7 @@ export class PostgresStorageRepository implements StorageRepository {
 
   async exportAll(): Promise<Memory[]> {
     const rows = await this.db.select().from(memories).orderBy(asc(memories.createdAt))
-    return rows.map(toMemory)
+    return rows.map((row) => toMemory(row))
   }
 
   async getStats(): Promise<StorageStats> {
