@@ -207,7 +207,7 @@ export class PostgresStorageRepository implements StorageRepository {
       conditions.push(tagsOverlapCondition(filter.tags))
     }
 
-    const distanceExpr = sql<number>`${memories.embedding} <=> ${sql.raw(`'${embeddingLiteral}'`)}::vector`
+    const distanceExpr = sql<number>`${memories.embedding} <=> ${embeddingLiteral}::vector`
 
     const rows = await this.db
       .select({
