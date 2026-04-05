@@ -76,6 +76,13 @@ packages/
 └── hooks/             Claude Code Hooks連携
 ```
 
+各パッケージの詳細ドキュメント:
+- [core](packages/core.md) — エンティティ、インターフェース、ユースケース、定数
+- [embedding-onnx](packages/embedding-onnx.md) — モデル設定、実装詳細
+- [storage-postgres](packages/storage-postgres.md) — 接続設定、インデックス、検索の仕組み
+- [mcp-server](packages/mcp-server.md) — DIコンテナ、ツール一覧、設定
+- [hooks](packages/hooks.md) — SessionEndHandler、QAChunkingStrategy
+
 ## 依存方向
 
 ```
