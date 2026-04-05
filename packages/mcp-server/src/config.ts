@@ -1,6 +1,7 @@
 // packages/mcp-server/src/config.ts
 export interface AppConfig {
   databaseUrl: string
+  dbPoolSize: number
   embeddingModel: string
   embeddingDimension: number
   logLevel: string
@@ -12,6 +13,7 @@ export function loadConfig(): AppConfig {
 
   return {
     databaseUrl,
+    dbPoolSize: Number(process.env.DB_POOL_SIZE ?? '10'),
     embeddingModel: process.env.EMBEDDING_MODEL ?? 'intfloat/multilingual-e5-small',
     embeddingDimension: Number(process.env.EMBEDDING_DIMENSION ?? '384'),
     logLevel: process.env.LOG_LEVEL ?? 'info',
