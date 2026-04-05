@@ -97,7 +97,24 @@ describe('PostgresStorageRepository', () => {
 
   describe('saveBatch', () => {
     it('saves multiple memories', async () => {
-      const memories = [makeMemory(), makeMemory(), makeMemory()]
+      const now = Date.now()
+      const memories = [
+        makeMemory({
+          createdAt: new Date(now - 2000),
+          updatedAt: new Date(now - 2000),
+          lastAccessedAt: new Date(now - 2000),
+        }),
+        makeMemory({
+          createdAt: new Date(now - 1000),
+          updatedAt: new Date(now - 1000),
+          lastAccessedAt: new Date(now - 1000),
+        }),
+        makeMemory({
+          createdAt: new Date(now),
+          updatedAt: new Date(now),
+          lastAccessedAt: new Date(now),
+        }),
+      ]
       await repo.saveBatch(memories)
 
       const stats = await repo.getStats()
@@ -127,7 +144,24 @@ describe('PostgresStorageRepository', () => {
 
   describe('clear', () => {
     it('removes all memories', async () => {
-      await repo.saveBatch([makeMemory(), makeMemory(), makeMemory()])
+      const now = Date.now()
+      await repo.saveBatch([
+        makeMemory({
+          createdAt: new Date(now - 2000),
+          updatedAt: new Date(now - 2000),
+          lastAccessedAt: new Date(now - 2000),
+        }),
+        makeMemory({
+          createdAt: new Date(now - 1000),
+          updatedAt: new Date(now - 1000),
+          lastAccessedAt: new Date(now - 1000),
+        }),
+        makeMemory({
+          createdAt: new Date(now),
+          updatedAt: new Date(now),
+          lastAccessedAt: new Date(now),
+        }),
+      ])
 
       await repo.clear()
 
@@ -144,26 +178,31 @@ describe('PostgresStorageRepository', () => {
           metadata: { sessionId: 's1', source: 'manual' },
           createdAt: new Date(now - 4000),
           updatedAt: new Date(now - 4000),
+          lastAccessedAt: new Date(now - 4000),
         }),
         makeMemory({
           metadata: { sessionId: 's1', source: 'auto' },
           createdAt: new Date(now - 3000),
           updatedAt: new Date(now - 3000),
+          lastAccessedAt: new Date(now - 3000),
         }),
         makeMemory({
           metadata: { sessionId: 's2', source: 'manual' },
           createdAt: new Date(now - 2000),
           updatedAt: new Date(now - 2000),
+          lastAccessedAt: new Date(now - 2000),
         }),
         makeMemory({
           metadata: { sessionId: 's2', source: 'auto' },
           createdAt: new Date(now - 1000),
           updatedAt: new Date(now - 1000),
+          lastAccessedAt: new Date(now - 1000),
         }),
         makeMemory({
           metadata: { sessionId: 's3', source: 'manual' },
           createdAt: new Date(now),
           updatedAt: new Date(now),
+          lastAccessedAt: new Date(now),
         }),
       ]
       await repo.saveBatch(memories)
@@ -205,10 +244,26 @@ describe('PostgresStorageRepository', () => {
 
     it('filters by tags', async () => {
       await repo.clear()
+      const now = Date.now()
       await repo.saveBatch([
-        makeMemory({ metadata: { sessionId: 's1', tags: ['design'], source: 'manual' } }),
-        makeMemory({ metadata: { sessionId: 's1', tags: ['bug'], source: 'manual' } }),
-        makeMemory({ metadata: { sessionId: 's1', tags: ['design', 'bug'], source: 'manual' } }),
+        makeMemory({
+          metadata: { sessionId: 's1', tags: ['design'], source: 'manual' },
+          createdAt: new Date(now - 2000),
+          updatedAt: new Date(now - 2000),
+          lastAccessedAt: new Date(now - 2000),
+        }),
+        makeMemory({
+          metadata: { sessionId: 's1', tags: ['bug'], source: 'manual' },
+          createdAt: new Date(now - 1000),
+          updatedAt: new Date(now - 1000),
+          lastAccessedAt: new Date(now - 1000),
+        }),
+        makeMemory({
+          metadata: { sessionId: 's1', tags: ['design', 'bug'], source: 'manual' },
+          createdAt: new Date(now),
+          updatedAt: new Date(now),
+          lastAccessedAt: new Date(now),
+        }),
       ])
       const results = await repo.list({ limit: 10, offset: 0, tags: ['design'] })
       expect(results).toHaveLength(2)
@@ -231,13 +286,32 @@ describe('PostgresStorageRepository', () => {
 
   describe('searchByKeyword', () => {
     beforeEach(async () => {
+      const now = Date.now()
       await repo.saveBatch([
-        makeMemory({ content: 'TypeScript is a strongly typed language' }),
-        makeMemory({ content: 'JavaScript is dynamically typed' }),
-        makeMemory({ content: 'Python is great for data science' }),
+        makeMemory({
+          content: 'TypeScript is a strongly typed language',
+          createdAt: new Date(now - 3000),
+          updatedAt: new Date(now - 3000),
+          lastAccessedAt: new Date(now - 3000),
+        }),
+        makeMemory({
+          content: 'JavaScript is dynamically typed',
+          createdAt: new Date(now - 2000),
+          updatedAt: new Date(now - 2000),
+          lastAccessedAt: new Date(now - 2000),
+        }),
+        makeMemory({
+          content: 'Python is great for data science',
+          createdAt: new Date(now - 1000),
+          updatedAt: new Date(now - 1000),
+          lastAccessedAt: new Date(now - 1000),
+        }),
         makeMemory({
           content: 'TypeScript and JavaScript are related',
           metadata: { sessionId: 'sx', projectPath: '/other/project', source: 'auto' },
+          createdAt: new Date(now),
+          updatedAt: new Date(now),
+          lastAccessedAt: new Date(now),
         }),
       ])
     })
@@ -265,14 +339,21 @@ describe('PostgresStorageRepository', () => {
 
     it('filters by tags', async () => {
       await repo.clear()
+      const now = Date.now()
       await repo.saveBatch([
         makeMemory({
           content: 'TypeScript with tag',
           metadata: { sessionId: 's1', tags: ['frontend', 'typescript'], source: 'manual' },
+          createdAt: new Date(now - 1000),
+          updatedAt: new Date(now - 1000),
+          lastAccessedAt: new Date(now - 1000),
         }),
         makeMemory({
           content: 'TypeScript without tag',
           metadata: { sessionId: 's1', tags: ['backend'], source: 'manual' },
+          createdAt: new Date(now),
+          updatedAt: new Date(now),
+          lastAccessedAt: new Date(now),
         }),
       ])
       const results = await repo.searchByKeyword('TypeScript', 10, { tags: ['frontend'] })
@@ -290,10 +371,26 @@ describe('PostgresStorageRepository', () => {
 
     it('returns results ordered by bigm similarity score', async () => {
       await repo.clear()
+      const now = Date.now()
       await repo.saveBatch([
-        makeMemory({ content: 'TypeScript is a strongly typed language' }),
-        makeMemory({ content: 'TypeScript and JavaScript are related to TypeScript' }),
-        makeMemory({ content: 'Python is great for data science' }),
+        makeMemory({
+          content: 'TypeScript is a strongly typed language',
+          createdAt: new Date(now - 2000),
+          updatedAt: new Date(now - 2000),
+          lastAccessedAt: new Date(now - 2000),
+        }),
+        makeMemory({
+          content: 'TypeScript and JavaScript are related to TypeScript',
+          createdAt: new Date(now - 1000),
+          updatedAt: new Date(now - 1000),
+          lastAccessedAt: new Date(now - 1000),
+        }),
+        makeMemory({
+          content: 'Python is great for data science',
+          createdAt: new Date(now),
+          updatedAt: new Date(now),
+          lastAccessedAt: new Date(now),
+        }),
       ])
 
       const results = await repo.searchByKeyword('TypeScript', 10)
@@ -311,9 +408,22 @@ describe('PostgresStorageRepository', () => {
 
   describe('searchByVector', () => {
     it('returns nearest neighbors by cosine similarity', async () => {
+      const now = Date.now()
       const embedding1 = makeEmbedding()
-      const memory1 = makeMemory({ content: 'First memory', embedding: embedding1 })
-      const memory2 = makeMemory({ content: 'Second memory', embedding: makeEmbedding() })
+      const memory1 = makeMemory({
+        content: 'First memory',
+        embedding: embedding1,
+        createdAt: new Date(now - 1000),
+        updatedAt: new Date(now - 1000),
+        lastAccessedAt: new Date(now - 1000),
+      })
+      const memory2 = makeMemory({
+        content: 'Second memory',
+        embedding: makeEmbedding(),
+        createdAt: new Date(now),
+        updatedAt: new Date(now),
+        lastAccessedAt: new Date(now),
+      })
       await repo.saveBatch([memory1, memory2])
 
       // Searching with the exact same embedding should find memory1 as top result
@@ -325,19 +435,43 @@ describe('PostgresStorageRepository', () => {
     })
 
     it('respects the limit parameter', async () => {
-      await repo.saveBatch([makeMemory(), makeMemory(), makeMemory()])
+      const now = Date.now()
+      await repo.saveBatch([
+        makeMemory({
+          createdAt: new Date(now - 2000),
+          updatedAt: new Date(now - 2000),
+          lastAccessedAt: new Date(now - 2000),
+        }),
+        makeMemory({
+          createdAt: new Date(now - 1000),
+          updatedAt: new Date(now - 1000),
+          lastAccessedAt: new Date(now - 1000),
+        }),
+        makeMemory({
+          createdAt: new Date(now),
+          updatedAt: new Date(now),
+          lastAccessedAt: new Date(now),
+        }),
+      ])
       const results = await repo.searchByVector(makeEmbedding(), 2)
       expect(results).toHaveLength(2)
     })
 
     it('filters by projectPath', async () => {
+      const now = Date.now()
       const target = makeMemory({
         content: 'Target memory',
         metadata: { sessionId: 's1', projectPath: '/target/path', source: 'manual' },
+        createdAt: new Date(now - 1000),
+        updatedAt: new Date(now - 1000),
+        lastAccessedAt: new Date(now - 1000),
       })
       const other = makeMemory({
         content: 'Other memory',
         metadata: { sessionId: 's2', projectPath: '/other/path', source: 'manual' },
+        createdAt: new Date(now),
+        updatedAt: new Date(now),
+        lastAccessedAt: new Date(now),
       })
       await repo.saveBatch([target, other])
 
@@ -362,13 +496,29 @@ describe('PostgresStorageRepository', () => {
     })
 
     it('returns correct stats with data', async () => {
+      const now = Date.now()
       await repo.saveBatch([
-        makeMemory({ content: 'Short', metadata: { sessionId: 'sess-a', source: 'manual' } }),
+        makeMemory({
+          content: 'Short',
+          metadata: { sessionId: 'sess-a', source: 'manual' },
+          createdAt: new Date(now - 2000),
+          updatedAt: new Date(now - 2000),
+          lastAccessedAt: new Date(now - 2000),
+        }),
         makeMemory({
           content: 'A bit longer content',
           metadata: { sessionId: 'sess-b', source: 'auto' },
+          createdAt: new Date(now - 1000),
+          updatedAt: new Date(now - 1000),
+          lastAccessedAt: new Date(now - 1000),
         }),
-        makeMemory({ content: 'Another one', metadata: { sessionId: 'sess-a', source: 'manual' } }),
+        makeMemory({
+          content: 'Another one',
+          metadata: { sessionId: 'sess-a', source: 'manual' },
+          createdAt: new Date(now),
+          updatedAt: new Date(now),
+          lastAccessedAt: new Date(now),
+        }),
       ])
 
       const stats = await repo.getStats()
