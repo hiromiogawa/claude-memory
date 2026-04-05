@@ -1,3 +1,4 @@
+import { SEARCH_DEFAULTS } from '@claude-memory/core'
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js'
 import { z } from 'zod'
 import type { Container } from '../container.js'
@@ -7,7 +8,7 @@ export function registerMemoryListTool(server: McpServer, container: Container):
     'memory_list',
     'List memories with pagination',
     {
-      limit: z.number().optional().default(20),
+      limit: z.number().optional().default(SEARCH_DEFAULTS.maxResults),
       offset: z.number().optional().default(0),
       source: z.enum(['manual', 'auto']).optional(),
       tags: z.array(z.string()).optional(),
