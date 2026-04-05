@@ -1,6 +1,7 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js'
 import { z } from 'zod'
 import type { Container } from '../container.js'
+import { handleToolError } from './error-handler.js'
 
 export function registerMemoryCleanupTool(server: McpServer, container: Container): void {
   server.tool(
@@ -15,16 +16,18 @@ export function registerMemoryCleanupTool(server: McpServer, container: Containe
         .describe('Preview what would be deleted without actually deleting'),
     },
     async (args) => {
-      const result = await container.cleanupMemory.execute(args)
-      const action = result.dryRun ? 'Would delete' : 'Deleted'
-      return {
-        content: [
-          {
-            type: 'text',
-            text: `${action} ${result.deletedCount} memories (not accessed in ${args.olderThanDays} days).`,
-          },
-        ],
-      }
+      return handleToolError(async () => {
+        const result = await container.cleanupMemory.execute(args)
+        const action = result.dryRun ? 'Would delete' : 'Deleted'
+        return {
+          content: [
+            {
+              type: 'text',
+              text: `${action} ${result.deletedCount} memories (not accessed in ${args.olderThanDays} days).`,
+            },
+          ],
+        }
+      })
     },
   )
 }
