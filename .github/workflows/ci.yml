@@ -32,26 +32,14 @@ jobs:
       - run: pnpm build
       - name: Start test DB
         run: docker compose -f docker-compose.test.yml up -d --build --wait
+      - name: Setup DB extensions
+        run: |
+          PGPASSWORD=test psql -h localhost -p 5434 -U test -d claude_memory_test \
+            -c "CREATE EXTENSION IF NOT EXISTS vector; CREATE EXTENSION IF NOT EXISTS pg_bigm;"
       - name: Setup DB schema
         run: |
-          PGPASSWORD=test psql -h localhost -p 5434 -U test -d claude_memory_test <<'SQL'
-            CREATE EXTENSION IF NOT EXISTS vector;
-            CREATE EXTENSION IF NOT EXISTS pg_bigm;
-            CREATE TABLE IF NOT EXISTS memories (
-              id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-              content TEXT NOT NULL,
-              embedding vector(384),
-              session_id TEXT,
-              project_path TEXT,
-              tags TEXT[],
-              source TEXT,
-              created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
-              updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
-              last_accessed_at TIMESTAMPTZ NOT NULL DEFAULT now()
-            );
-            CREATE INDEX IF NOT EXISTS idx_memories_bigm ON memories USING gin(content gin_bigm_ops);
-            CREATE INDEX IF NOT EXISTS idx_memories_vector ON memories USING hnsw(embedding vector_cosine_ops);
-          SQL
+          PGPASSWORD=test psql -h localhost -p 5434 -U test -d claude_memory_test \
+            -f packages/storage-postgres/drizzle/0000_nice_ultron.sql
       - name: Run tests
         run: pnpm test
         env:
