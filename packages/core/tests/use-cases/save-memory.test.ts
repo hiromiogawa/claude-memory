@@ -253,6 +253,7 @@ describe('SaveMemoryUseCase', () => {
             metadata: { sessionId: 's0', source: 'auto' },
             createdAt: new Date(),
             updatedAt: new Date(),
+            lastAccessedAt: new Date(),
           },
           score: 0.97,
           matchType: 'vector',
