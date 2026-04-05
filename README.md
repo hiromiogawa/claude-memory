@@ -29,9 +29,9 @@ cd claude-memory
 docker compose up -d
 ```
 
-### 2. Claude Code にMCPサーバーを登録
+### 2. Claude Code の設定（MCP + Hooks）
 
-`~/.claude/settings.json` に追加：
+`~/.claude/settings.json`（グローバル設定）に以下を追加：
 
 ```json
 {
@@ -45,16 +45,7 @@ docker compose up -d
         "packages/mcp-server/dist/index.js"
       ]
     }
-  }
-}
-```
-
-### 3. PostSessionEnd フックを登録
-
-同じ `settings.json` に追加：
-
-```json
-{
+  },
   "hooks": {
     "PostSessionEnd": [
       {
@@ -65,9 +56,21 @@ docker compose up -d
 }
 ```
 
-このフックはセッション終了時に自動発火し、会話内容をQ&Aペアに分割してDBに保存する。ユーザーが意識する必要はない。
+**設定ファイルの場所:**
 
-### 4. CLAUDE.md に記憶ルールを記載
+| ファイル | スコープ | 用途 |
+|---------|---------|------|
+| `~/.claude/settings.json` | グローバル | 全プロジェクトで使う場合 |
+| `<project>/.claude/settings.json` | プロジェクト | 特定プロジェクトのみで使う場合 |
+
+**この設定で有効になること:**
+
+- **mcpServers** — Claude Code が `memory_save`, `memory_search` 等のMCPツールを使えるようになる
+- **hooks.PostSessionEnd** — セッション終了時に会話内容をQ&Aペアに分割してDBに自動保存する。ユーザーが意識する必要はなく、会話を終了するだけで記憶が蓄積される
+
+設定後、Claude Code を再起動すると反映される。
+
+### 3. CLAUDE.md に記憶ルールを記載
 
 ```markdown
 ## 記憶ルール
