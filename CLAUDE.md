@@ -6,6 +6,17 @@
 - 型定義変更時はJSDocも同時に更新する
 - テストはTDDで書く（RED → GREEN → REFACTOR）
 
+## 記憶ルール（memory_save / memory_search）
+- セッション開始時に memory_search で現在のプロジェクトに関連する記憶を検索し、文脈を把握する
+- 以下の情報は自動的に memory_save で保存する（ユーザーに確認不要）：
+  - 重要な設計判断とその理由
+  - ユーザーの好み・作業スタイル
+  - バグの原因と解決策
+  - プロジェクト固有の知識（アーキテクチャ、制約、ルール）
+  - 議論の結論や合意事項
+- 一般的な技術知識（公式ドキュメントに書いてあること）は保存しない
+- 保存時は tags を付けて検索しやすくする
+
 ## プロジェクト設定
 → .project-config.yml
 
@@ -15,12 +26,12 @@
 - sdd → 仕様駆動開発フロー
 - adr → ADR管理
 - code-quality → 品質ツール設定
-- diagram-management → 図の管理・CI生成
 
 ## プロジェクト固有のドキュメント
 - docs/specs/ → 設計段階の仕様書
 - docs/adr/ → 設計判断記録
-- docs/diagrams/ → アーキテクチャ図
+- docs/images/ → アーキテクチャ図（FigJamからPNGエクスポート）
+- docs/engineer/ → 開発者向けドキュメント
 - docs/plans/ → 実装計画
 
 ## パッケージ構成
