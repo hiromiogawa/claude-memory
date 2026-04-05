@@ -11,4 +11,5 @@ export interface StorageRepository {
   delete(id: string): Promise<void>
   clear(): Promise<void>
   getStats(): Promise<StorageStats>
+  exportAll(): Promise<Memory[]>
 }

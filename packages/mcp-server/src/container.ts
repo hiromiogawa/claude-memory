@@ -2,7 +2,9 @@
 import {
   ClearMemoryUseCase,
   DeleteMemoryUseCase,
+  ExportMemoryUseCase,
   GetStatsUseCase,
+  ImportMemoryUseCase,
   ListMemoriesUseCase,
   SaveMemoryUseCase,
   SearchMemoryUseCase,
@@ -31,6 +33,8 @@ export function createContainer(config: AppConfig) {
     getStats: new GetStatsUseCase(storage),
     clearMemory: new ClearMemoryUseCase(storage),
     updateMemory: new UpdateMemoryUseCase(storage, embedding),
+    exportMemory: new ExportMemoryUseCase(storage),
+    importMemory: new ImportMemoryUseCase(storage, embedding),
   }
 }
 
