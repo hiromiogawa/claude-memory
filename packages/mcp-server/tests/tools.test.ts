@@ -1,12 +1,21 @@
+import {
+  EmbeddingFailedError,
+  MemoryNotFoundError,
+  StorageConnectionError,
+} from '@claude-memory/core'
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js'
 import { describe, expect, it, vi } from 'vitest'
 import type { Container } from '../src/container.js'
 import { registerMemoryCleanupTool } from '../src/tools/memory-cleanup.js'
+import { registerMemoryClearTool } from '../src/tools/memory-clear.js'
 import { registerMemoryDeleteTool } from '../src/tools/memory-delete.js'
 import { registerMemoryExportTool } from '../src/tools/memory-export.js'
+import { registerMemoryImportTool } from '../src/tools/memory-import.js'
+import { registerMemoryListTool } from '../src/tools/memory-list.js'
 import { registerMemorySaveTool } from '../src/tools/memory-save.js'
 import { registerMemorySearchTool } from '../src/tools/memory-search.js'
 import { registerMemoryStatsTool } from '../src/tools/memory-stats.js'
+import { registerMemoryUpdateTool } from '../src/tools/memory-update.js'
 
 /** Mock McpServer that captures tool registrations */
 function createMockServer() {
@@ -232,5 +241,181 @@ describe('memory_cleanup tool', () => {
     const result = await handler({ olderThanDays: 60, dryRun: false })
 
     expect(result.content[0].text).toBe('Deleted 3 memories (not accessed in 60 days).')
+  })
+})
+
+describe('unified error handling', () => {
+  it('returns error response for MemoryNotFoundError on delete', async () => {
+    const testId = '550e8400-e29b-41d4-a716-446655440000'
+    const container = createMockContainer({
+      deleteMemory: {
+        execute: vi.fn().mockRejectedValue(new MemoryNotFoundError(testId)),
+      },
+    })
+    const server = createMockServer()
+    registerMemoryDeleteTool(server as unknown as McpServer, container)
+
+    const handler = server.tools.get('memory_delete')!.handler
+    const result = await handler({ id: testId })
+
+    expect(result.isError).toBe(true)
+    expect(result.content[0].text).toBe(`Error: Memory not found: ${testId}`)
+  })
+
+  it('returns error response for MemoryNotFoundError on update', async () => {
+    const testId = '550e8400-e29b-41d4-a716-446655440000'
+    const container = createMockContainer({
+      updateMemory: {
+        execute: vi.fn().mockRejectedValue(new MemoryNotFoundError(testId)),
+      },
+    })
+    const server = createMockServer()
+    registerMemoryUpdateTool(server as unknown as McpServer, container)
+
+    const handler = server.tools.get('memory_update')!.handler
+    const result = await handler({ id: testId, content: 'updated' })
+
+    expect(result.isError).toBe(true)
+    expect(result.content[0].text).toBe(`Error: Memory not found: ${testId}`)
+  })
+
+  it('returns error response for EmbeddingFailedError on save', async () => {
+    const container = createMockContainer({
+      saveMemory: {
+        saveManual: vi.fn().mockRejectedValue(new EmbeddingFailedError('model unavailable')),
+      },
+    })
+    const server = createMockServer()
+    registerMemorySaveTool(server as unknown as McpServer, container)
+
+    const handler = server.tools.get('memory_save')!.handler
+    const result = await handler({ content: 'test', sessionId: 'sess-1' })
+
+    expect(result.isError).toBe(true)
+    expect(result.content[0].text).toBe('Error: Embedding failed: model unavailable')
+  })
+
+  it('returns error response for EmbeddingFailedError on search', async () => {
+    const container = createMockContainer({
+      searchMemory: {
+        search: vi.fn().mockRejectedValue(new EmbeddingFailedError('timeout')),
+      },
+    })
+    const server = createMockServer()
+    registerMemorySearchTool(server as unknown as McpServer, container)
+
+    const handler = server.tools.get('memory_search')!.handler
+    const result = await handler({ query: 'test', limit: 5, allProjects: false })
+
+    expect(result.isError).toBe(true)
+    expect(result.content[0].text).toBe('Error: Embedding failed: timeout')
+  })
+
+  it('returns error response for StorageConnectionError on cleanup', async () => {
+    const container = createMockContainer({
+      cleanupMemory: {
+        execute: vi.fn().mockRejectedValue(new StorageConnectionError('connection refused')),
+      },
+    })
+    const server = createMockServer()
+    registerMemoryCleanupTool(server as unknown as McpServer, container)
+
+    const handler = server.tools.get('memory_cleanup')!.handler
+    const result = await handler({ olderThanDays: 30, dryRun: true })
+
+    expect(result.isError).toBe(true)
+    expect(result.content[0].text).toBe('Error: Storage connection error: connection refused')
+  })
+
+  it('returns internal error for unknown errors', async () => {
+    const container = createMockContainer({
+      deleteMemory: {
+        execute: vi.fn().mockRejectedValue(new TypeError('Cannot read properties of null')),
+      },
+    })
+    const server = createMockServer()
+    registerMemoryDeleteTool(server as unknown as McpServer, container)
+
+    const handler = server.tools.get('memory_delete')!.handler
+    const result = await handler({ id: '550e8400-e29b-41d4-a716-446655440000' })
+
+    expect(result.isError).toBe(true)
+    expect(result.content[0].text).toBe('Internal error: Cannot read properties of null')
+  })
+
+  it('returns error response for parse errors on import', async () => {
+    const container = createMockContainer()
+    const server = createMockServer()
+    registerMemoryImportTool(server as unknown as McpServer, container)
+
+    const handler = server.tools.get('memory_import')!.handler
+    const result = await handler({ data: 'not-valid-json' })
+
+    expect(result.isError).toBe(true)
+    expect(result.content[0].text).toMatch(/^Internal error:/)
+  })
+
+  it('returns error response for StorageConnectionError on list', async () => {
+    const container = createMockContainer({
+      listMemories: {
+        execute: vi.fn().mockRejectedValue(new StorageConnectionError('pool exhausted')),
+      },
+    })
+    const server = createMockServer()
+    registerMemoryListTool(server as unknown as McpServer, container)
+
+    const handler = server.tools.get('memory_list')!.handler
+    const result = await handler({ limit: 10, offset: 0 })
+
+    expect(result.isError).toBe(true)
+    expect(result.content[0].text).toBe('Error: Storage connection error: pool exhausted')
+  })
+
+  it('returns error response on stats failure', async () => {
+    const container = createMockContainer({
+      getStats: {
+        execute: vi.fn().mockRejectedValue(new StorageConnectionError('db down')),
+      },
+    })
+    const server = createMockServer()
+    registerMemoryStatsTool(server as unknown as McpServer, container)
+
+    const handler = server.tools.get('memory_stats')!.handler
+    const result = await handler()
+
+    expect(result.isError).toBe(true)
+    expect(result.content[0].text).toBe('Error: Storage connection error: db down')
+  })
+
+  it('returns error response on export failure', async () => {
+    const container = createMockContainer({
+      exportMemory: {
+        execute: vi.fn().mockRejectedValue(new StorageConnectionError('timeout')),
+      },
+    })
+    const server = createMockServer()
+    registerMemoryExportTool(server as unknown as McpServer, container)
+
+    const handler = server.tools.get('memory_export')!.handler
+    const result = await handler()
+
+    expect(result.isError).toBe(true)
+    expect(result.content[0].text).toBe('Error: Storage connection error: timeout')
+  })
+
+  it('returns error response on clear failure', async () => {
+    const container = createMockContainer({
+      clearMemory: {
+        execute: vi.fn().mockRejectedValue(new StorageConnectionError('permission denied')),
+      },
+    })
+    const server = createMockServer()
+    registerMemoryClearTool(server as unknown as McpServer, container)
+
+    const handler = server.tools.get('memory_clear')!.handler
+    const result = await handler()
+
+    expect(result.isError).toBe(true)
+    expect(result.content[0].text).toBe('Error: Storage connection error: permission denied')
   })
 })

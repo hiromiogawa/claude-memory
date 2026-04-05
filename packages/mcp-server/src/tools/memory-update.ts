@@ -1,6 +1,7 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js'
 import { z } from 'zod'
 import type { Container } from '../container.js'
+import { handleToolError } from './error-handler.js'
 
 export function registerMemoryUpdateTool(server: McpServer, container: Container): void {
   server.tool(
@@ -12,10 +13,12 @@ export function registerMemoryUpdateTool(server: McpServer, container: Container
       tags: z.array(z.string()).optional(),
     },
     async (args) => {
-      await container.updateMemory.execute(args)
-      return {
-        content: [{ type: 'text', text: `Memory ${args.id} updated.` }],
-      }
+      return handleToolError(async () => {
+        await container.updateMemory.execute(args)
+        return {
+          content: [{ type: 'text', text: `Memory ${args.id} updated.` }],
+        }
+      })
     },
   )
 }

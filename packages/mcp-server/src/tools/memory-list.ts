@@ -2,6 +2,7 @@ import { SEARCH_DEFAULTS } from '@claude-memory/core'
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js'
 import { z } from 'zod'
 import type { Container } from '../container.js'
+import { handleToolError } from './error-handler.js'
 
 export function registerMemoryListTool(server: McpServer, container: Container): void {
   server.tool(
@@ -14,32 +15,34 @@ export function registerMemoryListTool(server: McpServer, container: Container):
       tags: z.array(z.string()).optional(),
     },
     async (args) => {
-      const memories = await container.listMemories.execute({
-        limit: args.limit,
-        offset: args.offset,
-        source: args.source,
-        tags: args.tags,
-      })
-
-      if (memories.length === 0) {
-        return {
-          content: [{ type: 'text', text: 'No memories found.' }],
-        }
-      }
-
-      const formatted = memories
-        .map((m, i) => {
-          const lines = [
-            `[${i + 1}] id=${m.id} source=${m.metadata.source} createdAt=${m.createdAt.toISOString()}`,
-            m.content,
-          ]
-          return lines.join('\n')
+      return handleToolError(async () => {
+        const memories = await container.listMemories.execute({
+          limit: args.limit,
+          offset: args.offset,
+          source: args.source,
+          tags: args.tags,
         })
-        .join('\n\n')
 
-      return {
-        content: [{ type: 'text', text: formatted }],
-      }
+        if (memories.length === 0) {
+          return {
+            content: [{ type: 'text', text: 'No memories found.' }],
+          }
+        }
+
+        const formatted = memories
+          .map((m, i) => {
+            const lines = [
+              `[${i + 1}] id=${m.id} source=${m.metadata.source} createdAt=${m.createdAt.toISOString()}`,
+              m.content,
+            ]
+            return lines.join('\n')
+          })
+          .join('\n\n')
+
+        return {
+          content: [{ type: 'text', text: formatted }],
+        }
+      })
     },
   )
 }
