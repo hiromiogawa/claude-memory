@@ -1,6 +1,15 @@
 {
+  "plugins": ["jsdoc"],
   "rules": {
-    "all": "warn"
+    "all": "warn",
+    "no-magic-numbers": [
+      "warn",
+      {
+        "ignore": [0, 1, -1, 2],
+        "ignoreEnums": true,
+        "ignoreReadonlyClassProperties": true
+      }
+    ]
   },
-  "ignorePatterns": ["dist/", "node_modules/", "coverage/"]
+  "ignorePatterns": ["dist/", "node_modules/", "coverage/", "**/*.test.ts"]
 }

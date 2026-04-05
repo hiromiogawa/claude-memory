@@ -65,8 +65,10 @@ export class SearchMemoryUseCase {
   }
 
   private timeDecay(createdAt: Date, now: Date): number {
-    const daysDiff = (now.getTime() - createdAt.getTime()) / (1000 * 60 * 60 * 24)
+    const MS_PER_DAY = 86_400_000
+    const HALF_LIFE_BASE = 0.5
+    const daysDiff = (now.getTime() - createdAt.getTime()) / MS_PER_DAY
     const halfLife = SEARCH_DEFAULTS.decayHalfLifeDays
-    return Math.pow(0.5, daysDiff / halfLife)
+    return Math.pow(HALF_LIFE_BASE, daysDiff / halfLife)
   }
 }

@@ -1,7 +1,9 @@
-import type { SearchFilter } from '@claude-memory/core'
+import { SEARCH_DEFAULTS, type SearchFilter } from '@claude-memory/core'
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js'
 import { z } from 'zod'
 import type { Container } from '../container.js'
+
+const SCORE_DECIMAL_PLACES = 4
 
 export function registerMemorySearchTool(server: McpServer, container: Container): void {
   server.tool(
@@ -9,7 +11,7 @@ export function registerMemorySearchTool(server: McpServer, container: Container
     'Search memories with hybrid search (keyword + vector)',
     {
       query: z.string().min(1),
-      limit: z.number().optional().default(20),
+      limit: z.number().optional().default(SEARCH_DEFAULTS.maxResults),
       projectPath: z.string().optional(),
       tags: z.array(z.string()).optional(),
       allProjects: z
@@ -44,7 +46,7 @@ export function registerMemorySearchTool(server: McpServer, container: Container
       const formatted = results
         .map((r, i) => {
           const lines = [
-            `[${i + 1}] matchType=${r.matchType} score=${r.score.toFixed(4)}`,
+            `[${i + 1}] matchType=${r.matchType} score=${r.score.toFixed(SCORE_DECIMAL_PLACES)}`,
             r.memory.content,
           ]
           return lines.join('\n')

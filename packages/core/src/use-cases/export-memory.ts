@@ -1,4 +1,3 @@
-import type { Memory } from '../entities/memory.js'
 import type { StorageRepository } from '../interfaces/storage-repository.js'
 
 export interface ExportedMemory {

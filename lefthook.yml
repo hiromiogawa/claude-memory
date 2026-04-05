@@ -7,7 +7,7 @@ pre-commit:
       stage_fixed: true
     oxlint:
       glob: "*.{ts,tsx,js}"
-      run: pnpm oxlint {staged_files}
+      run: pnpm oxlint -c .oxlintrc.json {staged_files}
     knip:
       run: pnpm knip
     dep-check:
