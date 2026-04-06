@@ -10,15 +10,23 @@ describe('QAChunkingStrategy', () => {
       sessionId: 'session-1',
       projectPath: '/my/project',
       messages: [
-        { role: 'user', content: 'TypeScriptとは？', timestamp: new Date() },
-        { role: 'assistant', content: '型付きJavaScriptです', timestamp: new Date() },
-        { role: 'user', content: 'メリットは？', timestamp: new Date() },
-        { role: 'assistant', content: '型安全です', timestamp: new Date() },
+        { role: 'user', content: 'TypeScriptの設計方針とは？', timestamp: new Date() },
+        {
+          role: 'assistant',
+          content: '型付きJavaScriptです。静的型システムを採用した理由は型安全性の向上です。',
+          timestamp: new Date(),
+        },
+        { role: 'user', content: 'テストのメリットは？', timestamp: new Date() },
+        {
+          role: 'assistant',
+          content: 'テストを実装することで型安全性を検証でき、リファクタも安心して行えます。',
+          timestamp: new Date(),
+        },
       ],
     }
     const chunks = strategy.chunk(log)
     expect(chunks).toHaveLength(2)
-    expect(chunks[0]!.content).toContain('TypeScriptとは？')
+    expect(chunks[0]!.content).toContain('TypeScriptの設計方針とは？')
     expect(chunks[0]!.content).toContain('型付きJavaScriptです')
     expect(chunks[0]!.metadata.sessionId).toBe('session-1')
     expect(chunks[0]!.metadata.projectPath).toBe('/my/project')
@@ -29,8 +37,12 @@ describe('QAChunkingStrategy', () => {
     const log: ConversationLog = {
       sessionId: 's1',
       messages: [
-        { role: 'user', content: 'question1', timestamp: new Date() },
-        { role: 'assistant', content: 'answer1', timestamp: new Date() },
+        { role: 'user', content: 'この設計方針について質問があります', timestamp: new Date() },
+        {
+          role: 'assistant',
+          content: 'はい、設計の決定についてお答えします。理由は以下の通りです。',
+          timestamp: new Date(),
+        },
         { role: 'user', content: 'question2', timestamp: new Date() },
       ],
     }
@@ -47,25 +59,29 @@ describe('QAChunkingStrategy', () => {
     const log: ConversationLog = {
       sessionId: 's1',
       messages: [
-        { role: 'user', content: 'q1', timestamp: new Date() },
-        { role: 'user', content: 'q2', timestamp: new Date() },
-        { role: 'assistant', content: 'a1', timestamp: new Date() },
+        { role: 'user', content: 'この実装方針について', timestamp: new Date() },
+        { role: 'user', content: 'テストの設計も含めて教えてください', timestamp: new Date() },
+        {
+          role: 'assistant',
+          content: 'テストを実装する理由は、リファクタ時の安全性を確保するためです。',
+          timestamp: new Date(),
+        },
       ],
     }
     const chunks = strategy.chunk(log)
     expect(chunks).toHaveLength(1)
-    expect(chunks[0]!.content).toContain('q1')
-    expect(chunks[0]!.content).toContain('q2')
-    expect(chunks[0]!.content).toContain('a1')
+    expect(chunks[0]!.content).toContain('この実装方針について')
+    expect(chunks[0]!.content).toContain('テストの設計も含めて教えてください')
+    expect(chunks[0]!.content).toContain('テストを実装する理由')
   })
 
   it('should split chunks that exceed max character limit', () => {
-    const longAnswer = 'これは長い回答です。'.repeat(150) // ~1500 chars
+    const longAnswer = 'この設計の理由は以下です。'.repeat(150) // ~1800 chars
     const log: ConversationLog = {
       sessionId: 's1',
       projectPath: '/project',
       messages: [
-        { role: 'user', content: '質問', timestamp: new Date() },
+        { role: 'user', content: '設計方針について質問', timestamp: new Date() },
         { role: 'assistant', content: longAnswer, timestamp: new Date() },
       ],
     }
@@ -82,17 +98,17 @@ describe('QAChunkingStrategy', () => {
 
   it('should split at sentence boundaries when possible', () => {
     const sentences = [
-      'First sentence here.',
-      'Second sentence here.',
-      'Third sentence here.',
-      'Fourth sentence here.',
-      'Fifth sentence here.',
+      'The design decision was made.',
+      'The implementation reason follows.',
+      'We chose this architecture.',
+      'The test strategy is clear.',
+      'The refactor cause was identified.',
     ]
     const longAnswer = sentences.join(' ')
     const log: ConversationLog = {
       sessionId: 's1',
       messages: [
-        { role: 'user', content: 'question', timestamp: new Date() },
+        { role: 'user', content: 'What was the design decision?', timestamp: new Date() },
         { role: 'assistant', content: longAnswer, timestamp: new Date() },
       ],
     }
@@ -106,11 +122,11 @@ describe('QAChunkingStrategy', () => {
   })
 
   it('should use default maxChunkChars of 1000 when not specified', () => {
-    const longAnswer = 'A'.repeat(2500)
+    const longAnswer = 'This implementation decision is the reason. '.repeat(80) // ~3520 chars
     const log: ConversationLog = {
       sessionId: 's1',
       messages: [
-        { role: 'user', content: 'q', timestamp: new Date() },
+        { role: 'user', content: 'What is the design reason?', timestamp: new Date() },
         { role: 'assistant', content: longAnswer, timestamp: new Date() },
       ],
     }
@@ -120,5 +136,72 @@ describe('QAChunkingStrategy', () => {
     for (const chunk of chunks) {
       expect(chunk.content.length).toBeLessThanOrEqual(1000)
     }
+  })
+
+  describe('importance filtering', () => {
+    it('should filter out trivial conversations', () => {
+      const log: ConversationLog = {
+        sessionId: 's1',
+        messages: [
+          { role: 'user', content: 'こんにちは', timestamp: new Date() },
+          {
+            role: 'assistant',
+            content: 'こんにちは！何かお手伝いできますか？',
+            timestamp: new Date(),
+          },
+        ],
+      }
+      const strategy = new QAChunkingStrategy()
+      const chunks = strategy.chunk(log)
+      expect(chunks).toHaveLength(0)
+    })
+
+    it('should keep important conversations about design decisions', () => {
+      const log: ConversationLog = {
+        sessionId: 's1',
+        messages: [
+          { role: 'user', content: 'データベースの設計方針を決定したい', timestamp: new Date() },
+          {
+            role: 'assistant',
+            content:
+              'PostgreSQLを採用する理由は、pgvectorによるベクトル検索とpg_bigmによる日本語検索が統合できるためです。',
+            timestamp: new Date(),
+          },
+        ],
+      }
+      const strategy = new QAChunkingStrategy()
+      const chunks = strategy.chunk(log)
+      expect(chunks).toHaveLength(1)
+    })
+
+    it('should filter out short confirmations', () => {
+      const log: ConversationLog = {
+        sessionId: 's1',
+        messages: [
+          { role: 'user', content: 'OK', timestamp: new Date() },
+          { role: 'assistant', content: 'はい', timestamp: new Date() },
+        ],
+      }
+      const strategy = new QAChunkingStrategy()
+      const chunks = strategy.chunk(log)
+      expect(chunks).toHaveLength(0)
+    })
+
+    it('should allow disabling importance filter', () => {
+      const log: ConversationLog = {
+        sessionId: 's1',
+        messages: [
+          { role: 'user', content: 'こんにちは', timestamp: new Date() },
+          {
+            role: 'assistant',
+            content: 'こんにちは！何かお手伝いできますか？',
+            timestamp: new Date(),
+          },
+        ],
+      }
+      const strategy = new QAChunkingStrategy({ filterByImportance: false })
+      const chunks = strategy.chunk(log)
+      expect(chunks).toHaveLength(1)
+    })
   })
 })

@@ -7,15 +7,73 @@ const QA_PREFIX_ASSISTANT = '\nA: '
 /** 文末句読点で分割する正規表現（日本語・英語対応） */
 const SENTENCE_BOUNDARY_REGEX = /[^。.!！?？\n]+[。.!！?？\n]?/g
 
+/** 重要度が高いことを示すキーワード（日本語・英語） */
+const IMPORTANCE_KEYWORDS = [
+  // Design decisions
+  '決定',
+  '選定',
+  '採用',
+  '方針',
+  '設計',
+  'decided',
+  'chose',
+  'architecture',
+  // Bugs
+  'バグ',
+  'エラー',
+  '原因',
+  '修正',
+  'bug',
+  'error',
+  'fix',
+  'cause',
+  // User preferences
+  '好み',
+  'スタイル',
+  'ルール',
+  'prefer',
+  'style',
+  'rule',
+  // Important outcomes
+  '結論',
+  '合意',
+  '理由',
+  'conclusion',
+  'agreed',
+  'reason',
+  'because',
+  // Technical
+  '実装',
+  'リファクタ',
+  'テスト',
+  'implement',
+  'refactor',
+  'test',
+]
+
+/** チャンクの最小文字数。これ以下は重要度が低いと判定 */
+const MIN_CHUNK_CHARS = 50
+
+/** チャンクが保存に値する重要度を持つか判定する */
+function isImportant(content: string): boolean {
+  if (content.length < MIN_CHUNK_CHARS) return false
+  const lower = content.toLowerCase()
+  return IMPORTANCE_KEYWORDS.some((kw) => lower.includes(kw.toLowerCase()))
+}
+
 interface QAChunkingOptions {
   maxChunkChars?: number
+  /** 重要度フィルタを有効にするか（デフォルト: true） */
+  filterByImportance?: boolean
 }
 
 export class QAChunkingStrategy implements ChunkingStrategy {
   private readonly maxChunkChars: number
+  private readonly filterByImportance: boolean
 
   constructor(options?: QAChunkingOptions) {
     this.maxChunkChars = options?.maxChunkChars ?? DEFAULT_MAX_CHUNK_CHARS
+    this.filterByImportance = options?.filterByImportance ?? true
   }
 
   chunk(conversation: ConversationLog): Chunk[] {
@@ -30,7 +88,8 @@ export class QAChunkingStrategy implements ChunkingStrategy {
       }
     }
 
-    return result
+    // Filter out low-importance chunks (only when enabled, e.g. auto-save)
+    return this.filterByImportance ? result.filter((chunk) => isImportant(chunk.content)) : result
   }
 
   private extractQAPairs(conversation: ConversationLog): Chunk[] {
