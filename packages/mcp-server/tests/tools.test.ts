@@ -178,6 +178,36 @@ describe('memory_search tool', () => {
     expect(result.content[0].text).toMatch(/^No memories found\./)
   })
 
+  it('highlights keyword in search results for keyword/hybrid matches', async () => {
+    const container = createMockContainer({
+      searchMemory: {
+        search: vi.fn().mockResolvedValue([
+          {
+            matchType: 'keyword',
+            score: 0.8,
+            memory: { content: 'TypeScript is a typed language' },
+          },
+          {
+            matchType: 'vector',
+            score: 0.7,
+            memory: { content: 'TypeScript is great' },
+          },
+        ]),
+      },
+    })
+    const server = createMockServer()
+    const logger = createMockLogger()
+    registerMemorySearchTool(server as unknown as McpServer, container, logger)
+
+    const handler = server.tools.get('memory_search')!.handler
+    const result = await handler({ query: 'TypeScript', limit: 5, allProjects: false })
+
+    // keyword match should have bold highlighting
+    expect(result.content[0].text).toContain('**TypeScript**')
+    // vector-only match should NOT have highlighting
+    expect(result.content[0].text).toMatch(/\[2\].*\nTypeScript is great/)
+  })
+
   it('returns formatted results when memories exist', async () => {
     const container = createMockContainer({
       searchMemory: {

@@ -7,6 +7,18 @@ import { handleToolError } from './error-handler.js'
 
 const SCORE_DECIMAL_PLACES = 4
 
+/**
+ * Wraps matched keywords with markdown bold markers for visibility.
+ * @param content - The content string to highlight within
+ * @param query - The search query to highlight
+ * @returns Content with matched keywords wrapped in ** markers
+ */
+const highlightKeyword = (content: string, query: string): string => {
+  if (!query) return content
+  const escaped = query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+  return content.replace(new RegExp(escaped, 'gi'), (match) => `**${match}**`)
+}
+
 export function registerMemorySearchTool(
   server: McpServer,
   container: Container,
@@ -56,9 +68,13 @@ export function registerMemorySearchTool(
 
         const formatted = results
           .map((r, i) => {
+            const content =
+              r.matchType !== 'vector'
+                ? highlightKeyword(r.memory.content, args.query)
+                : r.memory.content
             const lines = [
               `[${i + 1}] matchType=${r.matchType} score=${r.score.toFixed(SCORE_DECIMAL_PLACES)}`,
-              r.memory.content,
+              content,
             ]
             return lines.join('\n')
           })
