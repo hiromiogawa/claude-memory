@@ -40,7 +40,7 @@ jobs:
         run: |
           PGPASSWORD=test psql -h localhost -p 5434 -U test -d claude_memory_test \
             -f packages/storage-postgres/drizzle/0000_nice_ultron.sql
-      - name: Run tests
-        run: pnpm test
+      - name: Run tests with coverage
+        run: pnpm -r run test:coverage
         env:
           DATABASE_URL: postgresql://test:test@localhost:5434/claude_memory_test
