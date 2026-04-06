@@ -83,6 +83,11 @@ docker compose ps
     }
   },
   "hooks": {
+    "SessionStart": [
+      {
+        "command": "docker exec claude-memory-mcp-server-1 node packages/mcp-server/dist/session-start.js"
+      }
+    ],
     "PostSessionEnd": [
       {
         "command": "docker exec claude-memory-mcp-server-1 node packages/hooks/dist/index.js"

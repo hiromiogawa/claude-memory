@@ -3,6 +3,10 @@
     "packages/*": {
       "entry": ["src/index.ts"],
       "project": ["src/**/*.ts"]
+    },
+    "packages/mcp-server": {
+      "entry": ["src/index.ts", "src/session-start.ts"],
+      "project": ["src/**/*.ts"]
     }
   },
   "ignore": ["**/*.test.ts", "scripts/**"],
