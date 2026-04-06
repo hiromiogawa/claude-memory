@@ -38,8 +38,10 @@ jobs:
             -c "CREATE EXTENSION IF NOT EXISTS vector; CREATE EXTENSION IF NOT EXISTS pg_bigm;"
       - name: Setup DB schema
         run: |
-          PGPASSWORD=test psql -h localhost -p 5434 -U test -d claude_memory_test \
-            -f packages/storage-postgres/drizzle/0000_nice_ultron.sql
+          for f in packages/storage-postgres/drizzle/*.sql; do
+            echo "Applying: $f"
+            PGPASSWORD=test psql -h localhost -p 5434 -U test -d claude_memory_test -f "$f"
+          done
       - name: Run tests with coverage
         run: pnpm -r run test:coverage
         env:
