@@ -17,6 +17,8 @@ export interface MemoryMetadata {
   projectPath?: string
   tags?: string[]
   source: 'manual' | 'auto'
+  /** Memory visibility scope. 'project' (default) scoped to projectPath, 'global' shared across all projects */
+  scope?: 'project' | 'global'
 }
 
 export interface ListOptions {

@@ -31,6 +31,7 @@ function toMemory(row: DbRow, embedding: number[] | null = null): Memory {
       projectPath: row.projectPath ?? undefined,
       tags: row.tags ?? undefined,
       source: (row.source as 'manual' | 'auto') ?? 'manual',
+      scope: (row.scope as 'project' | 'global') ?? 'project',
     },
     createdAt: row.createdAt,
     updatedAt: row.updatedAt,
@@ -68,6 +69,7 @@ export class PostgresStorageRepository implements StorageRepository {
         projectPath: memory.metadata.projectPath ?? null,
         tags: memory.metadata.tags ?? null,
         source: memory.metadata.source,
+        scope: memory.metadata.scope ?? 'project',
         createdAt: memory.createdAt,
         updatedAt: memory.updatedAt,
         lastAccessedAt: memory.lastAccessedAt,
@@ -81,6 +83,7 @@ export class PostgresStorageRepository implements StorageRepository {
           projectPath: memory.metadata.projectPath ?? null,
           tags: memory.metadata.tags ?? null,
           source: memory.metadata.source,
+          scope: memory.metadata.scope ?? 'project',
           updatedAt: memory.updatedAt,
           lastAccessedAt: memory.lastAccessedAt,
         },
@@ -150,7 +153,9 @@ export class PostgresStorageRepository implements StorageRepository {
     const conditions = [sql`${memories.content} LIKE ${'%' + escapedQuery + '%'}`]
 
     if (filter?.projectPath) {
-      conditions.push(eq(memories.projectPath, filter.projectPath))
+      conditions.push(
+        sql`(${memories.projectPath} = ${filter.projectPath} OR ${memories.scope} = 'global')`,
+      )
     }
     if (filter?.source) {
       conditions.push(eq(memories.source, filter.source))
@@ -170,6 +175,7 @@ export class PostgresStorageRepository implements StorageRepository {
         projectPath: memories.projectPath,
         tags: memories.tags,
         source: memories.source,
+        scope: memories.scope,
         createdAt: memories.createdAt,
         updatedAt: memories.updatedAt,
         lastAccessedAt: memories.lastAccessedAt,
@@ -198,7 +204,9 @@ export class PostgresStorageRepository implements StorageRepository {
 
     const conditions = []
     if (filter?.projectPath) {
-      conditions.push(eq(memories.projectPath, filter.projectPath))
+      conditions.push(
+        sql`(${memories.projectPath} = ${filter.projectPath} OR ${memories.scope} = 'global')`,
+      )
     }
     if (filter?.source) {
       conditions.push(eq(memories.source, filter.source))
@@ -218,6 +226,7 @@ export class PostgresStorageRepository implements StorageRepository {
         projectPath: memories.projectPath,
         tags: memories.tags,
         source: memories.source,
+        scope: memories.scope,
         createdAt: memories.createdAt,
         updatedAt: memories.updatedAt,
         lastAccessedAt: memories.lastAccessedAt,

@@ -11,6 +11,7 @@ interface SaveManualInput {
   sessionId: string
   projectPath?: string
   tags?: string[]
+  scope?: 'project' | 'global'
 }
 
 interface SaveMemoryOptions {
@@ -48,6 +49,7 @@ export class SaveMemoryUseCase {
         projectPath: input.projectPath,
         tags: input.tags,
         source: 'manual',
+        scope: input.scope ?? 'project',
       },
       createdAt: now,
       updatedAt: now,
