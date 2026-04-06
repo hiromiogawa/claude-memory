@@ -36,12 +36,10 @@ jobs:
         run: |
           PGPASSWORD=test psql -h localhost -p 5434 -U test -d claude_memory_test \
             -c "CREATE EXTENSION IF NOT EXISTS vector; CREATE EXTENSION IF NOT EXISTS pg_bigm;"
-      - name: Setup DB schema
-        run: |
-          for f in packages/storage-postgres/drizzle/*.sql; do
-            echo "Applying: $f"
-            PGPASSWORD=test psql -h localhost -p 5434 -U test -d claude_memory_test -f "$f"
-          done
+      - name: Run DB migrations
+        run: pnpm --filter @claude-memory/storage-postgres exec drizzle-kit migrate
+        env:
+          DATABASE_URL: postgresql://test:test@localhost:5434/claude_memory_test
       - name: Run tests with coverage
         run: pnpm -r run test:coverage
         env:
