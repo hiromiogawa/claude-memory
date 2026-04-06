@@ -168,6 +168,9 @@ docker compose ps
 | [技術選定](docs/engineer/tech-decisions.md) | 各技術の選定理由と代替案 |
 | [MCPツールリファレンス](docs/engineer/mcp-tools.md) | 全ツールの詳細仕様 |
 | [運用ルール](docs/engineer/operations.md) | コミット規約、CI、Gitフック、テスト戦略 |
+| [セキュリティ](docs/engineer/security.md) | SQLインジェクション対策、入力バリデーション、認証情報の管理 |
+
+> **注意:** `docker-compose.yml` のDB認証情報はローカル開発用のデフォルト値です。共有環境で使用する場合は `.env` ファイルで認証情報を上書きしてください。
 
 ## ライセンス
 
