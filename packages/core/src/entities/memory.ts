@@ -10,6 +10,8 @@ export interface Memory {
   updatedAt: Date
   /** 最終アクセス日時。検索結果として返された際に更新される */
   lastAccessedAt: Date
+  /** 検索でヒットした累計回数。検索スコアのブーストに使用される */
+  accessCount: number
 }
 
 /** 保存済み記憶エントリに関連するメタデータ。 */

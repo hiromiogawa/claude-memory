@@ -24,6 +24,7 @@ function makeMemory(overrides: Partial<Memory> = {}): Memory {
     createdAt: new Date(),
     updatedAt: new Date(),
     lastAccessedAt: new Date(),
+    accessCount: 0,
     ...overrides,
   }
 }

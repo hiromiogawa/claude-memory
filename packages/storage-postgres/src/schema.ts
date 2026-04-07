@@ -1,5 +1,5 @@
 import { sql } from 'drizzle-orm'
-import { index, pgTable, text, timestamp, uuid, vector } from 'drizzle-orm/pg-core'
+import { index, integer, pgTable, text, timestamp, uuid, vector } from 'drizzle-orm/pg-core'
 import { createInsertSchema, createSelectSchema } from 'drizzle-zod'
 
 const embeddingDimension = Number(process.env.EMBEDDING_DIMENSION ?? '384')
@@ -19,6 +19,7 @@ export const memories = pgTable(
     createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
     updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),
     lastAccessedAt: timestamp('last_accessed_at', { withTimezone: true }).defaultNow().notNull(),
+    accessCount: integer('access_count').default(0).notNull(),
   },
   (table) => [
     index('idx_memories_bigm').using('gin', sql`${table.content} gin_bigm_ops`),

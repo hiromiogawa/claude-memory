@@ -74,6 +74,7 @@ export class SaveMemoryUseCase {
       createdAt: now,
       updatedAt: now,
       lastAccessedAt: now,
+      accessCount: 0,
     }
     await this.storage.save(memory)
     return { saved: true }
@@ -119,6 +120,7 @@ export class SaveMemoryUseCase {
         createdAt: now,
         updatedAt: now,
         lastAccessedAt: now,
+        accessCount: 0,
       })
     }
 

@@ -36,6 +36,7 @@ function toMemory(row: DbRow, embedding: number[] | null = null): Memory {
     createdAt: row.createdAt,
     updatedAt: row.updatedAt,
     lastAccessedAt: row.lastAccessedAt,
+    accessCount: row.accessCount,
   }
 }
 
@@ -88,6 +89,7 @@ export class PostgresStorageRepository implements StorageRepository {
         createdAt: memory.createdAt,
         updatedAt: memory.updatedAt,
         lastAccessedAt: memory.lastAccessedAt,
+        accessCount: memory.accessCount,
       })
       .onConflictDoUpdate({
         target: memories.id,
@@ -225,6 +227,7 @@ export class PostgresStorageRepository implements StorageRepository {
         createdAt: memories.createdAt,
         updatedAt: memories.updatedAt,
         lastAccessedAt: memories.lastAccessedAt,
+        accessCount: memories.accessCount,
         similarity: similarityExpr,
       })
       .from(memories)
@@ -283,6 +286,7 @@ export class PostgresStorageRepository implements StorageRepository {
         createdAt: memories.createdAt,
         updatedAt: memories.updatedAt,
         lastAccessedAt: memories.lastAccessedAt,
+        accessCount: memories.accessCount,
         distance: distanceExpr,
       })
       .from(memories)
@@ -388,12 +392,15 @@ export class PostgresStorageRepository implements StorageRepository {
     return result[0]?.count ?? 0
   }
 
-  /** 検索ヒットした記憶のlastAccessedAtを現在時刻に更新（クリーンアップの判定基準） */
+  /** 検索ヒットした記憶のlastAccessedAtを現在時刻に更新し、access_countをインクリメントする */
   private async touchLastAccessed(ids: string[]): Promise<void> {
     if (ids.length === 0) return
     await this.db
       .update(memories)
-      .set({ lastAccessedAt: new Date() })
+      .set({
+        lastAccessedAt: new Date(),
+        accessCount: sql`${memories.accessCount} + 1`,
+      })
       .where(
         sql`${memories.id} = ANY(ARRAY[${sql.join(
           ids.map((id) => sql`${id}::uuid`),

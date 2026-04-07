@@ -39,6 +39,7 @@ export class ImportMemoryUseCase {
         createdAt: new Date(item.createdAt),
         updatedAt: now,
         lastAccessedAt: now,
+        accessCount: 0,
       }
       await this.storage.save(memory)
       imported++

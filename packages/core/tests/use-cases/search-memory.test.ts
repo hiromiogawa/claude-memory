@@ -4,7 +4,7 @@ import type { EmbeddingProvider } from '../../src/interfaces/embedding-provider.
 import type { StorageRepository } from '../../src/interfaces/storage-repository.js'
 import { SearchMemoryUseCase } from '../../src/use-cases/search-memory.js'
 
-function makeMemory(id: string, daysAgo: number = 0): Memory {
+function makeMemory(id: string, daysAgo: number = 0, accessCount: number = 0): Memory {
   const date = new Date()
   date.setDate(date.getDate() - daysAgo)
   return {
@@ -15,6 +15,7 @@ function makeMemory(id: string, daysAgo: number = 0): Memory {
     createdAt: date,
     updatedAt: date,
     lastAccessedAt: date,
+    accessCount,
   }
 }
 
@@ -87,6 +88,59 @@ describe('SearchMemoryUseCase', () => {
     const recentResult = results.find((r) => r.memory.id === 'recent')!
     const oldResult = results.find((r) => r.memory.id === 'old')!
     expect(recentResult.score).toBeGreaterThan(oldResult.score)
+  })
+
+  it('should boost score for frequently accessed memories', async () => {
+    const storage = createMockStorage()
+    const embedding = createMockEmbedding()
+    const frequentMem = makeMemory('frequent', 0, 50)
+    const rareMem = makeMemory('rare', 0, 0)
+
+    vi.mocked(storage.searchByKeyword).mockResolvedValue([
+      { memory: frequentMem, score: 0.8, matchType: 'keyword' },
+      { memory: rareMem, score: 0.8, matchType: 'keyword' },
+    ])
+    vi.mocked(storage.searchByVector).mockResolvedValue([])
+
+    const useCase = new SearchMemoryUseCase(storage, embedding)
+    const results = await useCase.search('test', 10)
+
+    const frequentResult = results.find((r) => r.memory.id === 'frequent')!
+    const rareResult = results.find((r) => r.memory.id === 'rare')!
+    // 50 accesses should give 1.2x boost vs 1.0x for 0 accesses
+    expect(frequentResult.score).toBeGreaterThan(rareResult.score)
+    expect(frequentResult.score / rareResult.score).toBeCloseTo(1.2, 1)
+  })
+
+  it('should cap access boost at 1.2x even for very high access counts', async () => {
+    const storage = createMockStorage()
+    const embedding = createMockEmbedding()
+    const mem50 = makeMemory('a50', 0, 50)
+    const mem1000 = makeMemory('a1000', 0, 1000)
+    const memZero = makeMemory('a0', 0, 0)
+
+    // Use vector results where each memory is at the same rank position in separate calls
+    vi.mocked(storage.searchByKeyword).mockResolvedValue([])
+    vi.mocked(storage.searchByVector).mockResolvedValue([
+      { memory: memZero, score: 0.9, matchType: 'vector' },
+      { memory: mem50, score: 0.8, matchType: 'vector' },
+      { memory: mem1000, score: 0.7, matchType: 'vector' },
+    ])
+
+    const useCase = new SearchMemoryUseCase(storage, embedding)
+    const results = await useCase.search('test', 10)
+
+    const result50 = results.find((r) => r.memory.id === 'a50')!
+    const result1000 = results.find((r) => r.memory.id === 'a1000')!
+    // Both at 50+ accesses should have the same 1.2x boost (capped)
+    // They have different RRF ranks, so compare the boost ratio instead
+    const resultZero = results.find((r) => r.memory.id === 'a0')!
+    // mem50 gets 1.2x boost, mem1000 also gets 1.2x (capped), memZero gets 1.0x
+    // Verify that 50 and 1000 accesses produce the same boost factor
+    // ratio of score_50/score_1000 should equal ratio of their RRF base scores (no extra boost diff)
+    const rrfRank2 = 1 / (60 + 2)
+    const rrfRank3 = 1 / (60 + 3)
+    expect(result50.score / result1000.score).toBeCloseTo(rrfRank2 / rrfRank3, 5)
   })
 
   it('should pass filter to storage methods', async () => {
