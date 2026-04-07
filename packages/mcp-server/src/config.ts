@@ -1,5 +1,5 @@
 // packages/mcp-server/src/config.ts
-/** Application configuration loaded from environment variables. */
+/** 環境変数から読み込むアプリケーション設定。 */
 export interface AppConfig {
   databaseUrl: string
   dbPoolSize: number
@@ -9,8 +9,8 @@ export interface AppConfig {
 }
 
 /**
- * Loads application configuration from environment variables.
- * @returns The resolved application configuration
+ * 環境変数からアプリケーション設定を読み込む。
+ * @returns 解決済みのアプリケーション設定
  */
 export function loadConfig(): AppConfig {
   const databaseUrl = process.env.DATABASE_URL

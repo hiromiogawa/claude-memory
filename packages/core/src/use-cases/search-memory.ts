@@ -4,12 +4,12 @@ import type { EmbeddingProvider } from '../interfaces/embedding-provider.js'
 import type { StorageRepository } from '../interfaces/storage-repository.js'
 
 /**
- * Searches memories using hybrid keyword + vector search with RRF fusion and time decay.
+ * RRF fusionと時間減衰を使ったハイブリッドkeyword + vector検索で記憶を検索する。
  *
- * Pipeline: parallel keyword (pg_bigm) + vector (pgvector) search, then Reciprocal Rank Fusion.
+ * パイプライン: 並列keyword（pg_bigm）+ vector（pgvector）検索、その後Reciprocal Rank Fusion。
  * RRF formula: score = 1 / (k + rank), where k = 60.
  * Time decay: finalScore = rrfScore * 0.5^(daysSinceCreation / 30), half-life = 30 days.
- * Results appearing in both keyword and vector lists receive summed RRF scores ("hybrid" match).
+ * keywordとvectorの両方のリストに現れた結果はRRFスコアが加算される（"hybrid"マッチ）。
  * @example
  * ```ts
  * const results = await searchUseCase.search('database migration', 10, { tags: ['infra'] });
@@ -17,9 +17,9 @@ import type { StorageRepository } from '../interfaces/storage-repository.js'
  */
 export class SearchMemoryUseCase {
   /**
-   * Creates a new SearchMemoryUseCase.
-   * @param storage - The storage repository for keyword and vector search.
-   * @param embedding - The embedding provider for vectorizing the query.
+   * 新しい SearchMemoryUseCase を生成する。
+   * @param storage - keywordとvector検索用のストレージリポジトリ。
+   * @param embedding - クエリをvector化するためのembeddingプロバイダー。
    */
   constructor(
     private readonly storage: StorageRepository,
@@ -27,11 +27,11 @@ export class SearchMemoryUseCase {
   ) {}
 
   /**
-   * Executes a hybrid search combining keyword and vector results.
-   * @param query - The search query text.
-   * @param limit - Maximum number of results to return (default: 20).
-   * @param filter - Optional filter criteria.
-   * @returns Ranked search results after RRF fusion and time decay.
+   * keywordとvectorの結果を組み合わせたハイブリッド検索を実行する。
+   * @param query - 検索クエリのテキスト。
+   * @param limit - 最大取得件数（デフォルト: 20）。
+   * @param filter - オプションのフィルター条件。
+   * @returns RRF fusionと時間減衰後にランク付けされた検索結果。
    */
   async search(
     query: string,

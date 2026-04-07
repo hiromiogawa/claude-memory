@@ -7,10 +7,10 @@ import { memorySaveSchema, TOOL_METADATA } from './tool-metadata.js'
 const meta = TOOL_METADATA.find((t) => t.name === 'memory_save')!
 
 /**
- * Registers the memory_save tool on the MCP server.
- * @param server - The MCP server instance
- * @param container - Dependency injection container
- * @param logger - Pino logger instance
+ * memory_saveツールをMCP serverに登録する。
+ * @param server - MCP serverインスタンス
+ * @param container - DIコンテナ
+ * @param logger - Pinoロガーインスタンス
  */
 export function registerMemorySaveTool(
   server: McpServer,

@@ -11,12 +11,12 @@ interface RawLogEntry {
   timestamp: string
 }
 
-/** Processes conversation logs into Q&A chunks and saves them as memories at session end. */
+/** セッション終了時に会話ログをQ&Aチャンクに変換してメモリとして保存するハンドラ。 */
 export class SessionEndHandler {
   /**
-   * Creates a new SessionEndHandler instance.
-   * @param chunking - Strategy for splitting conversations into chunks
-   * @param saveUseCase - Use case capable of persisting conversation logs
+   * SessionEndHandlerの新しいインスタンスを生成する。
+   * @param chunking - 会話をチャンクに分割するストラテジ
+   * @param saveUseCase - 会話ログを永続化するユースケース
    */
   constructor(
     private readonly chunking: ChunkingStrategy,
@@ -24,11 +24,11 @@ export class SessionEndHandler {
   ) {}
 
   /**
-   * Reads a conversation log file, chunks it, and saves the resulting memories.
-   * @param conversationLogPath - Path to the JSONL conversation log file
-   * @param sessionId - Unique session identifier
-   * @param projectPath - Optional project path for scoping memories
-   * @returns A promise that resolves when all chunks are saved
+   * 会話ログファイルを読み込み、チャンク化してメモリとして保存する。
+   * @param conversationLogPath - JSONL形式の会話ログファイルのパス
+   * @param sessionId - セッションの一意識別子
+   * @param projectPath - メモリのスコープを絞るプロジェクトパス（省略可）
+   * @returns 全チャンクの保存完了時に解決するPromise
    */
   async handle(
     conversationLogPath: string,

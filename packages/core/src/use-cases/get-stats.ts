@@ -1,16 +1,16 @@
 import type { StorageStats } from '../entities/memory.js'
 import type { StorageRepository } from '../interfaces/storage-repository.js'
 
-/** Retrieves aggregate statistics about the memory storage. */
+/** 記憶ストレージの集計統計情報を取得する。 */
 export class GetStatsUseCase {
   /**
-   * Creates a new GetStatsUseCase.
-   * @param storage - The storage repository to query.
+   * 新しい GetStatsUseCase を生成する。
+   * @param storage - クエリ対象のストレージリポジトリ。
    */
   constructor(private readonly storage: StorageRepository) {}
   /**
-   * Retrieves storage statistics.
-   * @returns Aggregate stats including totals, dates, and averages.
+   * ストレージ統計情報を取得する。
+   * @returns 総数、日時、平均値を含む集計統計情報。
    */
   async execute(): Promise<StorageStats> {
     return this.storage.getStats()

@@ -4,7 +4,7 @@ import { createInsertSchema, createSelectSchema } from 'drizzle-zod'
 
 const embeddingDimension = Number(process.env.EMBEDDING_DIMENSION ?? '384')
 
-/** Drizzle table definition for the memories table with pgvector and pg_bigm indexes. */
+/** pgvectorとpg_bigmインデックスを持つmemoriesテーブルのDrizzleテーブル定義。 */
 export const memories = pgTable(
   'memories',
   {
@@ -26,11 +26,11 @@ export const memories = pgTable(
   ],
 )
 
-/** Zod schema for validating memory insert operations. */
+/** メモリのinsert操作を検証するZod schema。 */
 export const insertMemorySchema: ReturnType<typeof createInsertSchema<typeof memories>> =
   createInsertSchema(memories, {
     content: (schema) => schema.min(1, '空文字不可'),
   })
 
-/** Zod schema for validating memory select results. */
+/** メモリのselect結果を検証するZod schema。 */
 export const selectMemorySchema = createSelectSchema(memories)

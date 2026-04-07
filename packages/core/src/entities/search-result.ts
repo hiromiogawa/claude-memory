@@ -1,21 +1,21 @@
 import type { Memory } from './memory.js'
 
-/** A memory returned from a search query with its relevance score. */
+/** 検索クエリから返された記憶と関連スコア。 */
 export interface SearchResult {
-  /** The matched memory entry. */
+  /** マッチした記憶エントリ。 */
   memory: Memory
-  /** Relevance score after RRF fusion and time decay (higher is better). */
+  /** RRF fusionと時間減衰後の関連スコア（高いほど良い）。 */
   score: number
-  /** How the match was found: keyword-only, vector-only, or both. */
+  /** マッチの種別: keyword のみ、vector のみ、またはその両方。 */
   matchType: 'keyword' | 'vector' | 'hybrid'
 }
 
-/** Filter criteria applied to search queries. */
+/** 検索クエリに適用するフィルター条件。 */
 export interface SearchFilter {
-  /** Restrict results to a specific project path. */
+  /** 結果を特定のプロジェクトパスに限定する。 */
   projectPath?: string
-  /** Filter by creation source. */
+  /** 作成ソースでフィルター。 */
   source?: 'manual' | 'auto'
-  /** Filter by tags. */
+  /** タグでフィルター。 */
   tags?: string[]
 }

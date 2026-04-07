@@ -7,10 +7,10 @@ import { memoryUpdateSchema, TOOL_METADATA } from './tool-metadata.js'
 const meta = TOOL_METADATA.find((t) => t.name === 'memory_update')!
 
 /**
- * Registers the memory_update tool on the MCP server.
- * @param server - The MCP server instance
- * @param container - Dependency injection container
- * @param logger - Pino logger instance
+ * memory_updateツールをMCP serverに登録する。
+ * @param server - MCP serverインスタンス
+ * @param container - DIコンテナ
+ * @param logger - Pinoロガーインスタンス
  */
 export function registerMemoryUpdateTool(
   server: McpServer,

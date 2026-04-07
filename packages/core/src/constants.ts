@@ -1,5 +1,5 @@
 /**
- * Default parameters for the hybrid search algorithm.
+ * ハイブリッド検索アルゴリズムのデフォルトパラメーター。
  *
  * RRF fusion: score = 1 / (k + rank), where k = 60.
  * Time decay: score * 0.5^(days / 30), half-life = 30 days.
@@ -11,11 +11,11 @@ export const SEARCH_DEFAULTS = {
 } as const
 
 /**
- * Default parameters for memory deduplication.
+ * 記憶の重複排除に使用するデフォルトパラメーター。
  *
- * Memories with cosine similarity >= 0.95 to an existing entry are considered duplicates and skipped.
+ * 既存エントリとのcosine similarityが0.95以上の記憶は重複とみなしてスキップする。
  */
 export const DEDUP_DEFAULTS = {
-  /** Cosine similarity threshold; values >= 0.95 are treated as duplicates. */
+  /** cosine similarity閾値。0.95以上を重複として扱う。 */
   similarityThreshold: 0.95,
 } as const

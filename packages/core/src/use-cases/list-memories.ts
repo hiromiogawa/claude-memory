@@ -3,17 +3,17 @@ import type { StorageRepository } from '../interfaces/storage-repository.js'
 
 const MAX_LIMIT = 100
 
-/** Lists memories with pagination, capping the limit at 100. */
+/** ページネーションで記憶を一覧取得する。上限は100件。 */
 export class ListMemoriesUseCase {
   /**
-   * Creates a new ListMemoriesUseCase.
-   * @param storage - The storage repository to query.
+   * 新しい ListMemoriesUseCase を生成する。
+   * @param storage - クエリ対象のストレージリポジトリ。
    */
   constructor(private readonly storage: StorageRepository) {}
   /**
-   * Lists memories with the given options, enforcing a maximum limit of 100.
-   * @param options - Pagination and filter options.
-   * @returns An array of memories matching the criteria.
+   * 指定オプションで記憶を一覧取得する。最大件数は100件に制限される。
+   * @param options - ページネーションとフィルターのオプション。
+   * @returns 条件に一致する記憶の配列。
    */
   async execute(options: ListOptions): Promise<Memory[]> {
     const sanitized = { ...options, limit: Math.min(options.limit, MAX_LIMIT) }

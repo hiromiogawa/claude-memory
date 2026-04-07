@@ -17,9 +17,9 @@ import { PostgresStorageRepository } from '@claude-memory/storage-postgres'
 import type { AppConfig } from './config.js'
 
 /**
- * Creates a dependency injection container with all use cases and infrastructure.
- * @param config - Application configuration
- * @returns Container holding storage, embedding, and all use case instances
+ * 全ユースケースとインフラを含むDIコンテナを生成する。
+ * @param config - アプリケーション設定
+ * @returns storage・embedding・全ユースケースのインスタンスを保持するコンテナ
  */
 export function createContainer(config: AppConfig) {
   const storage = new PostgresStorageRepository(config.databaseUrl, {
@@ -45,5 +45,5 @@ export function createContainer(config: AppConfig) {
   }
 }
 
-/** Dependency injection container type holding all use cases and infrastructure. */
+/** 全ユースケースとインフラを保持するDIコンテナの型。 */
 export type Container = ReturnType<typeof createContainer>

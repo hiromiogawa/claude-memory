@@ -5,8 +5,8 @@ import { SessionStartHandler } from '@claude-memory/hooks'
 import { PostgresStorageRepository } from '@claude-memory/storage-postgres'
 
 /**
- * Standalone script entry point that recalls relevant memories at session start.
- * @returns A promise that resolves after printing recalled context to stdout
+ * セッション開始時に関連メモリを再現するスタンドアロンスクリプトのエントリポイント。
+ * @returns 再現コンテキストをstdoutに出力した後に解決するPromise
  */
 async function main() {
   const databaseUrl = process.env.DATABASE_URL
