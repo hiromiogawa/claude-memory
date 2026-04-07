@@ -58,11 +58,13 @@ Delete a memory by ID
 
 ### memory_cleanup
 
-Delete old memories that have not been accessed recently
+Delete memories by age (not accessed in N days) or by LFU strategy (least-accessed first)
 
 | 引数 | 型 | 必須 | デフォルト | 説明 |
 |------|------|------|------------|------|
-| olderThanDays | number | Yes | - | Delete memories not accessed in this many days |
+| strategy | "lastAccessedOlderThan" \| "leastAccessed" | No | "lastAccessedOlderThan" | Cleanup strategy: lastAccessedOlderThan (by days) or leastAccessed (LFU) |
+| olderThanDays | number | No | - | Delete memories not accessed in this many days (for lastAccessedOlderThan strategy) |
+| limit | number | No | - | Number of least-accessed memories to delete (for leastAccessed strategy) |
 | dryRun | boolean | No | true | Preview what would be deleted without actually deleting |
 
 ### memory_import
