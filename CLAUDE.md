@@ -1,22 +1,24 @@
 # CLAUDE.md
 
-## AI固有の指示
+## Skills
+
+- memory-usage → 記憶の保存・検索・活用ルール（claude-memory MCPとセットで使用）
+- conventional-commits → コミット・ブランチルール
+- github-flow → Issue階層・PR・Projects運用
+- sdd → 仕様駆動開発フロー
+- adr → ADR作成・管理
+- code-quality → OXLint/Biome/knip/dependency-cruiser
+- diagram-management → draw.io・依存グラフCI自動生成
+- project-bootstrap → 新プロジェクト初期化（統括スキル）
+
+## プロジェクト固有の指示
 
 - コミット時は Conventional Commits に従う（scope: core, embedding-onnx, storage-postgres, mcp-server, hooks）
 - PRは必ず関連Issueを紐付ける
 - 型定義変更時はJSDocも同時に更新する
 - テストはTDDで書く（RED → GREEN → REFACTOR）
-- 設計判断があった場合はADRを `docs/adr/` に追加し、長期記憶にも保存する
+- 設計判断があった場合はADRを `docs/adr/` に追加し、memory_save でも保存する
 - コード変更時は関連ドキュメントの更新が必要か確認する
-
-## Skills
-
-- memory-usage → 長期記憶の保存・検索・タグ・ADR連携ルール
-- conventional-commits → コミット・ブランチルール
-- github-flow → Issue・PR・Projects運用
-- sdd → 仕様駆動開発フロー
-- adr → ADR管理
-- code-quality → 品質ツール設定
 
 ## プロジェクトドキュメント（詳細はリンク先を参照）
 

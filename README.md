@@ -111,7 +111,37 @@ docker compose ps
 
 設定後、Claude Code を再起動すると反映される。
 
-### 3. CLAUDE.md に記憶ルールを記載
+### 3. 記憶ルールの設定
+
+Claude Code が記憶をいつ・何を・どう保存/検索するかのルールを設定する。2つの方法がある。
+
+#### 方法A: スキルを使う（推奨）
+
+`.claude/skills/memory-usage/` ディレクトリをプロジェクトにコピーする：
+
+```bash
+cp -r <claude-memory-repo>/.claude/skills/memory-usage <your-project>/.claude/skills/
+```
+
+CLAUDE.md にスキル名を記載する：
+
+```markdown
+## Skills
+- memory-usage → 記憶の保存・検索・活用ルール
+```
+
+スキルには以下が含まれる：
+
+- セッション開始時の検索手順
+- 保存する情報/しない情報の判断基準
+- scope（project/global）の使い分け
+- タグ体系と検索戦略
+- 重複・矛盾する記憶の扱い
+- ADR連携フロー
+
+#### 方法B: CLAUDE.md に直接記載
+
+スキルを使わずシンプルに始めたい場合は、CLAUDE.md に記憶ルールを直接書く：
 
 ```markdown
 ## 記憶ルール
@@ -120,8 +150,6 @@ docker compose ps
 - 一般的な技術知識は保存しない
 - 保存時は tags を付けて検索しやすくする
 ```
-
-テンプレートは [templates/CLAUDE.md.example](templates/CLAUDE.md.example) を参考にしてください。
 
 ## 記憶の保存と検索
 
