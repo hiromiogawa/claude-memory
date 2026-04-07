@@ -76,13 +76,6 @@ packages/
 └── hooks/             Claude Code Hooks連携
 ```
 
-各パッケージの詳細ドキュメント:
-- [core](packages/core.md) — エンティティ、インターフェース、ユースケース、定数
-- [embedding-onnx](packages/embedding-onnx.md) — モデル設定、実装詳細
-- [storage-postgres](packages/storage-postgres.md) — 接続設定、インデックス、検索の仕組み
-- [mcp-server](packages/mcp-server.md) — DIコンテナ、ツール一覧、設定
-- [hooks](packages/hooks.md) — SessionEndHandler、QAChunkingStrategy
-
 ## 依存方向
 
 ```
@@ -129,3 +122,85 @@ CREATE INDEX idx_memories_vector ON memories USING hnsw(embedding vector_cosine_
 ### 重複排除
 
 保存前に最近傍1件のコサイン類似度を検査。閾値（デフォルト0.95）以上なら保存をスキップ。`Promise.all` で全チャンクを並列チェック。
+
+## アルゴリズム詳細
+
+### RRF（Reciprocal Rank Fusion）
+
+異なる検索手法の結果を公平に統合する方式。各結果のスコアを順位から算出し、合算する。
+
+```
+計算式: score = 1 / (k + rank)    k=60（論文推奨の標準値）
+```
+
+k が大きいほど順位差の影響が小さくなる（結果が均等化される）。
+
+```
+例: k=60
+
+キーワード検索: 1位=記憶A, 2位=記憶B, 3位=記憶C
+ベクトル検索:   1位=記憶B, 2位=記憶D, 3位=記憶A
+
+記憶A: keyword 1/(60+1) + vector 1/(60+3) = 0.0164 + 0.0159 = 0.0323
+記憶B: keyword 1/(60+2) + vector 1/(60+1) = 0.0161 + 0.0164 = 0.0325 ← 最高スコア
+記憶C: keyword 1/(60+3)                   = 0.0159
+記憶D:                    vector 1/(60+2) = 0.0161
+
+→ 結果: 記憶B > 記憶A > 記憶D > 記憶C
+  （両方の検索にヒットした記憶Bが最も関連性が高いと判定）
+```
+
+### 時間減衰
+
+古い記憶のスコアを指数関数的に下げる。半減期30日。
+
+```
+計算式: score × 0.5^(経過日数 / 30)
+
+今日の記憶:     score × 1.0    （そのまま）
+30日前の記憶:   score × 0.5    （半分）
+60日前の記憶:   score × 0.25   （1/4）
+90日前の記憶:   score × 0.125  （1/8）
+```
+
+これにより「3ヶ月前に保存した設計判断」より「昨日保存した最新の決定」が上位に来る。ただし完全に消えるわけではなく、他に関連記憶がなければ古い記憶も返される。
+
+### 重複排除の仕組み（コサイン類似度）
+
+テキストはembeddingにより384次元ベクトルに変換される。2つのベクトルの「向きの近さ」を0〜1で表したものがコサイン類似度。閾値 `0.95` 以上なら「実質同一内容」とみなし保存をスキップする。
+
+```
+計算式: cosine_similarity >= 0.95 → 重複と判定
+```
+
+セッション終了時のauto保存では複数チャンクの重複チェックを `Promise.all` で並列実行し、N+1問題を回避。
+
+### QAチャンキング
+
+会話をQ&Aペアに分割するチャンキング戦略。
+
+1. 連続するuserメッセージ → Q部分
+2. 連続するassistantメッセージ → A部分
+3. `Q: {question}\nA: {answer}` 形式で結合
+4. 最大1000文字を超えた場合は文境界で分割（`。` `.` `!` `?`）
+5. 単一文が上限を超える場合は文字数で強制分割
+
+### 埋め込みモデル
+
+ONNX Runtimeによるローカル推論。外部APIへの依存なし。
+
+- **モデル**: multilingual-e5-small（384次元、~100MB）
+- **初期化**: 遅延初期化（初回embed時にモデルをダウンロード、`~/.cache/`にキャッシュ）
+- **プーリング**: mean pooling
+- **正規化**: L2 norm
+- **バッチ処理**: `Promise.all` で並列実行
+
+### インデックス戦略
+
+| インデックス | 型 | 用途 |
+|-------------|-----|------|
+| idx_memories_bigm | GIN (gin_bigm_ops) | 日本語キーワード検索（pg_bigm） |
+| idx_memories_vector | HNSW (vector_cosine_ops) | ベクトル近傍検索（pgvector） |
+
+- **キーワード検索**: `LIKE '%query%'` でフィルタ → `bigm_similarity()` でスコア付け → スコア降順ソート
+- **ベクトル検索**: `<=>` 演算子でコサイン距離計算 → HNSWインデックスで高速近傍検索 → スコア = 1 - distance
