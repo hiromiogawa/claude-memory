@@ -1,0 +1,8 @@
+{
+  ".": "0.0.1",
+  "packages/core": "0.0.1",
+  "packages/embedding-onnx": "0.0.1",
+  "packages/storage-postgres": "0.0.1",
+  "packages/mcp-server": "0.0.1",
+  "packages/hooks": "0.0.1"
+}

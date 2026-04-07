@@ -144,6 +144,35 @@ Terraform（`infra/github/`）で管理。masterブランチに対して：
 - `lint` と `test` のCIパス必須
 - force push と branch 削除の禁止
 
+## リリース
+
+[release-please](https://github.com/googleapis/release-please) による自動バージョニングを採用。
+
+### 仕組み
+
+1. Conventional Commits に従ったコミットが `master` にマージされる
+2. release-please が CHANGELOG とバージョンを更新する Release PR を自動作成
+3. Release PR をマージすると GitHub Release が自動作成される
+
+### 設定ファイル
+
+| ファイル | 役割 |
+|---------|------|
+| `release-please-config.json` | リリース設定（パッケージ、CHANGELOGセクション定義） |
+| `.release-please-manifest.json` | 現在のバージョン管理 |
+| `.github/workflows/release.yml` | GitHub Actions ワークフロー |
+
+### バージョニングルール
+
+- `feat:` → マイナーバージョン UP（0.1.0 → 0.2.0）
+- `fix:` / `perf:` → パッチバージョン UP（0.1.0 → 0.1.1）
+- `feat!:` / `BREAKING CHANGE` → メジャーバージョン UP（0.1.0 → 1.0.0）
+- `docs:` / `chore:` → バージョン変更なし（CHANGELOGには記録）
+
+### モノレポ戦略
+
+全パッケージ（core, embedding-onnx, storage-postgres, mcp-server, hooks）を `linked-versions` で一括バージョニングする。ルートの `package.json` のバージョンで管理。
+
 ## テスト戦略
 
 ### テストレベル
