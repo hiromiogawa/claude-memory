@@ -103,7 +103,6 @@ export class PostgresStorageRepository implements StorageRepository {
           scope: memory.metadata.scope ?? 'project',
           updatedAt: memory.updatedAt,
           lastAccessedAt: memory.lastAccessedAt,
-          accessCount: memory.accessCount,
         },
       })
   }
