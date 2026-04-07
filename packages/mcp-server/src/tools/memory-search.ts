@@ -21,6 +21,12 @@ const highlightKeyword = (content: string, query: string): string => {
 
 const meta = TOOL_METADATA.find((t) => t.name === 'memory_search')!
 
+/**
+ * Registers the memory_search tool on the MCP server.
+ * @param server - The MCP server instance
+ * @param container - Dependency injection container
+ * @param logger - Pino logger instance
+ */
 export function registerMemorySearchTool(
   server: McpServer,
   container: Container,

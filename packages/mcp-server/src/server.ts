@@ -15,6 +15,10 @@ import { registerMemorySearchTool } from './tools/memory-search.js'
 import { registerMemoryStatsTool } from './tools/memory-stats.js'
 import { registerMemoryUpdateTool } from './tools/memory-update.js'
 
+/**
+ * Starts the MCP server with all memory tools registered on stdio transport.
+ * @returns A promise that resolves when the server is connected
+ */
 export async function startServer() {
   const config = loadConfig()
   const logger = pino({ level: config.logLevel })

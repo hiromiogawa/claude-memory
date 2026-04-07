@@ -6,6 +6,12 @@ import { memoryCleanupSchema, TOOL_METADATA } from './tool-metadata.js'
 
 const meta = TOOL_METADATA.find((t) => t.name === 'memory_cleanup')!
 
+/**
+ * Registers the memory_cleanup tool on the MCP server.
+ * @param server - The MCP server instance
+ * @param container - Dependency injection container
+ * @param logger - Pino logger instance
+ */
 export function registerMemoryCleanupTool(
   server: McpServer,
   container: Container,
