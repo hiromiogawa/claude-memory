@@ -3,12 +3,36 @@ import type { SearchFilter, SearchResult } from '../entities/search-result.js'
 import type { EmbeddingProvider } from '../interfaces/embedding-provider.js'
 import type { StorageRepository } from '../interfaces/storage-repository.js'
 
+/**
+ * Searches memories using hybrid keyword + vector search with RRF fusion and time decay.
+ * @remarks
+ * Pipeline: parallel keyword (pg_bigm) + vector (pgvector) search, then Reciprocal Rank Fusion.
+ * RRF formula: score = 1 / (k + rank), where k = 60.
+ * Time decay: finalScore = rrfScore * 0.5^(daysSinceCreation / 30), half-life = 30 days.
+ * Results appearing in both keyword and vector lists receive summed RRF scores ("hybrid" match).
+ * @example
+ * ```ts
+ * const results = await searchUseCase.search('database migration', 10, { tags: ['infra'] });
+ * ```
+ */
 export class SearchMemoryUseCase {
+  /**
+   * Creates a new SearchMemoryUseCase.
+   * @param storage - The storage repository for keyword and vector search.
+   * @param embedding - The embedding provider for vectorizing the query.
+   */
   constructor(
     private readonly storage: StorageRepository,
     private readonly embedding: EmbeddingProvider,
   ) {}
 
+  /**
+   * Executes a hybrid search combining keyword and vector results.
+   * @param query - The search query text.
+   * @param limit - Maximum number of results to return (default: 20).
+   * @param filter - Optional filter criteria.
+   * @returns Ranked search results after RRF fusion and time decay.
+   */
   async search(
     query: string,
     limit: number = SEARCH_DEFAULTS.maxResults,

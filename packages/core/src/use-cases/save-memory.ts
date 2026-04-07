@@ -18,13 +18,28 @@ interface SaveMemoryOptions {
   similarityThreshold?: number
 }
 
+/** Result of a save operation indicating whether the memory was persisted. */
 export interface SaveResult {
+  /** True if the memory was saved; false if it was skipped as a duplicate. */
   saved: boolean
 }
 
+/**
+ * Saves memories with automatic deduplication.
+ * @remarks
+ * Deduplication: before saving, the nearest existing memory is retrieved via vector search.
+ * If cosine similarity >= 0.95 (configurable), the new memory is considered a duplicate and skipped.
+ */
 export class SaveMemoryUseCase {
   private readonly similarityThreshold: number
 
+  /**
+   * Creates a new SaveMemoryUseCase.
+   * @param storage - The storage repository.
+   * @param embedding - The embedding provider for vectorizing content.
+   * @param chunking - The chunking strategy for splitting conversations.
+   * @param options - Optional overrides (e.g. similarity threshold).
+   */
   constructor(
     private readonly storage: StorageRepository,
     private readonly embedding: EmbeddingProvider,
@@ -34,6 +49,11 @@ export class SaveMemoryUseCase {
     this.similarityThreshold = options?.similarityThreshold ?? DEDUP_DEFAULTS.similarityThreshold
   }
 
+  /**
+   * Saves a manually created memory, skipping if a duplicate exists.
+   * @param input - The memory content and metadata.
+   * @returns Whether the memory was saved or skipped.
+   */
   async saveManual(input: SaveManualInput): Promise<SaveResult> {
     const embeddingVector = await this.embedding.embed(input.content)
 
@@ -59,6 +79,10 @@ export class SaveMemoryUseCase {
     return { saved: true }
   }
 
+  /**
+   * Chunks a conversation, deduplicates in parallel, and saves new memories.
+   * @param log - The conversation log to process.
+   */
   async saveConversation(log: ConversationLog): Promise<void> {
     const chunks = this.chunking.chunk(log)
     if (chunks.length === 0) return
