@@ -15,28 +15,66 @@ const meta = TOOL_METADATA.find((t) => t.name === 'memory_cleanup')!
 export function registerMemoryCleanupTool(
   server: McpServer,
   container: Container,
-  logger: Logger,
+  logger?: Logger,
 ): void {
   server.tool(meta.name, meta.description, memoryCleanupSchema, async (args) => {
     return handleToolError(async () => {
       const start = performance.now()
-      const result = await container.cleanupMemory.execute(args)
+
+      const strategy = args.strategy ?? 'lastAccessedOlderThan'
+
+      let cleanupArgs: Parameters<typeof container.cleanupMemory.execute>[0]
+      if (strategy === 'leastAccessed') {
+        if (!args.limit) {
+          return {
+            content: [
+              { type: 'text', text: 'Error: limit is required for leastAccessed strategy' },
+            ],
+            isError: true,
+          }
+        }
+        cleanupArgs = { strategy: 'leastAccessed', limit: args.limit, dryRun: args.dryRun }
+      } else {
+        if (!args.olderThanDays) {
+          return {
+            content: [
+              {
+                type: 'text',
+                text: 'Error: olderThanDays is required for lastAccessedOlderThan strategy',
+              },
+            ],
+            isError: true,
+          }
+        }
+        cleanupArgs = {
+          strategy: 'lastAccessedOlderThan',
+          olderThanDays: args.olderThanDays,
+          dryRun: args.dryRun,
+        }
+      }
+
+      const result = await container.cleanupMemory.execute(cleanupArgs)
       const durationMs = Math.round(performance.now() - start)
-      logger.info(
+      logger?.info(
         {
           tool: 'memory_cleanup',
           durationMs,
           deletedCount: result.deletedCount,
           dryRun: result.dryRun,
+          strategy,
         },
         'memory_cleanup completed',
       )
       const action = result.dryRun ? 'Would delete' : 'Deleted'
+      const reason =
+        strategy === 'leastAccessed'
+          ? `(least accessed, limit: ${args.limit})`
+          : `(not accessed in ${args.olderThanDays} days)`
       return {
         content: [
           {
             type: 'text',
-            text: `${action} ${result.deletedCount} memories (not accessed in ${args.olderThanDays} days).`,
+            text: `${action} ${result.deletedCount} memories ${reason}.`,
           },
         ],
       }

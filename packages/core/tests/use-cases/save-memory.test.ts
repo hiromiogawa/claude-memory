@@ -19,6 +19,8 @@ function createMockStorage(): StorageRepository {
     exportAll: vi.fn(),
     deleteOlderThan: vi.fn(),
     countOlderThan: vi.fn(),
+    countAll: vi.fn().mockResolvedValue(0),
+    deleteLeastAccessed: vi.fn().mockResolvedValue(0),
   }
 }
 
@@ -259,6 +261,81 @@ describe('SaveMemoryUseCase', () => {
     // All 3 non-duplicate chunks should be saved
     const saved = vi.mocked(storage.saveBatch).mock.calls[0]![0]
     expect(saved).toHaveLength(3)
+  })
+
+  describe('capacity management', () => {
+    it('should auto-prune when total exceeds maxMemories on saveManual', async () => {
+      const storage = createMockStorage()
+      const embedding = createMockEmbedding()
+      const chunking = createMockChunking()
+      vi.mocked(storage.searchByVector).mockResolvedValue([])
+      vi.mocked(storage.countAll).mockResolvedValue(10000)
+      vi.mocked(storage.deleteLeastAccessed).mockResolvedValue(1)
+      const useCase = new SaveMemoryUseCase(storage, embedding, chunking, { maxMemories: 10000 })
+
+      await useCase.saveManual({ content: 'new', sessionId: 's1' })
+
+      expect(storage.countAll).toHaveBeenCalled()
+      expect(storage.deleteLeastAccessed).toHaveBeenCalledWith(1)
+      expect(storage.save).toHaveBeenCalled()
+    })
+
+    it('should not prune when under capacity', async () => {
+      const storage = createMockStorage()
+      const embedding = createMockEmbedding()
+      const chunking = createMockChunking()
+      vi.mocked(storage.searchByVector).mockResolvedValue([])
+      vi.mocked(storage.countAll).mockResolvedValue(100)
+      const useCase = new SaveMemoryUseCase(storage, embedding, chunking, { maxMemories: 10000 })
+
+      await useCase.saveManual({ content: 'new', sessionId: 's1' })
+
+      expect(storage.deleteLeastAccessed).not.toHaveBeenCalled()
+      expect(storage.save).toHaveBeenCalled()
+    })
+
+    it('should auto-prune excess when batch saving exceeds capacity', async () => {
+      const storage = createMockStorage()
+      const embedding = createMockEmbedding()
+      const chunking = createMockChunking()
+      vi.mocked(chunking.chunk).mockReturnValue([
+        { content: 'chunk1', metadata: { sessionId: 's1', source: 'auto' as const } },
+        { content: 'chunk2', metadata: { sessionId: 's1', source: 'auto' as const } },
+      ])
+      vi.mocked(embedding.embedBatch).mockResolvedValue([
+        [0.1, 0.2, 0.3],
+        [0.4, 0.5, 0.6],
+      ])
+      vi.mocked(storage.searchByVector).mockResolvedValue([])
+      vi.mocked(storage.countAll).mockResolvedValue(9999)
+      vi.mocked(storage.deleteLeastAccessed).mockResolvedValue(1)
+      const useCase = new SaveMemoryUseCase(storage, embedding, chunking, { maxMemories: 10000 })
+
+      const log = {
+        sessionId: 's1',
+        messages: [
+          { role: 'user' as const, content: 'q', timestamp: new Date() },
+          { role: 'assistant' as const, content: 'a', timestamp: new Date() },
+        ],
+      }
+      await useCase.saveConversation(log)
+
+      // 9999 + 2 new = 10001, need to delete 1
+      expect(storage.deleteLeastAccessed).toHaveBeenCalledWith(1)
+    })
+
+    it('should skip capacity check when maxMemories is 0 (disabled)', async () => {
+      const storage = createMockStorage()
+      const embedding = createMockEmbedding()
+      const chunking = createMockChunking()
+      vi.mocked(storage.searchByVector).mockResolvedValue([])
+      const useCase = new SaveMemoryUseCase(storage, embedding, chunking, { maxMemories: 0 })
+
+      await useCase.saveManual({ content: 'new', sessionId: 's1' })
+
+      expect(storage.countAll).not.toHaveBeenCalled()
+      expect(storage.deleteLeastAccessed).not.toHaveBeenCalled()
+    })
   })
 
   it('should skip duplicate chunks during conversation save', async () => {

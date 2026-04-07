@@ -72,4 +72,16 @@ export interface StorageRepository {
    * @returns 条件に一致する記憶の件数。
    */
   countOlderThan(field: 'lastAccessedAt' | 'createdAt', olderThanDays: number): Promise<number>
+  /**
+   * 全記憶の件数を返す。
+   * @returns 保存済み記憶の総件数。
+   */
+  countAll(): Promise<number>
+  /**
+   * アクセス回数が最も少ない記憶をN件削除する（LFU方式）。
+   * 同一アクセス回数の場合は最終アクセス日時が古い順に削除する。
+   * @param limit - 削除する件数。
+   * @returns 削除された記憶の件数。
+   */
+  deleteLeastAccessed(limit: number): Promise<number>
 }

@@ -19,3 +19,13 @@ export const DEDUP_DEFAULTS = {
   /** cosine similarity閾値。0.90以上を重複として扱う。 */
   similarityThreshold: 0.9,
 } as const
+
+/**
+ * 記憶の容量管理に使用するデフォルトパラメーター。
+ *
+ * 記憶件数が上限を超えた場合、アクセス回数が最も少ない記憶から自動削除する（LFU方式）。
+ */
+export const CAPACITY_DEFAULTS = {
+  /** 記憶の最大保存件数。超過時はLFUで自動削除。 */
+  maxMemories: 10000,
+} as const

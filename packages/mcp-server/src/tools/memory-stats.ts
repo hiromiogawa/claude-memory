@@ -1,3 +1,4 @@
+import { CAPACITY_DEFAULTS } from '@claude-memory/core'
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js'
 import type { Logger } from 'pino'
 import type { Container } from '../container.js'
@@ -27,8 +28,9 @@ export function registerMemoryStatsTool(
         'memory_stats completed',
       )
 
+      const maxMemories = CAPACITY_DEFAULTS.maxMemories
       const lines = [
-        `Total memories: ${stats.totalMemories}`,
+        `Total memories: ${stats.totalMemories} / ${maxMemories}`,
         `  Manual: ${stats.manualCount}`,
         `  Auto: ${stats.autoCount}`,
         `Total sessions: ${stats.totalSessions}`,

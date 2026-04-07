@@ -13,8 +13,11 @@ function createMockStorage(): StorageRepository {
     delete: vi.fn(),
     clear: vi.fn(),
     getStats: vi.fn(),
+    exportAll: vi.fn(),
     deleteOlderThan: vi.fn(),
     countOlderThan: vi.fn(),
+    countAll: vi.fn(),
+    deleteLeastAccessed: vi.fn(),
   }
 }
 
@@ -55,5 +58,86 @@ describe('CleanupMemoryUseCase', () => {
     expect(result.dryRun).toBe(true)
     expect(storage.countOlderThan).toHaveBeenCalled()
     expect(storage.deleteOlderThan).not.toHaveBeenCalled()
+  })
+
+  describe('LFU cleanup (strategy: leastAccessed)', () => {
+    it('should delete least accessed memories with given limit', async () => {
+      const storage = createMockStorage()
+      vi.mocked(storage.deleteLeastAccessed).mockResolvedValue(10)
+      const useCase = new CleanupMemoryUseCase(storage)
+
+      const result = await useCase.execute({
+        strategy: 'leastAccessed',
+        limit: 10,
+        dryRun: false,
+      })
+
+      expect(result.deletedCount).toBe(10)
+      expect(result.dryRun).toBe(false)
+      expect(storage.deleteLeastAccessed).toHaveBeenCalledWith(10)
+    })
+
+    it('should return count in dry-run mode for leastAccessed', async () => {
+      const storage = createMockStorage()
+      vi.mocked(storage.countAll).mockResolvedValue(500)
+      const useCase = new CleanupMemoryUseCase(storage)
+
+      const result = await useCase.execute({
+        strategy: 'leastAccessed',
+        limit: 100,
+        dryRun: true,
+      })
+
+      expect(result.deletedCount).toBe(100)
+      expect(result.dryRun).toBe(true)
+      expect(storage.deleteLeastAccessed).not.toHaveBeenCalled()
+    })
+
+    it('should cap dry-run count to total memories when limit exceeds total', async () => {
+      const storage = createMockStorage()
+      vi.mocked(storage.countAll).mockResolvedValue(50)
+      const useCase = new CleanupMemoryUseCase(storage)
+
+      const result = await useCase.execute({
+        strategy: 'leastAccessed',
+        limit: 100,
+        dryRun: true,
+      })
+
+      expect(result.deletedCount).toBe(50)
+    })
+  })
+
+  describe('lastAccessedOlderThan strategy', () => {
+    it('should delete memories not accessed in N days', async () => {
+      const storage = createMockStorage()
+      vi.mocked(storage.deleteOlderThan).mockResolvedValue(7)
+      const useCase = new CleanupMemoryUseCase(storage)
+
+      const result = await useCase.execute({
+        strategy: 'lastAccessedOlderThan',
+        olderThanDays: 30,
+        dryRun: false,
+      })
+
+      expect(result.deletedCount).toBe(7)
+      expect(storage.deleteOlderThan).toHaveBeenCalledWith('lastAccessedAt', 30)
+    })
+
+    it('should count in dry-run for lastAccessedOlderThan', async () => {
+      const storage = createMockStorage()
+      vi.mocked(storage.countOlderThan).mockResolvedValue(12)
+      const useCase = new CleanupMemoryUseCase(storage)
+
+      const result = await useCase.execute({
+        strategy: 'lastAccessedOlderThan',
+        olderThanDays: 60,
+        dryRun: true,
+      })
+
+      expect(result.deletedCount).toBe(12)
+      expect(result.dryRun).toBe(true)
+      expect(storage.countOlderThan).toHaveBeenCalledWith('lastAccessedAt', 60)
+    })
   })
 })
