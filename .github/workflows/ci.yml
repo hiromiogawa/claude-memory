@@ -24,9 +24,9 @@ jobs:
         run: SKIP_DB_DOCS=true pnpm docs:generate
       - name: Check docs are up to date
         run: |
-          if ! git diff --exit-code docs/generated/; then
+          if ! git diff --exit-code docs/generated/mcp-tools.md; then
             echo "::error::Generated docs are out of date. Run 'pnpm docs:generate' and commit the results."
-            git diff docs/generated/
+            git diff docs/generated/mcp-tools.md
             exit 1
           fi
 
@@ -55,7 +55,8 @@ jobs:
           done
       - name: Install tbls
         run: |
-          curl -sL https://github.com/k1LoW/tbls/releases/latest/download/tbls_linux_amd64.tar.gz | tar xz
+          VERSION=$(curl -sL https://api.github.com/repos/k1LoW/tbls/releases/latest | jq -r '.tag_name')
+          curl -sL "https://github.com/k1LoW/tbls/releases/download/${VERSION}/tbls_${VERSION}_linux_amd64.tar.gz" | tar xz
           sudo mv tbls /usr/local/bin/
       - name: Generate DB schema docs
         run: pnpm docs:schema
