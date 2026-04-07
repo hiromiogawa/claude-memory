@@ -17,6 +17,7 @@ export function registerMemorySaveTool(
       sessionId: z.string(),
       projectPath: z.string().optional(),
       tags: z.array(z.string()).optional(),
+      scope: z.enum(['project', 'global']).optional().default('project'),
     },
     async (args) => {
       return handleToolError(async () => {

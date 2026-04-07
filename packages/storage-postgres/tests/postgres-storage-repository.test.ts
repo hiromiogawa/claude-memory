@@ -483,6 +483,139 @@ describe('PostgresStorageRepository', () => {
     })
   })
 
+  describe('scope filtering', () => {
+    it('returns global scope memories alongside project-specific ones in keyword search', async () => {
+      const now = Date.now()
+      await repo.saveBatch([
+        makeMemory({
+          content: 'project-specific memory',
+          metadata: {
+            sessionId: 's1',
+            projectPath: '/project-a',
+            scope: 'project',
+            source: 'manual',
+          },
+          createdAt: new Date(now - 2000),
+          updatedAt: new Date(now - 2000),
+          lastAccessedAt: new Date(now - 2000),
+        }),
+        makeMemory({
+          content: 'global preference memory',
+          metadata: {
+            sessionId: 's1',
+            projectPath: '/project-b',
+            scope: 'global',
+            source: 'manual',
+          },
+          createdAt: new Date(now - 1000),
+          updatedAt: new Date(now - 1000),
+          lastAccessedAt: new Date(now - 1000),
+        }),
+        makeMemory({
+          content: 'other project memory',
+          metadata: {
+            sessionId: 's1',
+            projectPath: '/project-b',
+            scope: 'project',
+            source: 'manual',
+          },
+          createdAt: new Date(now),
+          updatedAt: new Date(now),
+          lastAccessedAt: new Date(now),
+        }),
+      ])
+
+      const results = await repo.searchByKeyword('memory', 10, {
+        projectPath: '/project-a',
+      })
+      // Should find project-a specific + global, but NOT project-b specific
+      expect(results).toHaveLength(2)
+      const contents = results.map((r) => r.memory.content)
+      expect(contents).toContain('project-specific memory')
+      expect(contents).toContain('global preference memory')
+      expect(contents).not.toContain('other project memory')
+    })
+
+    it('returns global scope memories alongside project-specific ones in vector search', async () => {
+      const now = Date.now()
+      await repo.saveBatch([
+        makeMemory({
+          content: 'project-specific memory',
+          metadata: {
+            sessionId: 's1',
+            projectPath: '/project-a',
+            scope: 'project',
+            source: 'manual',
+          },
+          createdAt: new Date(now - 2000),
+          updatedAt: new Date(now - 2000),
+          lastAccessedAt: new Date(now - 2000),
+        }),
+        makeMemory({
+          content: 'global preference memory',
+          metadata: {
+            sessionId: 's1',
+            projectPath: '/project-b',
+            scope: 'global',
+            source: 'manual',
+          },
+          createdAt: new Date(now - 1000),
+          updatedAt: new Date(now - 1000),
+          lastAccessedAt: new Date(now - 1000),
+        }),
+        makeMemory({
+          content: 'other project memory',
+          metadata: {
+            sessionId: 's1',
+            projectPath: '/project-b',
+            scope: 'project',
+            source: 'manual',
+          },
+          createdAt: new Date(now),
+          updatedAt: new Date(now),
+          lastAccessedAt: new Date(now),
+        }),
+      ])
+
+      const results = await repo.searchByVector(makeEmbedding(), 10, {
+        projectPath: '/project-a',
+      })
+      expect(results).toHaveLength(2)
+      const ids = results.map((r) => r.memory.content)
+      expect(ids).toContain('project-specific memory')
+      expect(ids).toContain('global preference memory')
+    })
+
+    it('saves and retrieves scope in metadata', async () => {
+      const memory = makeMemory({
+        content: 'global memory',
+        metadata: {
+          sessionId: 's1',
+          projectPath: '/some/path',
+          scope: 'global',
+          source: 'manual',
+        },
+      })
+      await repo.save(memory)
+
+      const found = await repo.findById(memory.id)
+      expect(found).not.toBeNull()
+      expect(found!.metadata.scope).toBe('global')
+    })
+
+    it('defaults scope to project when not specified', async () => {
+      const memory = makeMemory({
+        content: 'memory without scope',
+        metadata: { sessionId: 's1', source: 'manual' },
+      })
+      await repo.save(memory)
+
+      const found = await repo.findById(memory.id)
+      expect(found).not.toBeNull()
+      expect(found!.metadata.scope).toBe('project')
+    })
+  })
+
   describe('getStats', () => {
     it('returns zeros when no memories', async () => {
       const stats = await repo.getStats()

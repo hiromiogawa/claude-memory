@@ -14,6 +14,7 @@ export const memories = pgTable(
     projectPath: text('project_path'),
     tags: text('tags').array(),
     source: text('source').$type<'manual' | 'auto'>(),
+    scope: text('scope').$type<'project' | 'global'>(),
     createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
     updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),
     lastAccessedAt: timestamp('last_accessed_at', { withTimezone: true }).defaultNow().notNull(),
