@@ -16,6 +16,11 @@ import { QAChunkingStrategy } from '@claude-memory/hooks'
 import { PostgresStorageRepository } from '@claude-memory/storage-postgres'
 import type { AppConfig } from './config.js'
 
+/**
+ * Creates a dependency injection container with all use cases and infrastructure.
+ * @param config - Application configuration
+ * @returns Container holding storage, embedding, and all use case instances
+ */
 export function createContainer(config: AppConfig) {
   const storage = new PostgresStorageRepository(config.databaseUrl, {
     maxConnections: config.dbPoolSize,
@@ -40,4 +45,5 @@ export function createContainer(config: AppConfig) {
   }
 }
 
+/** Dependency injection container type holding all use cases and infrastructure. */
 export type Container = ReturnType<typeof createContainer>

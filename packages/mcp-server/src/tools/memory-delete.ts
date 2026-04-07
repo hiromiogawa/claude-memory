@@ -6,6 +6,12 @@ import { memoryDeleteSchema, TOOL_METADATA } from './tool-metadata.js'
 
 const meta = TOOL_METADATA.find((t) => t.name === 'memory_delete')!
 
+/**
+ * Registers the memory_delete tool on the MCP server.
+ * @param server - The MCP server instance
+ * @param container - Dependency injection container
+ * @param logger - Pino logger instance
+ */
 export function registerMemoryDeleteTool(
   server: McpServer,
   container: Container,

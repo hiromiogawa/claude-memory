@@ -4,6 +4,10 @@ import { OnnxEmbeddingProvider } from '@claude-memory/embedding-onnx'
 import { SessionStartHandler } from '@claude-memory/hooks'
 import { PostgresStorageRepository } from '@claude-memory/storage-postgres'
 
+/**
+ * Standalone script entry point that recalls relevant memories at session start.
+ * @returns A promise that resolves after printing recalled context to stdout
+ */
 async function main() {
   const databaseUrl = process.env.DATABASE_URL
   if (!databaseUrl) {

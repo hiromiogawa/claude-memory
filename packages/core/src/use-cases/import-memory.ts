@@ -4,13 +4,23 @@ import type { EmbeddingProvider } from '../interfaces/embedding-provider.js'
 import type { StorageRepository } from '../interfaces/storage-repository.js'
 import type { ExportedMemory } from './export-memory.js'
 
+/** Imports previously exported memories, regenerating their embeddings. */
 export class ImportMemoryUseCase {
+  /**
+   * Creates a new ImportMemoryUseCase.
+   * @param storage - The storage repository to import into.
+   * @param embedding - The embedding provider for regenerating vectors.
+   */
   constructor(
     private readonly storage: StorageRepository,
     private readonly embedding: EmbeddingProvider,
   ) {}
 
-  /** 各記憶のembeddingを再計算して保存。createdAtはエクスポート時の値を保持 */
+  /**
+   * Imports memories by regenerating embeddings and preserving original creation dates.
+   * @param data - The exported memories to import.
+   * @returns The count of successfully imported memories.
+   */
   async execute(data: ExportedMemory[]): Promise<{ imported: number }> {
     let imported = 0
     for (const item of data) {

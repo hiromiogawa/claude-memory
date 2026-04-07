@@ -1,4 +1,5 @@
 // packages/mcp-server/src/config.ts
+/** Application configuration loaded from environment variables. */
 export interface AppConfig {
   databaseUrl: string
   dbPoolSize: number
@@ -7,6 +8,10 @@ export interface AppConfig {
   logLevel: string
 }
 
+/**
+ * Loads application configuration from environment variables.
+ * @returns The resolved application configuration
+ */
 export function loadConfig(): AppConfig {
   const databaseUrl = process.env.DATABASE_URL
   if (!databaseUrl) throw new Error('DATABASE_URL is required')

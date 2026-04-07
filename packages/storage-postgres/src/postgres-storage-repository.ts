@@ -39,10 +39,16 @@ function toMemory(row: DbRow, embedding: number[] | null = null): Memory {
   }
 }
 
+/** PostgreSQL-backed storage repository using pgvector for vector search and pg_bigm for keyword search. */
 export class PostgresStorageRepository implements StorageRepository {
   private readonly client: ReturnType<typeof postgres>
   private readonly db: ReturnType<typeof drizzle>
 
+  /**
+   * Creates a new PostgresStorageRepository instance.
+   * @param connectionString - PostgreSQL connection URL
+   * @param options - Optional configuration including max connection pool size
+   */
   constructor(connectionString: string, options?: { maxConnections?: number }) {
     const DEFAULT_MAX_CONNECTIONS = 10
     this.client = postgres(connectionString, {
@@ -51,10 +57,19 @@ export class PostgresStorageRepository implements StorageRepository {
     this.db = drizzle(this.client)
   }
 
+  /**
+   * Closes the underlying PostgreSQL connection pool.
+   * @returns A promise that resolves when all connections are closed
+   */
   async close(): Promise<void> {
     await this.client.end()
   }
 
+  /**
+   * Saves or upserts a memory record into PostgreSQL.
+   * @param memory - The memory to save (must include embedding)
+   * @returns A promise that resolves when the memory is persisted
+   */
   async save(memory: Memory): Promise<void> {
     if (!memory.embedding) throw new Error('Cannot save memory without embedding')
     const embeddingLiteral = `[${memory.embedding.join(',')}]`
@@ -90,6 +105,11 @@ export class PostgresStorageRepository implements StorageRepository {
       })
   }
 
+  /**
+   * Saves multiple memories sequentially.
+   * @param batch - Array of memories to save
+   * @returns A promise that resolves when all memories are persisted
+   */
   async saveBatch(batch: Memory[]): Promise<void> {
     if (batch.length === 0) return
     for (const memory of batch) {
@@ -97,20 +117,39 @@ export class PostgresStorageRepository implements StorageRepository {
     }
   }
 
+  /**
+   * Finds a memory by its UUID.
+   * @param id - The UUID of the memory to find
+   * @returns The memory if found, or null
+   */
   async findById(id: string): Promise<Memory | null> {
     const rows = await this.db.select().from(memories).where(eq(memories.id, id)).limit(1)
     if (rows.length === 0 || !rows[0]) return null
     return toMemory(rows[0])
   }
 
+  /**
+   * Deletes a memory by its UUID.
+   * @param id - The UUID of the memory to delete
+   * @returns A promise that resolves when the memory is deleted
+   */
   async delete(id: string): Promise<void> {
     await this.db.delete(memories).where(eq(memories.id, id))
   }
 
+  /**
+   * Deletes all memories from the database.
+   * @returns A promise that resolves when all memories are cleared
+   */
   async clear(): Promise<void> {
     await this.db.delete(memories)
   }
 
+  /**
+   * Lists memories with pagination, filtering, and sorting.
+   * @param options - Pagination, filter, and sort options
+   * @returns Array of memories matching the criteria
+   */
   async list(options: ListOptions): Promise<Memory[]> {
     const {
       limit,
@@ -143,6 +182,13 @@ export class PostgresStorageRepository implements StorageRepository {
     return rows.map((row) => toMemory(row))
   }
 
+  /**
+   * Searches memories by keyword using pg_bigm trigram similarity.
+   * @param query - The keyword search query
+   * @param limit - Maximum number of results to return
+   * @param filter - Optional filter for project path, source, or tags
+   * @returns Array of search results sorted by bigram similarity score
+   */
   async searchByKeyword(
     query: string,
     limit: number,
@@ -195,6 +241,13 @@ export class PostgresStorageRepository implements StorageRepository {
     }))
   }
 
+  /**
+   * Searches memories by vector similarity using pgvector cosine distance.
+   * @param embedding - The query embedding vector
+   * @param limit - Maximum number of results to return
+   * @param filter - Optional filter for project path, source, or tags
+   * @returns Array of search results sorted by cosine similarity score
+   */
   async searchByVector(
     embedding: number[],
     limit: number,
@@ -246,11 +299,19 @@ export class PostgresStorageRepository implements StorageRepository {
     }))
   }
 
+  /**
+   * Exports all memories ordered by creation date.
+   * @returns Array of all stored memories
+   */
   async exportAll(): Promise<Memory[]> {
     const rows = await this.db.select().from(memories).orderBy(asc(memories.createdAt))
     return rows.map((row) => toMemory(row))
   }
 
+  /**
+   * Returns aggregate statistics about stored memories.
+   * @returns Storage statistics including counts, dates, and averages
+   */
   async getStats(): Promise<StorageStats> {
     const result = await this.db
       .select({
@@ -287,6 +348,12 @@ export class PostgresStorageRepository implements StorageRepository {
     }
   }
 
+  /**
+   * Deletes memories older than the specified number of days.
+   * @param field - The date field to compare against
+   * @param olderThanDays - Number of days threshold for deletion
+   * @returns The number of deleted memories
+   */
   async deleteOlderThan(
     field: 'lastAccessedAt' | 'createdAt',
     olderThanDays: number,
@@ -301,6 +368,12 @@ export class PostgresStorageRepository implements StorageRepository {
     return result.length
   }
 
+  /**
+   * Counts memories older than the specified number of days.
+   * @param field - The date field to compare against
+   * @param olderThanDays - Number of days threshold for counting
+   * @returns The number of matching memories
+   */
   async countOlderThan(
     field: 'lastAccessedAt' | 'createdAt',
     olderThanDays: number,

@@ -6,6 +6,12 @@ import { TOOL_METADATA } from './tool-metadata.js'
 
 const meta = TOOL_METADATA.find((t) => t.name === 'memory_export')!
 
+/**
+ * Registers the memory_export tool on the MCP server.
+ * @param server - The MCP server instance
+ * @param container - Dependency injection container
+ * @param logger - Pino logger instance
+ */
 export function registerMemoryExportTool(
   server: McpServer,
   container: Container,
