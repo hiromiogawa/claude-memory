@@ -33,6 +33,8 @@ function createMockStorage(): StorageRepository {
     exportAll: vi.fn(),
     deleteOlderThan: vi.fn(),
     countOlderThan: vi.fn(),
+    countAll: vi.fn(),
+    deleteLeastAccessed: vi.fn(),
   }
 }
 

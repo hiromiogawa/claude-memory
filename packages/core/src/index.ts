@@ -1,4 +1,4 @@
-export { DEDUP_DEFAULTS, SEARCH_DEFAULTS } from './constants.js'
+export { CAPACITY_DEFAULTS, DEDUP_DEFAULTS, SEARCH_DEFAULTS } from './constants.js'
 export type {
   Chunk,
   ConversationLog,

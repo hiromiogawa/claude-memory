@@ -392,6 +392,43 @@ export class PostgresStorageRepository implements StorageRepository {
     return result[0]?.count ?? 0
   }
 
+  /**
+   * 全記憶の件数を返す。
+   * @returns 保存済み記憶の総件数
+   */
+  async countAll(): Promise<number> {
+    const result = await this.db.select({ count: sql<number>`COUNT(*)::int` }).from(memories)
+    return result[0]?.count ?? 0
+  }
+
+  /**
+   * アクセス回数が最も少ない記憶をN件削除する（LFU方式）。
+   * 同一アクセス回数の場合は最終アクセス日時が古い順に削除する。
+   * @param limit - 削除する件数
+   * @returns 削除された記憶の件数
+   */
+  async deleteLeastAccessed(limit: number): Promise<number> {
+    const targets = await this.db
+      .select({ id: memories.id })
+      .from(memories)
+      .orderBy(asc(memories.accessCount), asc(memories.lastAccessedAt))
+      .limit(limit)
+
+    if (targets.length === 0) return 0
+
+    const targetIds = targets.map((r) => r.id)
+    const result = await this.db
+      .delete(memories)
+      .where(
+        sql`${memories.id} = ANY(ARRAY[${sql.join(
+          targetIds.map((id) => sql`${id}::uuid`),
+          sql`, `,
+        )}])`,
+      )
+      .returning({ id: memories.id })
+    return result.length
+  }
+
   /** 検索ヒットした記憶のlastAccessedAtを現在時刻に更新し、access_countをインクリメントする */
   private async touchLastAccessed(ids: string[]): Promise<void> {
     if (ids.length === 0) return

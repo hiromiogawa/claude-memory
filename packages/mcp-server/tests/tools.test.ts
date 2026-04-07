@@ -271,7 +271,7 @@ describe('memory_stats tool', () => {
     const result = await handler()
 
     const text = result.content[0].text
-    expect(text).toContain('Total memories: 42')
+    expect(text).toContain('Total memories: 42 / 10000')
     expect(text).toContain('Manual: 30')
     expect(text).toContain('Auto: 12')
     expect(text).toContain('Total sessions: 10')
@@ -298,7 +298,7 @@ describe('memory_export tool', () => {
 })
 
 describe('memory_cleanup tool', () => {
-  it('returns dry-run message when dryRun=true', async () => {
+  it('returns dry-run message when dryRun=true with lastAccessedOlderThan', async () => {
     const container = createMockContainer({
       cleanupMemory: { execute: vi.fn().mockResolvedValue({ deletedCount: 5, dryRun: true }) },
     })
@@ -307,9 +307,14 @@ describe('memory_cleanup tool', () => {
     registerMemoryCleanupTool(server as unknown as McpServer, container, logger)
 
     const handler = server.tools.get('memory_cleanup')!.handler
-    const result = await handler({ olderThanDays: 30, dryRun: true })
+    const result = await handler({
+      strategy: 'lastAccessedOlderThan',
+      olderThanDays: 30,
+      dryRun: true,
+    })
 
     expect(container.cleanupMemory.execute).toHaveBeenCalledWith({
+      strategy: 'lastAccessedOlderThan',
       olderThanDays: 30,
       dryRun: true,
     })
@@ -325,9 +330,58 @@ describe('memory_cleanup tool', () => {
     registerMemoryCleanupTool(server as unknown as McpServer, container, logger)
 
     const handler = server.tools.get('memory_cleanup')!.handler
-    const result = await handler({ olderThanDays: 60, dryRun: false })
+    const result = await handler({
+      strategy: 'lastAccessedOlderThan',
+      olderThanDays: 60,
+      dryRun: false,
+    })
 
     expect(result.content[0].text).toBe('Deleted 3 memories (not accessed in 60 days).')
+  })
+
+  it('returns leastAccessed dry-run message', async () => {
+    const container = createMockContainer({
+      cleanupMemory: { execute: vi.fn().mockResolvedValue({ deletedCount: 100, dryRun: true }) },
+    })
+    const server = createMockServer()
+    const logger = createMockLogger()
+    registerMemoryCleanupTool(server as unknown as McpServer, container, logger)
+
+    const handler = server.tools.get('memory_cleanup')!.handler
+    const result = await handler({ strategy: 'leastAccessed', limit: 100, dryRun: true })
+
+    expect(container.cleanupMemory.execute).toHaveBeenCalledWith({
+      strategy: 'leastAccessed',
+      limit: 100,
+      dryRun: true,
+    })
+    expect(result.content[0].text).toBe('Would delete 100 memories (least accessed, limit: 100).')
+  })
+
+  it('returns error when olderThanDays missing for lastAccessedOlderThan', async () => {
+    const container = createMockContainer()
+    const server = createMockServer()
+    const logger = createMockLogger()
+    registerMemoryCleanupTool(server as unknown as McpServer, container, logger)
+
+    const handler = server.tools.get('memory_cleanup')!.handler
+    const result = await handler({ strategy: 'lastAccessedOlderThan', dryRun: true })
+
+    expect(result.isError).toBe(true)
+    expect(result.content[0].text).toContain('olderThanDays is required')
+  })
+
+  it('returns error when limit missing for leastAccessed', async () => {
+    const container = createMockContainer()
+    const server = createMockServer()
+    const logger = createMockLogger()
+    registerMemoryCleanupTool(server as unknown as McpServer, container, logger)
+
+    const handler = server.tools.get('memory_cleanup')!.handler
+    const result = await handler({ strategy: 'leastAccessed', dryRun: true })
+
+    expect(result.isError).toBe(true)
+    expect(result.content[0].text).toContain('limit is required')
   })
 })
 
@@ -408,7 +462,11 @@ describe('unified error handling', () => {
     registerMemoryCleanupTool(server as unknown as McpServer, container)
 
     const handler = server.tools.get('memory_cleanup')!.handler
-    const result = await handler({ olderThanDays: 30, dryRun: true })
+    const result = await handler({
+      strategy: 'lastAccessedOlderThan',
+      olderThanDays: 30,
+      dryRun: true,
+    })
 
     expect(result.isError).toBe(true)
     expect(result.content[0].text).toBe('Error: Storage connection error: connection refused')

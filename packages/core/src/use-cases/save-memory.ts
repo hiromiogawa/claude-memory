@@ -1,5 +1,5 @@
 import { randomUUID } from 'node:crypto'
-import { DEDUP_DEFAULTS } from '../constants.js'
+import { CAPACITY_DEFAULTS, DEDUP_DEFAULTS } from '../constants.js'
 import type { ConversationLog } from '../entities/conversation.js'
 import type { Memory } from '../entities/memory.js'
 import type { ChunkingStrategy } from '../interfaces/chunking-strategy.js'
@@ -16,6 +16,8 @@ interface SaveManualInput {
 
 interface SaveMemoryOptions {
   similarityThreshold?: number
+  /** 記憶の最大保存件数。超過時はLFUで自動削除。0で無制限。 */
+  maxMemories?: number
 }
 
 /** 保存操作の結果。記憶が永続化されたかどうかを示す。 */
@@ -32,13 +34,14 @@ export interface SaveResult {
  */
 export class SaveMemoryUseCase {
   private readonly similarityThreshold: number
+  private readonly maxMemories: number
 
   /**
    * 新しい SaveMemoryUseCase を生成する。
    * @param storage - ストレージリポジトリ。
    * @param embedding - コンテンツをvector化するためのembeddingプロバイダー。
    * @param chunking - 会話を分割するためのチャンキングストラテジー。
-   * @param options - オプションの上書き設定（例: similarity閾値）。
+   * @param options - オプションの上書き設定（例: similarity閾値、容量上限）。
    */
   constructor(
     private readonly storage: StorageRepository,
@@ -47,6 +50,7 @@ export class SaveMemoryUseCase {
     options?: SaveMemoryOptions,
   ) {
     this.similarityThreshold = options?.similarityThreshold ?? DEDUP_DEFAULTS.similarityThreshold
+    this.maxMemories = options?.maxMemories ?? CAPACITY_DEFAULTS.maxMemories
   }
 
   /**
@@ -76,6 +80,7 @@ export class SaveMemoryUseCase {
       lastAccessedAt: now,
       accessCount: 0,
     }
+    await this.enforceCapacity(1)
     await this.storage.save(memory)
     return { saved: true }
   }
@@ -125,7 +130,21 @@ export class SaveMemoryUseCase {
     }
 
     if (memories.length > 0) {
+      await this.enforceCapacity(memories.length)
       await this.storage.saveBatch(memories)
+    }
+  }
+
+  /**
+   * 容量上限を超過する場合、アクセス回数が最も少ない記憶から削除する。
+   * @param newCount - これから追加する記憶の件数。
+   */
+  private async enforceCapacity(newCount: number): Promise<void> {
+    if (this.maxMemories <= 0) return
+    const current = await this.storage.countAll()
+    const excess = current + newCount - this.maxMemories
+    if (excess > 0) {
+      await this.storage.deleteLeastAccessed(excess)
     }
   }
 

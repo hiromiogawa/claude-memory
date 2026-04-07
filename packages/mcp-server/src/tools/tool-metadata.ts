@@ -52,7 +52,23 @@ export const memoryDeleteSchema = {
 
 /** memory_cleanupツールの入力パラメータを定義するZod schema。 */
 export const memoryCleanupSchema = {
-  olderThanDays: z.number().min(1).describe('Delete memories not accessed in this many days'),
+  strategy: z
+    .enum(['lastAccessedOlderThan', 'leastAccessed'])
+    .optional()
+    .default('lastAccessedOlderThan')
+    .describe('Cleanup strategy: lastAccessedOlderThan (by days) or leastAccessed (LFU)'),
+  olderThanDays: z
+    .number()
+    .min(1)
+    .optional()
+    .describe(
+      'Delete memories not accessed in this many days (for lastAccessedOlderThan strategy)',
+    ),
+  limit: z
+    .number()
+    .min(1)
+    .optional()
+    .describe('Number of least-accessed memories to delete (for leastAccessed strategy)'),
   dryRun: z
     .boolean()
     .optional()
@@ -94,7 +110,8 @@ export const TOOL_METADATA: ToolMetadata[] = [
   },
   {
     name: 'memory_cleanup',
-    description: 'Delete old memories that have not been accessed recently',
+    description:
+      'Delete memories by age (not accessed in N days) or by LFU strategy (least-accessed first)',
     schema: memoryCleanupSchema,
   },
   {
