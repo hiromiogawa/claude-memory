@@ -13,6 +13,8 @@
 
 ## プロジェクト固有の指示
 
+- **セッション開始時に `memory_search` で過去の文脈・設計判断・好みを必ず検索してから作業を始める**
+- 判断に迷ったらまず `memory_search` で過去の合意を確認する（ドキュメント配置、技術選定など）
 - コミット時は Conventional Commits に従う（scope: core, embedding-onnx, storage-postgres, mcp-server, hooks）
 - PRは必ず関連Issueを紐付ける
 - 型定義変更時はJSDocも同時に更新する
@@ -31,6 +33,7 @@
 | MCPツール | [docs/generated/mcp-tools.md](docs/generated/mcp-tools.md) | 全10ツールの詳細仕様（自動生成） |
 | 依存関係図 | [docs/generated/dependency-graph.svg](docs/generated/dependency-graph.svg) | パッケージ依存関係の可視化（自動生成） |
 | DBスキーマ | [docs/generated/schema/](docs/generated/schema/) | データベーススキーマ定義（自動生成） |
+| インフラ管理 | [docs/engineer/infrastructure.md](docs/engineer/infrastructure.md) | Terraform管理対象、セットアップ、plan/apply手順 |
 | セキュリティ | [docs/engineer/security.md](docs/engineer/security.md) | SQLインジェクション対策、認証情報管理 |
 | ADR | [docs/adr/](docs/adr/) | 設計判断記録 |
 
