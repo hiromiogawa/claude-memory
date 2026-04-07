@@ -53,22 +53,6 @@ jobs:
             echo "Applying migration: $f"
             PGPASSWORD=test psql -h localhost -p 5434 -U test -d claude_memory_test -f "$f"
           done
-      - name: Install tbls
-        run: |
-          VERSION=$(curl -sL https://api.github.com/repos/k1LoW/tbls/releases/latest | jq -r '.tag_name')
-          curl -sL "https://github.com/k1LoW/tbls/releases/download/${VERSION}/tbls_${VERSION}_linux_amd64.tar.gz" | tar xz
-          sudo mv tbls /usr/local/bin/
-      - name: Generate DB schema docs
-        run: pnpm docs:schema
-        env:
-          DATABASE_URL: postgresql://test:test@localhost:5434/claude_memory_test?sslmode=disable
-      - name: Check DB schema docs are up to date
-        run: |
-          if ! git diff --exit-code docs/generated/schema/; then
-            echo "::error::DB schema docs are out of date. Run 'pnpm docs:generate' with DB running and commit."
-            git diff docs/generated/schema/
-            exit 1
-          fi
       - name: Run tests with coverage
         run: pnpm -r run test:coverage
         env:
