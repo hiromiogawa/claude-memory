@@ -5,7 +5,7 @@ import type { StorageRepository } from '../interfaces/storage-repository.js'
 
 /**
  * Searches memories using hybrid keyword + vector search with RRF fusion and time decay.
- * @remarks
+ *
  * Pipeline: parallel keyword (pg_bigm) + vector (pgvector) search, then Reciprocal Rank Fusion.
  * RRF formula: score = 1 / (k + rank), where k = 60.
  * Time decay: finalScore = rrfScore * 0.5^(daysSinceCreation / 30), half-life = 30 days.

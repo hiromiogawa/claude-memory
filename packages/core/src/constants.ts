@@ -1,6 +1,6 @@
 /**
  * Default parameters for the hybrid search algorithm.
- * @remarks
+ *
  * RRF fusion: score = 1 / (k + rank), where k = 60.
  * Time decay: score * 0.5^(days / 30), half-life = 30 days.
  */
@@ -12,7 +12,7 @@ export const SEARCH_DEFAULTS = {
 
 /**
  * Default parameters for memory deduplication.
- * @remarks
+ *
  * Memories with cosine similarity >= 0.95 to an existing entry are considered duplicates and skipped.
  */
 export const DEDUP_DEFAULTS = {

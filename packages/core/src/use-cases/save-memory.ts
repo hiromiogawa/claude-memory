@@ -26,7 +26,7 @@ export interface SaveResult {
 
 /**
  * Saves memories with automatic deduplication.
- * @remarks
+ *
  * Deduplication: before saving, the nearest existing memory is retrieved via vector search.
  * If cosine similarity >= 0.95 (configurable), the new memory is considered a duplicate and skipped.
  */
