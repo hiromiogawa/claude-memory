@@ -110,7 +110,8 @@ export const TOOL_METADATA: ToolMetadata[] = [
   },
   {
     name: 'memory_cleanup',
-    description: 'Delete old memories that have not been accessed recently',
+    description:
+      'Delete memories by age (not accessed in N days) or by LFU strategy (least-accessed first)',
     schema: memoryCleanupSchema,
   },
   {

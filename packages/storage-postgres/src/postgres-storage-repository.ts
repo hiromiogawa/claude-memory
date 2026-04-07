@@ -408,16 +408,25 @@ export class PostgresStorageRepository implements StorageRepository {
    * @returns 削除された記憶の件数
    */
   async deleteLeastAccessed(limit: number): Promise<number> {
-    const result = await this.db.execute(sql`
-      DELETE FROM memories
-      WHERE id IN (
-        SELECT id FROM memories
-        ORDER BY access_count ASC, last_accessed_at ASC
-        LIMIT ${limit}
+    const targets = await this.db
+      .select({ id: memories.id })
+      .from(memories)
+      .orderBy(asc(memories.accessCount), asc(memories.lastAccessedAt))
+      .limit(limit)
+
+    if (targets.length === 0) return 0
+
+    const targetIds = targets.map((r) => r.id)
+    const result = await this.db
+      .delete(memories)
+      .where(
+        sql`${memories.id} = ANY(ARRAY[${sql.join(
+          targetIds.map((id) => sql`${id}::uuid`),
+          sql`, `,
+        )}])`,
       )
-      RETURNING id
-    `)
-    return (result as unknown as { id: string }[]).length
+      .returning({ id: memories.id })
+    return result.length
   }
 
   /** 検索ヒットした記憶のlastAccessedAtを現在時刻に更新し、access_countをインクリメントする */
