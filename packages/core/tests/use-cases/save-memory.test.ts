@@ -164,6 +164,37 @@ describe('SaveMemoryUseCase', () => {
     expect(storage.save).toHaveBeenCalledTimes(1)
   })
 
+  it('should skip saving when similarity is between 0.90 and 0.95', async () => {
+    const storage = createMockStorage()
+    const embedding = createMockEmbedding()
+    const chunking = createMockChunking()
+
+    vi.mocked(storage.searchByVector).mockResolvedValue([
+      {
+        memory: {
+          id: 'existing-id',
+          content: 'nearly identical content',
+          embedding: [0.1, 0.2, 0.3],
+          metadata: { sessionId: 's0', source: 'manual' },
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          lastAccessedAt: new Date(),
+        },
+        score: 0.92,
+        matchType: 'vector',
+      },
+    ])
+
+    const useCase = new SaveMemoryUseCase(storage, embedding, chunking)
+    const result = await useCase.saveManual({
+      content: 'nearly identical content!',
+      sessionId: 'session-1',
+    })
+
+    expect(result.saved).toBe(false)
+    expect(storage.save).not.toHaveBeenCalled()
+  })
+
   it('should save when existing memory similarity is below threshold', async () => {
     const storage = createMockStorage()
     const embedding = createMockEmbedding()

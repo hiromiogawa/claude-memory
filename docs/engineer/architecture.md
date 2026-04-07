@@ -22,7 +22,7 @@
 - `ChunkingStrategy` — `chunk()`
 
 **ユースケース:**
-- `SaveMemoryUseCase` — 保存 + 重複チェック（コサイン類似度 >= 0.95）
+- `SaveMemoryUseCase` — 保存 + 重複チェック（コサイン類似度 >= 0.90）
 - `SearchMemoryUseCase` — ハイブリッド検索（pg_bigm + pgvector → RRF → 時間減衰）
 - `UpdateMemoryUseCase` — 更新（content変更時のみ再embedding）
 - `DeleteMemoryUseCase` — 削除（存在チェック付き）
@@ -121,7 +121,7 @@ CREATE INDEX idx_memories_vector ON memories USING hnsw(embedding vector_cosine_
 
 ### 重複排除
 
-保存前に最近傍1件のコサイン類似度を検査。閾値（デフォルト0.95）以上なら保存をスキップ。`Promise.all` で全チャンクを並列チェック。
+保存前に最近傍1件のコサイン類似度を検査。閾値（デフォルト0.90）以上なら保存をスキップ。`Promise.all` で全チャンクを並列チェック。
 
 ## アルゴリズム詳細
 
@@ -167,10 +167,10 @@ k が大きいほど順位差の影響が小さくなる（結果が均等化さ
 
 ### 重複排除の仕組み（コサイン類似度）
 
-テキストはembeddingにより384次元ベクトルに変換される。2つのベクトルの「向きの近さ」を0〜1で表したものがコサイン類似度。閾値 `0.95` 以上なら「実質同一内容」とみなし保存をスキップする。
+テキストはembeddingにより384次元ベクトルに変換される。2つのベクトルの「向きの近さ」を0〜1で表したものがコサイン類似度。閾値 `0.90` 以上なら「実質同一内容」とみなし保存をスキップする。
 
 ```
-計算式: cosine_similarity >= 0.95 → 重複と判定
+計算式: cosine_similarity >= 0.90 → 重複と判定
 ```
 
 セッション終了時のauto保存では複数チャンクの重複チェックを `Promise.all` で並列実行し、N+1問題を回避。
