@@ -1,29 +1,14 @@
 {
   "workspaces": {
     "packages/*": {
-      "entry": ["src/index.ts"],
       "project": ["src/**/*.ts"]
     },
     "packages/mcp-server": {
-      "entry": ["src/index.ts", "src/session-start.ts"],
+      "entry": ["src/session-start.ts"],
       "project": ["src/**/*.ts"]
     }
   },
-  "ignore": ["**/*.test.ts", "scripts/**"],
+  "ignore": ["scripts/**"],
   "ignoreBinaries": ["dot", "tbls"],
-  "ignoreDependencies": [
-    "onnxruntime-common",
-    "onnxruntime-node",
-    "@claude-memory/core",
-    "@claude-memory/embedding-onnx",
-    "@claude-memory/storage-postgres",
-    "@claude-memory/hooks",
-    "@modelcontextprotocol/sdk",
-    "pino",
-    "pino-pretty",
-    "zod",
-    "drizzle-orm",
-    "drizzle-zod",
-    "postgres"
-  ]
+  "ignoreDependencies": ["onnxruntime-common", "onnxruntime-node", "pino-pretty"]
 }

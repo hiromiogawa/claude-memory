@@ -1,5 +1,5 @@
 import type { SearchFilter } from '@claude-memory/core'
-import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js'
+import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js'
 import type { Logger } from 'pino'
 import type { Container } from '../container.js'
 import { handleToolError } from './error-handler.js'
