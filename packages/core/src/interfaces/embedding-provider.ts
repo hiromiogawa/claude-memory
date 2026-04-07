@@ -1,20 +1,20 @@
-/** Provider for generating embedding vectors from text. */
+/** テキストからembedding vectorを生成するプロバイダー。 */
 export interface EmbeddingProvider {
   /**
-   * Generates an embedding vector for a single text.
-   * @param text - The input text to embed.
-   * @returns The embedding vector.
+   * 単一テキストのembedding vectorを生成する。
+   * @param text - embeddingする入力テキスト。
+   * @returns embedding vector。
    */
   embed(text: string): Promise<number[]>
   /**
-   * Generates embedding vectors for multiple texts in a single batch.
-   * @param texts - The input texts to embed.
-   * @returns An array of embedding vectors, one per input text.
+   * 複数テキストのembedding vectorを一括生成する。
+   * @param texts - embeddingする入力テキストの配列。
+   * @returns 入力テキストごとのembedding vectorの配列。
    */
   embedBatch(texts: string[]): Promise<number[][]>
   /**
-   * Returns the dimensionality of the embedding vectors produced by this provider.
-   * @returns The number of dimensions.
+   * このプロバイダーが生成するembedding vectorの次元数を返す。
+   * @returns 次元数。
    */
   getDimension(): number
 }

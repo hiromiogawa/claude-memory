@@ -1,9 +1,9 @@
-/** Base error class for all memory-related errors. */
+/** 記憶関連エラーの基底クラス。 */
 export class MemoryError extends Error {
   /**
-   * Creates a new MemoryError.
-   * @param message - Human-readable error description.
-   * @param code - Machine-readable error code.
+   * 新しい MemoryError を生成する。
+   * @param message - 人間が読めるエラーの説明。
+   * @param code - マシンが読めるエラーコード。
    */
   constructor(
     message: string,
@@ -14,11 +14,11 @@ export class MemoryError extends Error {
   }
 }
 
-/** Thrown when a memory with the specified ID does not exist. */
+/** 指定IDの記憶が存在しない場合にスローされる。 */
 export class MemoryNotFoundError extends MemoryError {
   /**
-   * Creates a new MemoryNotFoundError.
-   * @param id - The UUID of the memory that was not found.
+   * 新しい MemoryNotFoundError を生成する。
+   * @param id - 見つからなかった記憶のUUID。
    */
   constructor(id: string) {
     super(`Memory not found: ${id}`, 'MEMORY_NOT_FOUND')
@@ -26,11 +26,11 @@ export class MemoryNotFoundError extends MemoryError {
   }
 }
 
-/** Thrown when generating an embedding vector fails. */
+/** embedding vectorの生成に失敗した場合にスローされる。 */
 export class EmbeddingFailedError extends MemoryError {
   /**
-   * Creates a new EmbeddingFailedError.
-   * @param reason - Description of why embedding failed.
+   * 新しい EmbeddingFailedError を生成する。
+   * @param reason - embedding失敗の理由の説明。
    */
   constructor(reason: string) {
     super(`Embedding failed: ${reason}`, 'EMBEDDING_FAILED')
@@ -38,11 +38,11 @@ export class EmbeddingFailedError extends MemoryError {
   }
 }
 
-/** Thrown when the storage backend connection fails. */
+/** ストレージバックエンドへの接続に失敗した場合にスローされる。 */
 export class StorageConnectionError extends MemoryError {
   /**
-   * Creates a new StorageConnectionError.
-   * @param reason - Description of the connection failure.
+   * 新しい StorageConnectionError を生成する。
+   * @param reason - 接続失敗の理由の説明。
    */
   constructor(reason: string) {
     super(`Storage connection error: ${reason}`, 'STORAGE_CONNECTION_ERROR')

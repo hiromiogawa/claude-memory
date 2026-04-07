@@ -1,11 +1,11 @@
 ---
 name: conventional-commits
-description: Conventional Commits + branch naming rules for consistent git workflow
+description: Conventional Commits + ブランチ命名規則による一貫した Git ワークフロー
 ---
 
-# Conventional Commits & Branch Rules
+# Conventional Commits とブランチルール
 
-## Commit Format
+## コミットフォーマット
 
 ```
 <type>(<scope>): <description>
@@ -15,30 +15,30 @@ description: Conventional Commits + branch naming rules for consistent git workf
 [optional footer(s)]
 ```
 
-### Types
+### タイプ
 
-| Type | When to use |
-|------|-------------|
-| `feat` | New feature |
-| `fix` | Bug fix |
-| `docs` | Documentation only |
-| `style` | Formatting, no logic change |
-| `refactor` | Code change that neither fixes nor adds |
-| `test` | Adding or correcting tests |
-| `chore` | Build process, tooling, dependencies |
-| `perf` | Performance improvement |
-| `ci` | CI configuration |
+| タイプ | 使用場面 |
+|--------|----------|
+| `feat` | 新機能 |
+| `fix` | バグ修正 |
+| `docs` | ドキュメントのみ |
+| `style` | フォーマット変更、ロジック変更なし |
+| `refactor` | 修正でも追加でもないコード変更 |
+| `test` | テストの追加・修正 |
+| `chore` | ビルド、ツール、依存関係 |
+| `perf` | パフォーマンス改善 |
+| `ci` | CI 設定 |
 
-### Scope
+### スコープ
 
-Use the package or module name. Check `.project-config.yml` for available scopes.
+パッケージ名またはモジュール名を使用。利用可能なスコープは `.project-config.yml` を参照。
 
-### Breaking Changes
+### 破壊的変更
 
-Add `!` after type/scope: `feat(core)!: change Memory interface`
-Or add `BREAKING CHANGE:` in the footer.
+タイプ/スコープの後に `!` を付ける: `feat(core)!: change Memory interface`
+またはフッターに `BREAKING CHANGE:` を記述。
 
-### Examples
+### 例
 
 ```
 feat(core): add SearchMemoryUseCase
@@ -48,23 +48,23 @@ chore(hooks): update dependencies
 feat(core)!: change Memory interface
 ```
 
-## Branch Naming
+## ブランチ命名
 
 ```
 [prefix]/#[issue-number]-[short-description]
 ```
 
-### Prefixes
+### プレフィックス
 
-| Prefix | When to use |
-|--------|-------------|
-| `feat` | New feature |
-| `fix` | Bug fix |
-| `chore` | Maintenance, tooling |
-| `docs` | Documentation |
-| `refactor` | Code refactoring |
+| プレフィックス | 使用場面 |
+|---------------|----------|
+| `feat` | 新機能 |
+| `fix` | バグ修正 |
+| `chore` | メンテナンス、ツール |
+| `docs` | ドキュメント |
+| `refactor` | リファクタリング |
 
-### Examples
+### 例
 
 ```
 feat/#12-add-memory-search
@@ -72,16 +72,16 @@ fix/#15-vector-index-error
 chore/#20-update-deps
 ```
 
-## Tooling
+## ツール
 
-- **commitlint** with `@commitlint/config-conventional` — validates commit messages
-- **lefthook** — runs commitlint on `commit-msg` hook
+- **commitlint** と `@commitlint/config-conventional` — コミットメッセージを検証
+- **lefthook** — `commit-msg` フックで commitlint を実行
 
-## Checklist
+## チェックリスト
 
-Before committing:
-- [ ] Message follows `type(scope): description` format
-- [ ] Scope matches a valid package/module
-- [ ] Description is imperative mood, lowercase, no period
-- [ ] Breaking changes are marked with `!` or `BREAKING CHANGE:` footer
-- [ ] Branch name follows `[prefix]/#[issue]-[description]` format
+コミット前の確認:
+- [ ] メッセージが `type(scope): description` フォーマットに従っている
+- [ ] スコープが有効なパッケージ/モジュールに一致している
+- [ ] 説明は命令形、小文字、ピリオドなし
+- [ ] 破壊的変更は `!` または `BREAKING CHANGE:` フッターで明示されている
+- [ ] ブランチ名が `[prefix]/#[issue]-[description]` フォーマットに従っている

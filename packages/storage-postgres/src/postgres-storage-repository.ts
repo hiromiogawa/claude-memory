@@ -39,15 +39,15 @@ function toMemory(row: DbRow, embedding: number[] | null = null): Memory {
   }
 }
 
-/** PostgreSQL-backed storage repository using pgvector for vector search and pg_bigm for keyword search. */
+/** pgvectorによるvector検索とpg_bigmによるキーワード検索を備えた、PostgreSQL永続化リポジトリ。 */
 export class PostgresStorageRepository implements StorageRepository {
   private readonly client: ReturnType<typeof postgres>
   private readonly db: ReturnType<typeof drizzle>
 
   /**
-   * Creates a new PostgresStorageRepository instance.
-   * @param connectionString - PostgreSQL connection URL
-   * @param options - Optional configuration including max connection pool size
+   * PostgresStorageRepositoryの新しいインスタンスを生成する。
+   * @param connectionString - PostgreSQL接続URL
+   * @param options - コネクションプール最大数などのオプション設定
    */
   constructor(connectionString: string, options?: { maxConnections?: number }) {
     const DEFAULT_MAX_CONNECTIONS = 10
@@ -58,17 +58,17 @@ export class PostgresStorageRepository implements StorageRepository {
   }
 
   /**
-   * Closes the underlying PostgreSQL connection pool.
-   * @returns A promise that resolves when all connections are closed
+   * PostgreSQLコネクションプールを閉じる。
+   * @returns 全接続が閉じられたときに解決するPromise
    */
   async close(): Promise<void> {
     await this.client.end()
   }
 
   /**
-   * Saves or upserts a memory record into PostgreSQL.
-   * @param memory - The memory to save (must include embedding)
-   * @returns A promise that resolves when the memory is persisted
+   * メモリレコードをPostgreSQLに保存（upsert）する。
+   * @param memory - 保存するメモリ（embeddingを含む必要がある）
+   * @returns 永続化完了時に解決するPromise
    */
   async save(memory: Memory): Promise<void> {
     if (!memory.embedding) throw new Error('Cannot save memory without embedding')
@@ -106,9 +106,9 @@ export class PostgresStorageRepository implements StorageRepository {
   }
 
   /**
-   * Saves multiple memories sequentially.
-   * @param batch - Array of memories to save
-   * @returns A promise that resolves when all memories are persisted
+   * 複数のメモリを順次保存する。
+   * @param batch - 保存するメモリの配列
+   * @returns 全メモリの永続化完了時に解決するPromise
    */
   async saveBatch(batch: Memory[]): Promise<void> {
     if (batch.length === 0) return
@@ -118,9 +118,9 @@ export class PostgresStorageRepository implements StorageRepository {
   }
 
   /**
-   * Finds a memory by its UUID.
-   * @param id - The UUID of the memory to find
-   * @returns The memory if found, or null
+   * UUIDでメモリを検索する。
+   * @param id - 検索するメモリのUUID
+   * @returns 見つかった場合はメモリ、見つからない場合はnull
    */
   async findById(id: string): Promise<Memory | null> {
     const rows = await this.db.select().from(memories).where(eq(memories.id, id)).limit(1)
@@ -129,26 +129,26 @@ export class PostgresStorageRepository implements StorageRepository {
   }
 
   /**
-   * Deletes a memory by its UUID.
-   * @param id - The UUID of the memory to delete
-   * @returns A promise that resolves when the memory is deleted
+   * UUIDでメモリを削除する。
+   * @param id - 削除するメモリのUUID
+   * @returns 削除完了時に解決するPromise
    */
   async delete(id: string): Promise<void> {
     await this.db.delete(memories).where(eq(memories.id, id))
   }
 
   /**
-   * Deletes all memories from the database.
-   * @returns A promise that resolves when all memories are cleared
+   * データベース上の全メモリを削除する。
+   * @returns 全削除完了時に解決するPromise
    */
   async clear(): Promise<void> {
     await this.db.delete(memories)
   }
 
   /**
-   * Lists memories with pagination, filtering, and sorting.
-   * @param options - Pagination, filter, and sort options
-   * @returns Array of memories matching the criteria
+   * ページネーション・フィルタ・ソートを指定してメモリを一覧取得する。
+   * @param options - ページネーション・フィルタ・ソートのオプション
+   * @returns 条件に一致するメモリの配列
    */
   async list(options: ListOptions): Promise<Memory[]> {
     const {
@@ -183,11 +183,11 @@ export class PostgresStorageRepository implements StorageRepository {
   }
 
   /**
-   * Searches memories by keyword using pg_bigm trigram similarity.
-   * @param query - The keyword search query
-   * @param limit - Maximum number of results to return
-   * @param filter - Optional filter for project path, source, or tags
-   * @returns Array of search results sorted by bigram similarity score
+   * pg_bigm trigram類似度によるキーワード検索を行う。
+   * @param query - キーワード検索クエリ
+   * @param limit - 返す結果の最大件数
+   * @param filter - プロジェクトパス・ソース・タグのフィルタ（省略可）
+   * @returns bigram類似度スコア順のSearchResult配列
    */
   async searchByKeyword(
     query: string,
@@ -242,11 +242,11 @@ export class PostgresStorageRepository implements StorageRepository {
   }
 
   /**
-   * Searches memories by vector similarity using pgvector cosine distance.
-   * @param embedding - The query embedding vector
-   * @param limit - Maximum number of results to return
-   * @param filter - Optional filter for project path, source, or tags
-   * @returns Array of search results sorted by cosine similarity score
+   * pgvectorのcosine距離によるvector類似検索を行う。
+   * @param embedding - クエリのembedding vector
+   * @param limit - 返す結果の最大件数
+   * @param filter - プロジェクトパス・ソース・タグのフィルタ（省略可）
+   * @returns cosine similarity スコア順のSearchResult配列
    */
   async searchByVector(
     embedding: number[],
@@ -300,8 +300,8 @@ export class PostgresStorageRepository implements StorageRepository {
   }
 
   /**
-   * Exports all memories ordered by creation date.
-   * @returns Array of all stored memories
+   * 全メモリを作成日順でエクスポートする。
+   * @returns 保存された全メモリの配列
    */
   async exportAll(): Promise<Memory[]> {
     const rows = await this.db.select().from(memories).orderBy(asc(memories.createdAt))
@@ -309,8 +309,8 @@ export class PostgresStorageRepository implements StorageRepository {
   }
 
   /**
-   * Returns aggregate statistics about stored memories.
-   * @returns Storage statistics including counts, dates, and averages
+   * 保存済みメモリの集計統計を返す。
+   * @returns 件数・日時・平均値などを含むストレージ統計
    */
   async getStats(): Promise<StorageStats> {
     const result = await this.db
@@ -349,10 +349,10 @@ export class PostgresStorageRepository implements StorageRepository {
   }
 
   /**
-   * Deletes memories older than the specified number of days.
-   * @param field - The date field to compare against
-   * @param olderThanDays - Number of days threshold for deletion
-   * @returns The number of deleted memories
+   * 指定日数より古いメモリを削除する。
+   * @param field - 比較対象の日付フィールド
+   * @param olderThanDays - 削除基準となる経過日数
+   * @returns 削除されたメモリの件数
    */
   async deleteOlderThan(
     field: 'lastAccessedAt' | 'createdAt',
@@ -369,10 +369,10 @@ export class PostgresStorageRepository implements StorageRepository {
   }
 
   /**
-   * Counts memories older than the specified number of days.
-   * @param field - The date field to compare against
-   * @param olderThanDays - Number of days threshold for counting
-   * @returns The number of matching memories
+   * 指定日数より古いメモリの件数を返す。
+   * @param field - 比較対象の日付フィールド
+   * @param olderThanDays - カウント基準となる経過日数
+   * @returns 条件に一致するメモリの件数
    */
   async countOlderThan(
     field: 'lastAccessedAt' | 'createdAt',

@@ -1,75 +1,75 @@
 import type { ListOptions, Memory, StorageStats } from '../entities/memory.js'
 import type { SearchFilter, SearchResult } from '../entities/search-result.js'
 
-/** Persistence layer abstraction for memory CRUD and search operations. */
+/** 記憶のCRUDおよび検索操作の永続化レイヤー抽象。 */
 export interface StorageRepository {
   /**
-   * Persists a single memory entry.
-   * @param memory - The memory to save.
+   * 単一の記憶エントリを永続化する。
+   * @param memory - 保存する記憶。
    */
   save(memory: Memory): Promise<void>
   /**
-   * Persists multiple memory entries in a single operation.
-   * @param memories - The memories to save.
+   * 複数の記憶エントリを一括で永続化する。
+   * @param memories - 保存する記憶の配列。
    */
   saveBatch(memories: Memory[]): Promise<void>
   /**
-   * Finds a memory by its unique ID.
-   * @param id - The UUID of the memory.
-   * @returns The memory if found, or null.
+   * 一意なIDで記憶を検索する。
+   * @param id - 記憶のUUID。
+   * @returns 見つかった場合は記憶、見つからない場合は null。
    */
   findById(id: string): Promise<Memory | null>
   /**
-   * Searches memories by keyword using full-text search (pg_bigm).
-   * @param query - The keyword search query.
-   * @param limit - Maximum number of results.
-   * @param filter - Optional filter criteria.
-   * @returns Matching results sorted by keyword relevance.
+   * 全文検索（pg_bigm）でキーワードによる記憶の検索を行う。
+   * @param query - keyword検索クエリ。
+   * @param limit - 最大取得件数。
+   * @param filter - オプションのフィルター条件。
+   * @returns keyword関連度順にソートされたマッチ結果。
    */
   searchByKeyword(query: string, limit: number, filter?: SearchFilter): Promise<SearchResult[]>
   /**
-   * Searches memories by vector similarity (pgvector cosine distance).
-   * @param embedding - The query embedding vector.
-   * @param limit - Maximum number of results.
-   * @param filter - Optional filter criteria.
-   * @returns Matching results sorted by cosine similarity.
+   * vector類似度（pgvector cosine距離）で記憶を検索する。
+   * @param embedding - クエリのembedding vector。
+   * @param limit - 最大取得件数。
+   * @param filter - オプションのフィルター条件。
+   * @returns cosine similarity順にソートされたマッチ結果。
    */
   searchByVector(embedding: number[], limit: number, filter?: SearchFilter): Promise<SearchResult[]>
   /**
-   * Lists memories with pagination and filtering.
-   * @param options - Pagination and filter options.
-   * @returns An array of memories.
+   * ページネーションとフィルターを使って記憶の一覧を取得する。
+   * @param options - ページネーションとフィルターのオプション。
+   * @returns 記憶の配列。
    */
   list(options: ListOptions): Promise<Memory[]>
   /**
-   * Deletes a memory by its unique ID.
-   * @param id - The UUID of the memory to delete.
+   * 一意なIDで記憶を削除する。
+   * @param id - 削除する記憶のUUID。
    */
   delete(id: string): Promise<void>
-  /** Deletes all memories from storage. */
+  /** ストレージ内の全記憶を削除する。 */
   clear(): Promise<void>
   /**
-   * Retrieves aggregate statistics about the storage.
-   * @returns Storage statistics.
+   * ストレージの集計統計情報を取得する。
+   * @returns ストレージ統計情報。
    */
   getStats(): Promise<StorageStats>
   /**
-   * Exports all memories including their embeddings.
-   * @returns All stored memories.
+   * embeddingを含む全記憶をエクスポートする。
+   * @returns 保存済みの全記憶。
    */
   exportAll(): Promise<Memory[]>
   /**
-   * Deletes memories older than a specified number of days.
-   * @param field - The date field to compare against.
-   * @param olderThanDays - Age threshold in days.
-   * @returns The number of deleted memories.
+   * 指定日数より古い記憶を削除する。
+   * @param field - 比較対象の日付フィールド。
+   * @param olderThanDays - 日数の閾値。
+   * @returns 削除された記憶の件数。
    */
   deleteOlderThan(field: 'lastAccessedAt' | 'createdAt', olderThanDays: number): Promise<number>
   /**
-   * Counts memories older than a specified number of days.
-   * @param field - The date field to compare against.
-   * @param olderThanDays - Age threshold in days.
-   * @returns The count of matching memories.
+   * 指定日数より古い記憶の件数を取得する。
+   * @param field - 比較対象の日付フィールド。
+   * @param olderThanDays - 日数の閾値。
+   * @returns 条件に一致する記憶の件数。
    */
   countOlderThan(field: 'lastAccessedAt' | 'createdAt', olderThanDays: number): Promise<number>
 }

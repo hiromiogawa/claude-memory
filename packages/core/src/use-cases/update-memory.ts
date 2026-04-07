@@ -8,12 +8,12 @@ interface UpdateMemoryInput {
   tags?: string[]
 }
 
-/** Updates an existing memory's content and/or tags, re-embedding only when content changes. */
+/** 既存の記憶のコンテンツやタグを更新する。embeddingの再生成はコンテンツ変更時のみ。 */
 export class UpdateMemoryUseCase {
   /**
-   * Creates a new UpdateMemoryUseCase.
-   * @param storage - The storage repository to operate on.
-   * @param embedding - The embedding provider for re-vectorizing updated content.
+   * 新しい UpdateMemoryUseCase を生成する。
+   * @param storage - 操作対象のストレージリポジトリ。
+   * @param embedding - 更新されたコンテンツをvector化するためのembeddingプロバイダー。
    */
   constructor(
     private readonly storage: StorageRepository,
@@ -21,9 +21,9 @@ export class UpdateMemoryUseCase {
   ) {}
 
   /**
-   * Updates a memory's content and/or tags; re-generates embedding only if content changed.
-   * @param input - The fields to update (id required, content and tags optional).
-   * @throws {MemoryNotFoundError} If no memory with the given ID exists.
+   * 記憶のコンテンツやタグを更新する。コンテンツが変更された場合のみembeddingを再生成する。
+   * @param input - 更新するフィールド（idは必須、contentとtagsは任意）。
+   * @throws {MemoryNotFoundError} 指定IDの記憶が存在しない場合。
    */
   async execute(input: UpdateMemoryInput): Promise<void> {
     const existing = await this.storage.findById(input.id)

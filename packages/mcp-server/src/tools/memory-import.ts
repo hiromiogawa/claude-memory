@@ -21,10 +21,10 @@ const exportedMemorySchema = z.array(
 )
 
 /**
- * Registers the memory_import tool on the MCP server.
- * @param server - The MCP server instance
- * @param container - Dependency injection container
- * @param logger - Pino logger instance
+ * memory_importツールをMCP serverに登録する。
+ * @param server - MCP serverインスタンス
+ * @param container - DIコンテナ
+ * @param logger - Pinoロガーインスタンス
  */
 export function registerMemoryImportTool(
   server: McpServer,

@@ -1,15 +1,15 @@
 import type { StorageRepository } from '../interfaces/storage-repository.js'
 
-/** Deletes all memories from storage. */
+/** ストレージ内の全記憶を削除する。 */
 export class ClearMemoryUseCase {
   /**
-   * Creates a new ClearMemoryUseCase.
-   * @param storage - The storage repository to operate on.
+   * 新しい ClearMemoryUseCase を生成する。
+   * @param storage - 操作対象のストレージリポジトリ。
    */
   constructor(private readonly storage: StorageRepository) {}
   /**
-   * Executes the clear operation, removing all stored memories.
-   * @returns Resolves when all memories have been deleted.
+   * 全保存済み記憶を削除するクリア操作を実行する。
+   * @returns 全記憶が削除されたときに解決する。
    */
   async execute(): Promise<void> {
     await this.storage.clear()

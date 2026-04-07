@@ -16,8 +16,8 @@ import { registerMemoryStatsTool } from './tools/memory-stats.js'
 import { registerMemoryUpdateTool } from './tools/memory-update.js'
 
 /**
- * Starts the MCP server with all memory tools registered on stdio transport.
- * @returns A promise that resolves when the server is connected
+ * 全メモリツールをstdioトランスポートに登録してMCP serverを起動する。
+ * @returns サーバー接続完了時に解決するPromise
  */
 export async function startServer() {
   const config = loadConfig()

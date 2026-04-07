@@ -6,18 +6,18 @@ interface SearchCapable {
   search(query: string, limit: number, filter?: SearchFilter): Promise<SearchResult[]>
 }
 
-/** Searches and formats relevant memories at session start for context recall. */
+/** セッション開始時に関連メモリを検索してコンテキスト再現用にフォーマットするハンドラ。 */
 export class SessionStartHandler {
   /**
-   * Creates a new SessionStartHandler instance.
-   * @param searchUseCase - Use case capable of searching memories
+   * SessionStartHandlerの新しいインスタンスを生成する。
+   * @param searchUseCase - メモリを検索するユースケース
    */
   constructor(private readonly searchUseCase: SearchCapable) {}
 
   /**
-   * Searches for relevant memories and returns formatted context.
-   * @param projectPath - Optional project path to scope the search
-   * @returns Formatted string of relevant memories or a no-results message
+   * 関連メモリを検索し、フォーマットされたコンテキスト文字列を返す。
+   * @param projectPath - 検索スコープを絞るプロジェクトパス（省略可）
+   * @returns 関連メモリのフォーマット済み文字列、または結果なしメッセージ
    */
   async handle(projectPath?: string): Promise<string> {
     const filter: SearchFilter | undefined = projectPath ? { projectPath } : undefined

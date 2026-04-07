@@ -18,27 +18,27 @@ interface SaveMemoryOptions {
   similarityThreshold?: number
 }
 
-/** Result of a save operation indicating whether the memory was persisted. */
+/** 保存操作の結果。記憶が永続化されたかどうかを示す。 */
 export interface SaveResult {
-  /** True if the memory was saved; false if it was skipped as a duplicate. */
+  /** 記憶が保存された場合はtrue、重複としてスキップされた場合はfalse。 */
   saved: boolean
 }
 
 /**
- * Saves memories with automatic deduplication.
+ * 自動重複排除付きで記憶を保存する。
  *
- * Deduplication: before saving, the nearest existing memory is retrieved via vector search.
- * If cosine similarity >= 0.95 (configurable), the new memory is considered a duplicate and skipped.
+ * 重複排除: 保存前にvector検索で最近傍の既存記憶を取得する。
+ * cosine similarityが0.95以上（設定可能）の場合、新規記憶は重複とみなしてスキップする。
  */
 export class SaveMemoryUseCase {
   private readonly similarityThreshold: number
 
   /**
-   * Creates a new SaveMemoryUseCase.
-   * @param storage - The storage repository.
-   * @param embedding - The embedding provider for vectorizing content.
-   * @param chunking - The chunking strategy for splitting conversations.
-   * @param options - Optional overrides (e.g. similarity threshold).
+   * 新しい SaveMemoryUseCase を生成する。
+   * @param storage - ストレージリポジトリ。
+   * @param embedding - コンテンツをvector化するためのembeddingプロバイダー。
+   * @param chunking - 会話を分割するためのチャンキングストラテジー。
+   * @param options - オプションの上書き設定（例: similarity閾値）。
    */
   constructor(
     private readonly storage: StorageRepository,
@@ -50,9 +50,9 @@ export class SaveMemoryUseCase {
   }
 
   /**
-   * Saves a manually created memory, skipping if a duplicate exists.
-   * @param input - The memory content and metadata.
-   * @returns Whether the memory was saved or skipped.
+   * 手動作成の記憶を保存する。重複が存在する場合はスキップする。
+   * @param input - 記憶のコンテンツとメタデータ。
+   * @returns 記憶が保存されたかスキップされたかを示す結果。
    */
   async saveManual(input: SaveManualInput): Promise<SaveResult> {
     const embeddingVector = await this.embedding.embed(input.content)
@@ -80,8 +80,8 @@ export class SaveMemoryUseCase {
   }
 
   /**
-   * Chunks a conversation, deduplicates in parallel, and saves new memories.
-   * @param log - The conversation log to process.
+   * 会話をチャンク化し、並列で重複排除してから新規記憶を保存する。
+   * @param log - 処理する会話ログ。
    */
   async saveConversation(log: ConversationLog): Promise<void> {
     const chunks = this.chunking.chunk(log)

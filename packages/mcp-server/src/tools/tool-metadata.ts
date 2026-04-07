@@ -1,14 +1,14 @@
 import { SEARCH_DEFAULTS } from '@claude-memory/core'
 import { z } from 'zod'
 
-/** Metadata describing an MCP tool including its name, description, and input schema. */
+/** MCPツールの名前・説明・入力schemaを記述するメタデータ。 */
 interface ToolMetadata {
   name: string
   description: string
   schema: z.ZodRawShape | null
 }
 
-/** Zod schema for the memory_save tool input parameters. */
+/** memory_saveツールの入力パラメータを定義するZod schema。 */
 export const memorySaveSchema = {
   content: z.string().min(1),
   sessionId: z.string(),
@@ -17,7 +17,7 @@ export const memorySaveSchema = {
   scope: z.enum(['project', 'global']).optional().default('project'),
 }
 
-/** Zod schema for the memory_search tool input parameters. */
+/** memory_searchツールの入力パラメータを定義するZod schema。 */
 export const memorySearchSchema = {
   query: z.string().min(1),
   limit: z.number().optional().default(SEARCH_DEFAULTS.maxResults),
@@ -30,7 +30,7 @@ export const memorySearchSchema = {
     .describe('Search across all projects instead of scoping to projectPath'),
 }
 
-/** Zod schema for the memory_list tool input parameters. */
+/** memory_listツールの入力パラメータを定義するZod schema。 */
 export const memoryListSchema = {
   limit: z.number().optional().default(SEARCH_DEFAULTS.maxResults),
   offset: z.number().optional().default(0),
@@ -38,19 +38,19 @@ export const memoryListSchema = {
   tags: z.array(z.string()).optional(),
 }
 
-/** Zod schema for the memory_update tool input parameters. */
+/** memory_updateツールの入力パラメータを定義するZod schema。 */
 export const memoryUpdateSchema = {
   id: z.string().uuid(),
   content: z.string().min(1).optional(),
   tags: z.array(z.string()).optional(),
 }
 
-/** Zod schema for the memory_delete tool input parameters. */
+/** memory_deleteツールの入力パラメータを定義するZod schema。 */
 export const memoryDeleteSchema = {
   id: z.string().uuid(),
 }
 
-/** Zod schema for the memory_cleanup tool input parameters. */
+/** memory_cleanupツールの入力パラメータを定義するZod schema。 */
 export const memoryCleanupSchema = {
   olderThanDays: z.number().min(1).describe('Delete memories not accessed in this many days'),
   dryRun: z
@@ -60,12 +60,12 @@ export const memoryCleanupSchema = {
     .describe('Preview what would be deleted without actually deleting'),
 }
 
-/** Zod schema for the memory_import tool input parameters. */
+/** memory_importツールの入力パラメータを定義するZod schema。 */
 export const memoryImportSchema = {
   data: z.string().min(1).describe('JSON string of exported memories array'),
 }
 
-/** Registry of all MCP tool definitions with their names, descriptions, and schemas. */
+/** 全MCPツール定義（名前・説明・schema）のレジストリ。 */
 export const TOOL_METADATA: ToolMetadata[] = [
   {
     name: 'memory_save',

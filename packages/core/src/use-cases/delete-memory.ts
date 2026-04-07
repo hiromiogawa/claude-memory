@@ -1,17 +1,17 @@
 import { MemoryNotFoundError } from '../errors/memory-error.js'
 import type { StorageRepository } from '../interfaces/storage-repository.js'
 
-/** Deletes a single memory by ID, throwing if it does not exist. */
+/** IDで単一の記憶を削除する。存在しない場合はスローする。 */
 export class DeleteMemoryUseCase {
   /**
-   * Creates a new DeleteMemoryUseCase.
-   * @param storage - The storage repository to operate on.
+   * 新しい DeleteMemoryUseCase を生成する。
+   * @param storage - 操作対象のストレージリポジトリ。
    */
   constructor(private readonly storage: StorageRepository) {}
   /**
-   * Deletes the memory with the given ID.
-   * @param id - The UUID of the memory to delete.
-   * @throws {MemoryNotFoundError} If no memory with the given ID exists.
+   * 指定IDの記憶を削除する。
+   * @param id - 削除する記憶のUUID。
+   * @throws {MemoryNotFoundError} 指定IDの記憶が存在しない場合。
    */
   async execute(id: string): Promise<void> {
     const existing = await this.storage.findById(id)

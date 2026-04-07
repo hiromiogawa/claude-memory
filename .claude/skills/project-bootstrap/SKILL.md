@@ -1,56 +1,56 @@
 ---
 name: project-bootstrap
-description: Orchestrator skill — initializes a new project with all dev-skills standards
+description: 統括スキル — 新プロジェクトを全 dev-skills 標準で初期化する
 ---
 
-# Project Bootstrap
+# プロジェクトブートストラップ
 
 新プロジェクト開始時に以下のスキルを順序付きで実行する統括スキル。
 
-## Prerequisites
+## 前提条件
 
 - `.project-config.yml` がプロジェクトルートに存在すること
 - git が初期化されていること
 
-## Execution Order
+## 実行順序
 
-### Phase 1: Code Quality Setup
-Invoke `code-quality` skill:
+### フェーズ 1: コード品質セットアップ
+`code-quality` スキルを実行:
 1. Biome 設定ファイル生成
 2. OXLint 設定ファイル生成
 3. knip 設定ファイル生成
 4. dependency-cruiser 設定ファイル生成
 5. Vitest 設定
 
-### Phase 2: Git Workflow Setup
-Invoke `conventional-commits` skill:
+### フェーズ 2: Git ワークフローセットアップ
+`conventional-commits` スキルを実行:
 1. lefthook 設定
 2. commitlint 設定
 3. Git hooks インストール
 
-### Phase 3: GitHub Setup
-Invoke `github-flow` skill:
+### フェーズ 3: GitHub セットアップ
+`github-flow` スキルを実行:
 1. Issue テンプレート作成 (`.github/ISSUE_TEMPLATE/`)
 2. GitHub Projects 設定（手動 or gh CLI）
 3. ラベル作成
 
-### Phase 4: Documentation Setup
-Invoke `sdd` skill:
+### フェーズ 4: ドキュメントセットアップ
+`sdd` スキルを実行:
 1. `docs/specs/` ディレクトリ作成
 2. typedoc 設定
 
-Invoke `adr` skill:
+`adr` スキルを実行:
 1. `docs/adr/root/` ディレクトリ作成
 2. `docs/adr/packages/` ディレクトリ作成
 
-Invoke `diagram-management` skill:
+`diagram-management` スキルを実行:
 1. `docs/diagrams/` ディレクトリ作成
 2. CI ワークフロー設定
 
-### Phase 5: CLAUDE.md
+### フェーズ 5: CLAUDE.md
 1. CLAUDE.md を生成（プロジェクト設定 + スキルへのポインタ + ドキュメント一覧）
 
-## .project-config.yml Template
+## `.project-config.yml` テンプレート
 
 ```yaml
 # Project-specific configuration values
@@ -79,14 +79,14 @@ scopes:
   - mcp-server
 ```
 
-## Verification
+## 確認事項
 
-After bootstrap, verify:
-- [ ] `pnpm lint` passes
-- [ ] `pnpm test` passes (or no tests yet)
-- [ ] `pnpm knip` passes
-- [ ] `pnpm dep-check` passes
-- [ ] lefthook hooks are installed
-- [ ] Issue templates exist in `.github/ISSUE_TEMPLATE/`
-- [ ] `docs/` structure is created
-- [ ] CLAUDE.md exists with correct pointers
+ブートストラップ後に確認:
+- [ ] `pnpm lint` が通ること
+- [ ] `pnpm test` が通ること（テストがまだない場合はOK）
+- [ ] `pnpm knip` が通ること
+- [ ] `pnpm dep-check` が通ること
+- [ ] lefthook フックがインストールされていること
+- [ ] Issue テンプレートが `.github/ISSUE_TEMPLATE/` に存在すること
+- [ ] `docs/` の構造が作成されていること
+- [ ] CLAUDE.md が正しいポインタで存在すること

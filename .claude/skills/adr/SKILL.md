@@ -1,18 +1,18 @@
 ---
 name: adr
-description: Architecture Decision Record creation and management
+description: アーキテクチャ決定記録（ADR）の作成と管理
 ---
 
-# ADR (Architecture Decision Records)
+# ADR（アーキテクチャ決定記録）
 
-## When to Create
+## 作成タイミング
 
 - 技術選定（ライブラリ、フレームワーク、DB等）
 - アーキテクチャの重要な決定
 - 代替案を検討した結果の判断
 - 将来の自分やチームメンバーが「なぜこうなっているか」を知りたくなる決定
 
-## File Organization
+## ファイル構成
 
 ```
 docs/adr/
@@ -26,7 +26,7 @@ docs/adr/
       ADR-001-xxx.md
 ```
 
-## Template
+## テンプレート
 
 ```markdown
 # ADR-XXX: タイトル
@@ -52,13 +52,13 @@ Proposed | Accepted | Deprecated | Superseded by ADR-YYY
 この決定による影響。何が変わるか。
 ```
 
-## Naming
+## 命名規則
 
 `ADR-XXX-short-description.md`
 - XXX は連番（001, 002, ...）
 - root と packages で独立した連番
 
-## Rules
+## ルール
 
 - ADR は **不変** — 変更する場合は新しい ADR で Supersede
 - ステータスを更新して「Deprecated」or「Superseded by ADR-YYY」にする

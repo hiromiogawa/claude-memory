@@ -1,47 +1,47 @@
 ---
 name: docs-freshness
-description: Documentation freshness rules — classify docs as Why/What/How, auto-generate What, check diffs in CI
+description: ドキュメント鮮度ルール — Why/What/How に分類し、What は自動生成、CI で差分チェック
 ---
 
-# Documentation Freshness
+# ドキュメント鮮度管理
 
-## Principle
+## 原則
 
-Classify all documentation into three categories with different maintenance strategies.
+すべてのドキュメントを3つのカテゴリに分類し、それぞれ異なるメンテナンス戦略を適用する。
 
-| Category | Content | Maintenance |
-|----------|---------|-------------|
-| **Why** | Design decisions, tech selection rationale, rejected alternatives | ADR + long-term memory |
-| **What** | API specs, DB schema, dependency graphs | Auto-generate from code |
-| **How** | Setup instructions, CI config, operations | Manual update on change |
+| カテゴリ | 内容 | メンテナンス方法 |
+|----------|------|-----------------|
+| **Why** | 設計判断、技術選定の理由、却下された代替案 | ADR + 長期記憶 |
+| **What** | API仕様、DBスキーマ、依存グラフ | コードから自動生成 |
+| **How** | セットアップ手順、CI設定、運用方法 | 変更時に手動更新 |
 
-## What: Auto-Generation
+## What: 自動生成
 
-- Run `pnpm docs:generate` to regenerate all What docs
-- Output to `docs/generated/` — never edit by hand
-- CI checks diff between generated output and committed files
-- If CI fails: run `pnpm docs:generate` locally and commit
+- `pnpm docs:generate` で全 What ドキュメントを再生成
+- 出力先は `docs/generated/` — 手動編集禁止
+- CI で生成結果とコミット済みファイルの差分をチェック
+- CI が失敗した場合: ローカルで `pnpm docs:generate` を実行してコミット
 
-## Why: Design Records
+## Why: 設計記録
 
-- Any "A vs B" decision → create ADR in `docs/adr/`
-- Save to long-term memory simultaneously
-- Focus on rejected alternatives (not derivable from code)
+- 「A vs B」の判断 → `docs/adr/` に ADR を作成
+- 同時に長期記憶にも保存
+- 却下された代替案に注力（コードからは導出できない情報）
 
-## How: Manual Docs
+## How: 手動ドキュメント
 
 - README, CONTRIBUTING, operations.md
-- Update when the process changes
-- PR template includes checklist to verify
+- プロセスが変わったときに更新
+- PR テンプレートに確認用チェックリストを含める
 
-## PR Checklist
+## PR チェックリスト
 
-Include in PR template:
-- `pnpm docs:generate` run with no diff?
-- ADR added for design decisions?
-- How docs updated if process changed?
+PR テンプレートに以下を含める:
+- `pnpm docs:generate` を実行して差分がないか?
+- 設計判断に対して ADR を追加したか?
+- プロセス変更があった場合、How ドキュメントを更新したか?
 
-## Anti-Pattern
+## アンチパターン
 
-"This is obvious from the code" → Then don't document it. Let JSDoc + auto-generation handle it.
-"This might rot" → Auto-generate it or don't write it.
+「コードを見れば分かる」 → ならドキュメント化しない。JSDoc + 自動生成に任せる。
+「陳腐化するかも」 → 自動生成するか、書かない。

@@ -1,12 +1,12 @@
 import type { Chunk } from '../entities/chunk.js'
 import type { ConversationLog } from '../entities/conversation.js'
 
-/** Strategy for splitting a conversation into storable chunks. */
+/** 会話をストレージ用のチャンクに分割するストラテジー。 */
 export interface ChunkingStrategy {
   /**
-   * Splits a conversation into discrete chunks for storage.
-   * @param conversation - The conversation log to chunk.
-   * @returns An array of chunks extracted from the conversation.
+   * 会話を保存用の個別チャンクに分割する。
+   * @param conversation - チャンク化する会話ログ。
+   * @returns 会話から抽出されたチャンクの配列。
    */
   chunk(conversation: ConversationLog): Chunk[]
 }

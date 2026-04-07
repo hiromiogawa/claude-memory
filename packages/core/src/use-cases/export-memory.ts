@@ -1,31 +1,31 @@
 import type { StorageRepository } from '../interfaces/storage-repository.js'
 
-/** A portable representation of a memory for import/export. */
+/** インポート/エクスポート用の記憶のポータブル表現。 */
 export interface ExportedMemory {
-  /** The text content of the memory. */
+  /** 記憶のテキスト内容。 */
   content: string
-  /** Metadata associated with the memory. */
+  /** 記憶に関連するメタデータ。 */
   metadata: {
     sessionId: string
     projectPath?: string
     tags?: string[]
     source: 'manual' | 'auto'
   }
-  /** ISO 8601 creation timestamp. */
+  /** ISO 8601形式の作成タイムスタンプ。 */
   createdAt: string
 }
 
-/** Exports all memories in a portable format (without embeddings). */
+/** 全記憶をポータブル形式（embeddingなし）でエクスポートする。 */
 export class ExportMemoryUseCase {
   /**
-   * Creates a new ExportMemoryUseCase.
-   * @param storage - The storage repository to export from.
+   * 新しい ExportMemoryUseCase を生成する。
+   * @param storage - エクスポート元のストレージリポジトリ。
    */
   constructor(private readonly storage: StorageRepository) {}
 
   /**
-   * Exports all memories as portable objects with ISO date strings.
-   * @returns An array of exported memories.
+   * 全記憶をISO日付文字列のポータブルオブジェクトとしてエクスポートする。
+   * @returns エクスポートされた記憶の配列。
    */
   async execute(): Promise<ExportedMemory[]> {
     const memories = await this.storage.exportAll()

@@ -12,52 +12,52 @@ export interface Memory {
   lastAccessedAt: Date
 }
 
-/** Metadata associated with a stored memory entry. */
+/** 保存済み記憶エントリに関連するメタデータ。 */
 export interface MemoryMetadata {
-  /** Session ID that produced this memory. */
+  /** この記憶を生成したセッションID。 */
   sessionId: string
-  /** Filesystem path of the project this memory belongs to. */
+  /** この記憶が属するプロジェクトのファイルシステムパス。 */
   projectPath?: string
-  /** User-defined tags for categorization. */
+  /** 分類用のユーザー定義タグ。 */
   tags?: string[]
-  /** How the memory was created. */
+  /** 記憶の作成方法。 */
   source: 'manual' | 'auto'
-  /** Memory visibility scope. 'project' (default) scoped to projectPath, 'global' shared across all projects */
+  /** 記憶の公開スコープ。'project'（デフォルト）は projectPath に限定、'global' は全プロジェクト共有。 */
   scope?: 'project' | 'global'
 }
 
-/** Pagination and filter options for listing memories. */
+/** 記憶一覧取得のページネーションとフィルターオプション。 */
 export interface ListOptions {
-  /** Number of items to retrieve. Default: 20, max: 100. */
+  /** 取得件数。デフォルト: 20、最大: 100。 */
   limit: number
-  /** Number of items to skip. Default: 0. */
+  /** スキップ件数。デフォルト: 0。 */
   offset: number
-  /** Filter by creation source. */
+  /** 作成ソースでフィルター。 */
   source?: 'manual' | 'auto'
-  /** Filter by tags. */
+  /** タグでフィルター。 */
   tags?: string[]
-  /** Filter by session ID. */
+  /** セッションIDでフィルター。 */
   sessionId?: string
-  /** Field to sort by. */
+  /** ソート対象フィールド。 */
   sortBy?: 'createdAt' | 'updatedAt'
-  /** Sort direction. */
+  /** ソート方向。 */
   sortOrder?: 'asc' | 'desc'
 }
 
-/** Aggregate statistics about the memory storage. */
+/** 記憶ストレージの集計統計情報。 */
 export interface StorageStats {
-  /** Total number of stored memories. */
+  /** 保存済み記憶の総件数。 */
   totalMemories: number
-  /** Total number of distinct sessions. */
+  /** 異なるセッションの総数。 */
   totalSessions: number
-  /** Creation date of the oldest memory, or null if empty. */
+  /** 最古の記憶の作成日時。空の場合は null。 */
   oldestMemory: Date | null
-  /** Creation date of the newest memory, or null if empty. */
+  /** 最新の記憶の作成日時。空の場合は null。 */
   newestMemory: Date | null
-  /** Average character length of memory content. */
+  /** 記憶コンテンツの平均文字数。 */
   averageContentLength: number
-  /** Total count of manual memories. */
+  /** 手動作成の記憶の総件数。 */
   manualCount: number
-  /** Total count of auto memories. */
+  /** 自動作成の記憶の総件数。 */
   autoCount: number
 }

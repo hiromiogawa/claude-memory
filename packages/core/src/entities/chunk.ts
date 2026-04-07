@@ -1,9 +1,9 @@
 import type { MemoryMetadata } from './memory.js'
 
-/** A text segment extracted from a conversation with associated metadata. */
+/** 会話から抽出されたテキストセグメントとそのメタデータ。 */
 export interface Chunk {
-  /** The text content of the chunk. */
+  /** チャンクのテキスト内容。 */
   content: string
-  /** Metadata inherited from the source conversation. */
+  /** 元の会話から引き継いだメタデータ。 */
   metadata: MemoryMetadata
 }

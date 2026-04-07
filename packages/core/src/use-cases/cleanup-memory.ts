@@ -5,26 +5,26 @@ interface CleanupOptions {
   dryRun?: boolean
 }
 
-/** Result of a cleanup operation. */
+/** クリーンアップ操作の結果。 */
 export interface CleanupResult {
-  /** Number of memories deleted (or that would be deleted in dry-run mode). */
+  /** 削除された記憶の件数（ドライランの場合は削除予定件数）。 */
   deletedCount: number
-  /** Whether this was a dry run (no actual deletion). */
+  /** ドライラン（実際の削除なし）かどうか。 */
   dryRun: boolean
 }
 
-/** Removes stale memories that have not been accessed within a given period. */
+/** 指定期間内にアクセスされなかった古い記憶を削除する。 */
 export class CleanupMemoryUseCase {
   /**
-   * Creates a new CleanupMemoryUseCase.
-   * @param storage - The storage repository to operate on.
+   * 新しい CleanupMemoryUseCase を生成する。
+   * @param storage - 操作対象のストレージリポジトリ。
    */
   constructor(private readonly storage: StorageRepository) {}
 
   /**
-   * Executes the cleanup operation.
-   * @param options - Cleanup configuration including age threshold and dry-run flag.
-   * @returns The cleanup result with the number of affected memories.
+   * クリーンアップ操作を実行する。
+   * @param options - 経過日数の閾値とドライランフラグを含むクリーンアップ設定。
+   * @returns 対象記憶の件数を含むクリーンアップ結果。
    */
   async execute(options: CleanupOptions): Promise<CleanupResult> {
     if (options.dryRun !== false) {

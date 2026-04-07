@@ -8,10 +8,10 @@ import { memorySearchSchema, TOOL_METADATA } from './tool-metadata.js'
 const SCORE_DECIMAL_PLACES = 4
 
 /**
- * Wraps matched keywords with markdown bold markers for visibility.
- * @param content - The content string to highlight within
- * @param query - The search query to highlight
- * @returns Content with matched keywords wrapped in ** markers
+ * マッチしたキーワードをmarkdownボールドマーカーで囲んで視認性を高める。
+ * @param content - ハイライト対象のコンテンツ文字列
+ * @param query - ハイライトする検索クエリ
+ * @returns マッチしたキーワードを ** で囲んだコンテンツ
  */
 const highlightKeyword = (content: string, query: string): string => {
   if (!query) return content
@@ -22,10 +22,10 @@ const highlightKeyword = (content: string, query: string): string => {
 const meta = TOOL_METADATA.find((t) => t.name === 'memory_search')!
 
 /**
- * Registers the memory_search tool on the MCP server.
- * @param server - The MCP server instance
- * @param container - Dependency injection container
- * @param logger - Pino logger instance
+ * memory_searchツールをMCP serverに登録する。
+ * @param server - MCP serverインスタンス
+ * @param container - DIコンテナ
+ * @param logger - Pinoロガーインスタンス
  */
 export function registerMemorySearchTool(
   server: McpServer,

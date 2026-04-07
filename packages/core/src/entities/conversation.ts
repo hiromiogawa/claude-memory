@@ -1,19 +1,19 @@
-/** A complete conversation session containing ordered messages. */
+/** 順序付きメッセージを含む完全な会話セッション。 */
 export interface ConversationLog {
-  /** Unique identifier for the conversation session. */
+  /** 会話セッションの一意な識別子。 */
   sessionId: string
-  /** Filesystem path of the project this conversation belongs to. */
+  /** この会話が属するプロジェクトのファイルシステムパス。 */
   projectPath?: string
-  /** Ordered list of messages in the conversation. */
+  /** 会話内のメッセージの順序付きリスト。 */
   messages: ConversationMessage[]
 }
 
-/** A single message within a conversation. */
+/** 会話内の1件のメッセージ。 */
 export interface ConversationMessage {
-  /** The sender role. */
+  /** 送信者のロール。 */
   role: 'user' | 'assistant'
-  /** The text content of the message. */
+  /** メッセージのテキスト内容。 */
   content: string
-  /** When the message was sent. */
+  /** メッセージの送信日時。 */
   timestamp: Date
 }
