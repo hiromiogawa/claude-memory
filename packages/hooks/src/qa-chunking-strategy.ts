@@ -109,14 +109,14 @@ export class QAChunkingStrategy implements ChunkingStrategy {
 
     while (i < messages.length) {
       const userParts: string[] = []
-      while (i < messages.length && messages[i]!.role === 'user') {
-        userParts.push(messages[i]!.content)
+      while (i < messages.length && messages[i]?.role === 'user') {
+        userParts.push(messages[i]?.content)
         i++
       }
 
       const assistantParts: string[] = []
-      while (i < messages.length && messages[i]!.role === 'assistant') {
-        assistantParts.push(messages[i]!.content)
+      while (i < messages.length && messages[i]?.role === 'assistant') {
+        assistantParts.push(messages[i]?.content)
         i++
       }
 

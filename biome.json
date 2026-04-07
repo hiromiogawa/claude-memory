@@ -7,7 +7,18 @@
     "lineWidth": 100
   },
   "linter": {
-    "enabled": false
+    "enabled": true,
+    "rules": {
+      "recommended": true,
+      "style": {
+        "noNonNullAssertion": "off",
+        "useExponentiationOperator": "off",
+        "useTemplate": "off"
+      },
+      "correctness": {
+        "noUnusedPrivateClassMembers": "off"
+      }
+    }
   },
   "javascript": {
     "formatter": {

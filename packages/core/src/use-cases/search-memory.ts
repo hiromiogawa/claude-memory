@@ -106,6 +106,6 @@ export class SearchMemoryUseCase {
     const HALF_LIFE_BASE = 0.5
     const daysDiff = (now.getTime() - createdAt.getTime()) / MS_PER_DAY
     const halfLife = SEARCH_DEFAULTS.decayHalfLifeDays
-    return Math.pow(HALF_LIFE_BASE, daysDiff / halfLife)
+    return HALF_LIFE_BASE ** (daysDiff / halfLife)
   }
 }

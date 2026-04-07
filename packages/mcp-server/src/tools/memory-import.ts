@@ -1,4 +1,4 @@
-import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js'
+import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js'
 import type { Logger } from 'pino'
 import { z } from 'zod'
 import type { Container } from '../container.js'
