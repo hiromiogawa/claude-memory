@@ -18,6 +18,17 @@ jobs:
       - run: pnpm knip
       - run: pnpm dep-check
       - run: pnpm build
+      - name: Install Graphviz
+        run: sudo apt-get install -y graphviz
+      - name: Generate docs (without DB)
+        run: SKIP_DB_DOCS=true pnpm docs:generate
+      - name: Check docs are up to date
+        run: |
+          if ! git diff --exit-code docs/generated/; then
+            echo "::error::Generated docs are out of date. Run 'pnpm docs:generate' and commit the results."
+            git diff docs/generated/
+            exit 1
+          fi
 
   test:
     runs-on: ubuntu-latest
@@ -42,6 +53,21 @@ jobs:
             echo "Applying migration: $f"
             PGPASSWORD=test psql -h localhost -p 5434 -U test -d claude_memory_test -f "$f"
           done
+      - name: Install tbls
+        run: |
+          curl -sL https://github.com/k1LoW/tbls/releases/latest/download/tbls_linux_amd64.tar.gz | tar xz
+          sudo mv tbls /usr/local/bin/
+      - name: Generate DB schema docs
+        run: pnpm docs:schema
+        env:
+          DATABASE_URL: postgresql://test:test@localhost:5434/claude_memory_test
+      - name: Check DB schema docs are up to date
+        run: |
+          if ! git diff --exit-code docs/generated/schema/; then
+            echo "::error::DB schema docs are out of date. Run 'pnpm docs:generate' with DB running and commit."
+            git diff docs/generated/schema/
+            exit 1
+          fi
       - name: Run tests with coverage
         run: pnpm -r run test:coverage
         env:

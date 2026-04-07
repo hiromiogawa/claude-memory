@@ -16,6 +16,7 @@
     "dep-check": "depcruise --config .dependency-cruiser.cjs packages/",
     "docs:dep-graph": "depcruise --config .dependency-cruiser.cjs --output-type dot packages/ | dot -Tsvg > docs/generated/dependency-graph.svg",
     "docs:schema": "tbls doc --force",
+    "docs:generate": "bash scripts/generate-all-docs.sh",
     "prepare": "husky"
   },
   "pnpm": {
