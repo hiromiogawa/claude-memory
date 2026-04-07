@@ -171,7 +171,7 @@ Terraform（`infra/github/`）で管理。masterブランチに対して：
 
 ### モノレポ戦略
 
-全パッケージを一括バージョニングする。ルートの `package.json` のバージョンで管理。
+全パッケージ（core, embedding-onnx, storage-postgres, mcp-server, hooks）を `linked-versions` で一括バージョニングする。ルートの `package.json` のバージョンで管理。
 
 ## テスト戦略
 
