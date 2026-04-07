@@ -14,6 +14,7 @@
     "format": "biome check --write .",
     "knip": "knip",
     "dep-check": "depcruise --config .dependency-cruiser.cjs packages/",
+    "docs:dep-graph": "depcruise --config .dependency-cruiser.cjs --output-type dot packages/ | dot -Tsvg > docs/generated/dependency-graph.svg",
     "prepare": "husky"
   },
   "pnpm": {
