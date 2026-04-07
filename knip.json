@@ -10,6 +10,7 @@
     }
   },
   "ignore": ["**/*.test.ts", "scripts/**"],
+  "ignoreBinaries": ["dot", "tbls"],
   "ignoreDependencies": [
     "onnxruntime-common",
     "onnxruntime-node",

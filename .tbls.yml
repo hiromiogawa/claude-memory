@@ -1,0 +1,7 @@
+dsn: ${DATABASE_URL}
+docPath: docs/generated/schema
+format:
+  adjust: true
+  sort: true
+er:
+  format: mermaid

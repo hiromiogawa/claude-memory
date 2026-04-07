@@ -18,6 +18,17 @@ jobs:
       - run: pnpm knip
       - run: pnpm dep-check
       - run: pnpm build
+      - name: Install Graphviz
+        run: sudo apt-get install -y graphviz
+      - name: Generate docs (without DB)
+        run: SKIP_DB_DOCS=true pnpm docs:generate
+      - name: Check docs are up to date
+        run: |
+          if ! git diff --exit-code docs/generated/mcp-tools.md; then
+            echo "::error::Generated docs are out of date. Run 'pnpm docs:generate' and commit the results."
+            git diff docs/generated/mcp-tools.md
+            exit 1
+          fi
 
   test:
     runs-on: ubuntu-latest
