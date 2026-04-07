@@ -3,6 +3,9 @@ import type { Logger } from 'pino'
 import { z } from 'zod'
 import type { Container } from '../container.js'
 import { handleToolError } from './error-handler.js'
+import { memoryImportSchema, TOOL_METADATA } from './tool-metadata.js'
+
+const meta = TOOL_METADATA.find((t) => t.name === 'memory_import')!
 
 const exportedMemorySchema = z.array(
   z.object({
@@ -22,26 +25,19 @@ export function registerMemoryImportTool(
   container: Container,
   logger: Logger,
 ): void {
-  server.tool(
-    'memory_import',
-    'Import memories from JSON backup (re-computes embeddings)',
-    {
-      data: z.string().min(1).describe('JSON string of exported memories array'),
-    },
-    async (args) => {
-      return handleToolError(async () => {
-        const start = performance.now()
-        const parsed = exportedMemorySchema.parse(JSON.parse(args.data))
-        const result = await container.importMemory.execute(parsed)
-        const durationMs = Math.round(performance.now() - start)
-        logger.info(
-          { tool: 'memory_import', durationMs, imported: result.imported },
-          'memory_import completed',
-        )
-        return {
-          content: [{ type: 'text', text: `Imported ${result.imported} memories.` }],
-        }
-      }, logger)
-    },
-  )
+  server.tool(meta.name, meta.description, memoryImportSchema, async (args) => {
+    return handleToolError(async () => {
+      const start = performance.now()
+      const parsed = exportedMemorySchema.parse(JSON.parse(args.data))
+      const result = await container.importMemory.execute(parsed)
+      const durationMs = Math.round(performance.now() - start)
+      logger.info(
+        { tool: 'memory_import', durationMs, imported: result.imported },
+        'memory_import completed',
+      )
+      return {
+        content: [{ type: 'text', text: `Imported ${result.imported} memories.` }],
+      }
+    }, logger)
+  })
 }
