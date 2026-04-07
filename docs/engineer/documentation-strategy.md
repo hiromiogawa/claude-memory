@@ -62,15 +62,15 @@
 
 コードの現在の状態を反映するドキュメント。手書きしない。
 
-| ドキュメント | 生成元 | 生成ツール | 場所 |
-|-------------|--------|-----------|------|
-| **DBスキーマ定義** | schema.ts | tbls | `docs/generated/schema.md` |
-| **パッケージ依存関係図** | packages/*/src/ | dependency-cruiser | `docs/generated/dependencies.svg` |
-| **MCPツールリファレンス** | zodスキーマ（tools/*.ts） | カスタムスクリプト | `docs/generated/mcp-tools.md` |
-| **エンティティ・インターフェース一覧** | core/src/ | TypeDoc or カスタム | `docs/generated/api.md` |
+| ドキュメント | 生成元 | 生成ツール | 場所 | 状態 |
+|-------------|--------|-----------|------|------|
+| **DBスキーマ定義** | schema.ts | tbls | `docs/generated/schema/` | ✓ 実装済み |
+| **パッケージ依存関係図** | packages/*/src/ | dependency-cruiser → SVG | `docs/generated/dependency-graph.svg` | ✓ 実装済み |
+| **MCPツールリファレンス** | Zodスキーマ（tools/*.ts） | カスタムスクリプト（Zod → Markdown） | `docs/generated/mcp-tools.md` | ✓ 実装済み |
+| **エンティティ・インターフェース一覧** | core/src/ | JSDoc（TypeDoc は今後の課題） | `docs/generated/api.md` | 未実装 |
 
 **自動生成の仕組み:**
-- `pnpm docs:generate` コマンドで全ドキュメントを再生成
+- `pnpm docs:generate` コマンドで全ドキュメントを再生成（実装済み）
 - CIで差分チェック — 生成結果とコミット済みの差分があればエラー
 - PRレビュー時に自動生成ドキュメントの変更も含まれていることを確認
 
@@ -114,15 +114,15 @@
 docs/
 ├── adr/                    # Why: 設計判断記録（AIが会話から抽出）
 ├── engineer/
+│   ├── architecture.md     # Why: アーキテクチャ概要
 │   ├── tech-decisions.md   # Why: 技術選定理由
 │   ├── operations.md       # How: 運用ルール
-│   ├── documentation-strategy.md  # How: このドキュメント
-│   └── packages/           # Why: パッケージの設計意図（手書き）
+│   ├── security.md         # How: セキュリティ
+│   └── documentation-strategy.md  # How: このドキュメント
 ├── generated/              # What: 自動生成（手で編集しない）
-│   ├── schema.md           # DBスキーマ（tblsで生成）
-│   ├── dependencies.svg    # 依存関係図（dep-cruiserで生成）
-│   ├── mcp-tools.md        # MCPツールリファレンス（zodから生成）
-│   └── api.md              # エンティティ・インターフェース一覧
+│   ├── schema/             # DBスキーマ（tblsで生成）
+│   ├── dependency-graph.svg  # 依存関係図（dep-cruiserで生成）
+│   └── mcp-tools.md        # MCPツールリファレンス（Zodから生成）
 ├── images/                 # 概念図（FigJamからPNGエクスポート）
 ├── plans/                  # アーカイブ: 実装計画
 ├── specs/                  # アーカイブ: 設計仕様
@@ -133,17 +133,26 @@ docs/
 
 現在手書きのWhat系ドキュメントを自動生成に移行する。
 
-| 現在 | 移行先 | 方法 |
-|------|--------|------|
-| `docs/engineer/mcp-tools.md` | `docs/generated/mcp-tools.md` | zodスキーマからスクリプトで生成 |
-| `docs/engineer/packages/*.md` のWhat部分 | `docs/generated/api.md` | TypeDocまたはカスタムスクリプト |
-| `docs/engineer/architecture.md` の依存関係部分 | `docs/generated/dependencies.svg` | dependency-cruiser |
+| 現在 | 移行先 | 方法 | 状態 |
+|------|--------|------|------|
+| `docs/engineer/mcp-tools.md` | `docs/generated/mcp-tools.md` | Zodスキーマからスクリプトで生成 | ✓ 完了 |
+| `docs/engineer/packages/*.md` のWhat部分 | JSDoc（ソースコード内） | JSDoc として各パッケージに移行 | ✓ 完了（packages/*.md 削除済み） |
+| `docs/engineer/architecture.md` の依存関係部分 | `docs/generated/dependency-graph.svg` | dependency-cruiser | ✓ 完了 |
 
-`docs/engineer/packages/*.md` のWhy部分（設計意図、アルゴリズム説明）はそのまま残す。
+`docs/engineer/packages/` ディレクトリは削除済み。Why部分（設計意図）は各パッケージのJSDocおよびADRに集約した。
+
+## スキル連携
+
+| スキル | リポジトリ | 状態 |
+|--------|-----------|------|
+| docs-freshness | dev-skills | 今後追加予定 |
+| diagram-management | dev-skills | 棚卸し予定（#107） |
+
+MCP 固有の自動生成ルール（ツールリファレンス生成等）は CLAUDE.md に記載。
 
 ## PRレビュー時のドキュメント確認チェックリスト
 
-PRテンプレートに追加：
+PRテンプレート（`.github/pull_request_template.md`）に実装済み：
 
 ```markdown
 ## ドキュメント確認
