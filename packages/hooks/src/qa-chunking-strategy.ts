@@ -67,15 +67,25 @@ interface QAChunkingOptions {
   filterByImportance?: boolean
 }
 
+/** Splits conversations into Q&A pair chunks with optional importance filtering. */
 export class QAChunkingStrategy implements ChunkingStrategy {
   private readonly maxChunkChars: number
   private readonly filterByImportance: boolean
 
+  /**
+   * Creates a new QAChunkingStrategy instance.
+   * @param options - Optional configuration for max chunk size and importance filtering
+   */
   constructor(options?: QAChunkingOptions) {
     this.maxChunkChars = options?.maxChunkChars ?? DEFAULT_MAX_CHUNK_CHARS
     this.filterByImportance = options?.filterByImportance ?? true
   }
 
+  /**
+   * Chunks a conversation log into Q&A pairs, splitting oversized chunks and filtering by importance.
+   * @param conversation - The conversation log to chunk
+   * @returns Array of chunks suitable for embedding and storage
+   */
   chunk(conversation: ConversationLog): Chunk[] {
     const rawChunks = this.extractQAPairs(conversation)
     const result: Chunk[] = []
