@@ -23,7 +23,7 @@
 
 **ユースケース:**
 - `SaveMemoryUseCase` — 保存 + 重複チェック（コサイン類似度 >= 0.90）
-- `SearchMemoryUseCase` — ハイブリッド検索（pg_bigm + pgvector → RRF → 時間減衰）
+- `SearchMemoryUseCase` — ハイブリッド検索（pg_bigm + pgvector → RRF → 時間減衰 → アクセスブースト）
 - `UpdateMemoryUseCase` — 更新（content変更時のみ再embedding）
 - `DeleteMemoryUseCase` — 削除（存在チェック付き）
 - `ListMemoriesUseCase` — 一覧取得（ページネーション、最大100件）
@@ -49,7 +49,7 @@ coreのインターフェースを実装する（依存性逆転の原則）。
 - pgvector: HNSWインデックスによるベクトル近傍検索
 - pg_bigm: GINインデックスによる日本語対応キーワード検索
 - コネクションプール対応（max=10、`DB_POOL_SIZE`で設定可能）
-- 検索ヒット時に `lastAccessedAt` を自動更新（クリーンアップの判定基準）
+- 検索ヒット時に `lastAccessedAt` を自動更新し `accessCount` をインクリメント（クリーンアップの判定基準・スコアブースト用）
 
 ### Interface Layer
 
@@ -99,7 +99,8 @@ CREATE TABLE memories (
   source TEXT,                    -- 'manual' | 'auto'
   created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
-  last_accessed_at TIMESTAMPTZ NOT NULL DEFAULT now()
+  last_accessed_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  access_count INTEGER NOT NULL DEFAULT 0
 );
 
 -- 日本語対応キーワード検索
@@ -117,7 +118,8 @@ CREATE INDEX idx_memories_vector ON memories USING hnsw(embedding vector_cosine_
 2. キーワード検索（pg_bigm）とベクトル検索（pgvector）を**並列実行**
 3. RRF（Reciprocal Rank Fusion, k=60）で両結果を統合
 4. 時間減衰を適用: `score *= 0.5^(経過日数 / 30)`
-5. スコア順で上位N件を返却
+5. アクセスブーストを適用: `score *= (1 + min(accessCount / 50, 0.2))`（最大1.2倍）
+6. スコア順で上位N件を返却
 
 ### 重複排除
 
@@ -164,6 +166,21 @@ k が大きいほど順位差の影響が小さくなる（結果が均等化さ
 ```
 
 これにより「3ヶ月前に保存した設計判断」より「昨日保存した最新の決定」が上位に来る。ただし完全に消えるわけではなく、他に関連記憶がなければ古い記憶も返される。
+
+### アクセスブースト
+
+頻繁にアクセスされる記憶のスコアを乗算方式で押し上げる。時間減衰の後に適用。
+
+```
+計算式: score × (1 + min(accessCount / 50, 0.2))
+
+アクセス0回:   score × 1.0    （ブーストなし）
+アクセス10回:  score × 1.04   （4%増）
+アクセス25回:  score × 1.1    （10%増）
+アクセス50回+: score × 1.2    （20%増、キャップ）
+```
+
+乗算方式を採用しているため、元のスコアの相対差を維持しつつ、頻繁に参照される記憶を優先する。最大1.2倍のキャップにより、アクセス頻度が内容の関連性を支配することを防止する。詳細は [ADR-0005](../adr/0005-access-frequency-score-boost.md) を参照。
 
 ### 重複排除の仕組み（コサイン類似度）
 
