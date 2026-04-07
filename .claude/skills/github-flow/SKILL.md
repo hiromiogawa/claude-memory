@@ -1,11 +1,11 @@
 ---
 name: github-flow
-description: Issue hierarchy, PR management, and GitHub Projects workflow
+description: Issue階層、PR管理、GitHub Projects ワークフロー
 ---
 
 # GitHub Flow
 
-## Issue Hierarchy
+## Issue 階層
 
 ```
 Epic (大きな機能単位)
@@ -17,16 +17,16 @@ Epic (大きな機能単位)
        └── Subtask               ← 1PR
 ```
 
-### Rules
+### ルール
 
 - Epic → Task/Story/Bug は **sub-issue** で表現
 - Task等が2PR以上になりそうな場合 **Subtask** を作成
 - **PR と Issue は 1:1** — 1つのPRは1つのIssueに紐付く
 - PR に `Closes #XX` を含めて Issue を自動close
 
-### Issue Templates
+### Issue テンプレート
 
-Issue templates are in `.github/ISSUE_TEMPLATE/`:
+Issue テンプレートは `.github/ISSUE_TEMPLATE/` に配置:
 - `epic.yml` — ゴール、完了条件、子Issue一覧
 - `task.yml` — やること、受け入れ条件、技術メモ
 - `bug.yml` — 何が起きたか、期待動作、再現手順、環境
@@ -35,8 +35,8 @@ Issue templates are in `.github/ISSUE_TEMPLATE/`:
 
 ## GitHub Projects
 
-| Column | Description |
-|--------|-------------|
+| カラム | 説明 |
+|--------|------|
 | Backlog | 未着手 |
 | Ready | 着手可能（依存解決済み） |
 | In Progress | AI または人間が作業中 |
@@ -44,20 +44,20 @@ Issue templates are in `.github/ISSUE_TEMPLATE/`:
 | QA | 人間による動作確認 |
 | Done | 完了 |
 
-### Automation
+### 自動化
 
-- PR created → Issue moves to "In Progress"
-- PR merged → Issue moves to "Done"
-- Labels: `epic`, `task`, `story`, `bug`, `subtask`
+- PR 作成 → Issue が「In Progress」に移動
+- PR マージ → Issue が「Done」に移動
+- ラベル: `epic`, `task`, `story`, `bug`, `subtask`
 
-## PR Rules
+## PR ルール
 
-- Title: `type(scope): description` (Conventional Commits format)
-- Body: `Closes #XX` で Issue 紐付け
+- タイトル: `type(scope): description`（Conventional Commits フォーマット）
+- 本文: `Closes #XX` で Issue 紐付け
 - 1 PR = 1 Issue
 - レビュー + QA 承認後にマージ
 
-## Workflow
+## ワークフロー
 
 1. Issue を作成（テンプレート使用）
 2. ブランチを切る（`feat/#12-description`）

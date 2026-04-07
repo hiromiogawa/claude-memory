@@ -1,26 +1,26 @@
 ---
 name: code-quality
-description: Code quality tooling setup and execution timing guide
+description: コード品質ツールの設定と実行タイミングガイド
 ---
 
-# Code Quality Tools
+# コード品質ツール
 
-## Tool Stack
+## ツールスタック
 
-| Tool | Purpose |
-|------|---------|
-| **Biome** | Formatter (Prettier alternative) |
-| **OXLint** | Linter (全ルール有効ベース) |
+| ツール | 用途 |
+|--------|------|
+| **Biome** | フォーマッター（Prettier の代替） |
+| **OXLint** | リンター（全ルール有効ベース） |
 | **knip** | 未使用コード・exports・依存の検出 |
 | **dependency-cruiser** | 依存方向の強制 + 循環依存検出 |
 | **Vitest** | テストフレームワーク |
 | **lefthook** | Git hooks 管理 |
 | **commitlint** | コミットメッセージ検証 |
 
-## Execution Timing
+## 実行タイミング
 
-| Tool | pre-commit | pre-push | CI |
-|------|-----------|----------|-----|
+| ツール | pre-commit | pre-push | CI |
+|--------|-----------|----------|-----|
 | Biome (format) | o | | o |
 | OXLint (lint) | o | | o |
 | knip (変更分) | o | | |
@@ -31,28 +31,28 @@ description: Code quality tooling setup and execution timing guide
 | Vitest (unit) | | | o |
 | Vitest (integration + E2E) | | | o |
 
-## Coverage Thresholds
+## カバレッジ閾値
 
-Check `.project-config.yml` for project-specific values. Default:
-- **Minimum:** 75%
-- **Target:** 80%
-- Measured per-package (unit + integration)
-- E2E is excluded from coverage
+プロジェクト固有の値は `.project-config.yml` を参照。デフォルト:
+- **最低:** 75%
+- **目標:** 80%
+- パッケージごとに計測（unit + integration）
+- E2E はカバレッジ対象外
 
-## dependency-cruiser Rules
+## dependency-cruiser ルール
 
-Must enforce:
-1. **Domain layer** must not import infrastructure or interface layers
-2. **Infrastructure layer** must not import interface layer
-3. **No circular dependencies**
+以下を強制する:
+1. **ドメイン層** はインフラ層・インターフェース層をインポートしてはならない
+2. **インフラ層** はインターフェース層をインポートしてはならない
+3. **循環依存の禁止**
 
-SVG dependency graph is auto-generated in CI.
+CI で依存グラフの SVG を自動生成する。
 
-## Configuration Files
+## 設定ファイル
 
-- `biome.json` — formatter config (linter disabled, OXLint handles it)
-- `.oxlintrc.json` — `"all": "warn"` base, disable specific rules as needed
-- `knip.json` — workspace-aware, entry/project patterns
-- `.dependency-cruiser.cjs` — forbidden dependency rules
-- `lefthook.yml` — pre-commit, pre-push, commit-msg hooks
-- `commitlint.config.cjs` — Conventional Commits config with scope enum
+- `biome.json` — フォーマッター設定（リンターは無効、OXLint が担当）
+- `.oxlintrc.json` — `"all": "warn"` ベース、必要に応じて個別ルールを無効化
+- `knip.json` — ワークスペース対応、entry/project パターン
+- `.dependency-cruiser.cjs` — 禁止依存ルール
+- `lefthook.yml` — pre-commit, pre-push, commit-msg フック
+- `commitlint.config.cjs` — Conventional Commits 設定（scope enum 付き）

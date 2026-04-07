@@ -9,7 +9,6 @@
 - adr → ADR作成・管理
 - code-quality → OXLint/Biome/knip/dependency-cruiser
 - docs-freshness → ドキュメント鮮度維持（Why/What/How分類、自動生成、CI差分チェック）
-- diagram-management → draw.io・依存グラフCI自動生成
 - project-bootstrap → 新プロジェクト初期化（統括スキル）
 
 ## プロジェクト固有の指示
