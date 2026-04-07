@@ -1,0 +1,96 @@
+name: Receive Skills
+
+on:
+  repository_dispatch:
+    types: [skills-sync]
+  workflow_dispatch:
+    inputs:
+      source:
+        description: 'Source repository (owner/repo)'
+        default: 'hiromiogawa/dev-skills'
+        required: true
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set source repo
+        id: source
+        run: |
+          if [ "${{ github.event_name }}" = "repository_dispatch" ]; then
+            echo "repo=${{ github.event.client_payload.source }}" >> "$GITHUB_OUTPUT"
+            echo "ref=${{ github.event.client_payload.ref }}" >> "$GITHUB_OUTPUT"
+          else
+            echo "repo=${{ inputs.source }}" >> "$GITHUB_OUTPUT"
+            echo "ref=master" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Fetch skills from source
+        run: |
+          git clone --depth 1 --branch "${{ steps.source.outputs.ref }}" \
+            "https://github.com/${{ steps.source.outputs.repo }}.git" /tmp/source-skills
+
+      - name: Read sync-ignore
+        id: ignore
+        run: |
+          if [ -f .claude/skills/.sync-ignore ]; then
+            cat .claude/skills/.sync-ignore
+          fi
+
+      - name: Copy skills
+        run: |
+          ignore_file=".claude/skills/.sync-ignore"
+          for skill_dir in /tmp/source-skills/skills/*/; do
+            skill_name=$(basename "$skill_dir")
+            if [ -f "$ignore_file" ] && grep -qx "$skill_name" "$ignore_file"; then
+              echo "Skipping: $skill_name (in .sync-ignore)"
+              continue
+            fi
+            echo "Syncing: $skill_name"
+            rm -rf ".claude/skills/$skill_name"
+            cp -r "$skill_dir" ".claude/skills/$skill_name"
+          done
+
+      - name: Check for changes
+        id: diff
+        run: |
+          if git diff --quiet && [ -z "$(git ls-files --others --exclude-standard .claude/skills/)" ]; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            echo "No changes detected"
+          else
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+            echo "Changes detected:"
+            git diff --stat
+            git ls-files --others --exclude-standard .claude/skills/
+          fi
+
+      - name: Create PR
+        if: steps.diff.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.SKILLS_SYNC_TOKEN }}
+        run: |
+          branch="chore/sync-dev-skills"
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git checkout -B "$branch"
+          git add .claude/skills/
+          git commit -m "chore: sync skills from dev-skills"
+          git push -f origin "$branch"
+
+          existing_pr=$(gh pr list --head "$branch" --json number --jq '.[0].number')
+          if [ -n "$existing_pr" ]; then
+            echo "PR #$existing_pr already exists, updated branch"
+          else
+            gh pr create \
+              --title "chore: sync skills from dev-skills" \
+              --body "dev-skills リポジトリからスキルを自動同期。" \
+              --head "$branch"
+          fi
+
+          pr_number=$(gh pr list --head "$branch" --json number --jq '.[0].number')
+          gh pr merge "$pr_number" --auto --squash
