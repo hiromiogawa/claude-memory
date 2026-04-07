@@ -11,9 +11,7 @@
     "rules": {
       "recommended": true,
       "style": {
-        "noNonNullAssertion": "off",
-        "useExponentiationOperator": "off",
-        "useTemplate": "off"
+        "noNonNullAssertion": "off"
       },
       "correctness": {
         "noUnusedPrivateClassMembers": "off"
