@@ -15,6 +15,13 @@
       "when": 1775447186526,
       "tag": "0001_whole_overlord",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1775548800000,
+      "tag": "0002_add_access_count",
+      "breakpoints": true
     }
   ]
 }

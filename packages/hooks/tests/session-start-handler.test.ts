@@ -12,6 +12,7 @@ function createMemory(id: string, content: string): SearchResult {
       createdAt: new Date('2026-04-01T00:00:00Z'),
       updatedAt: new Date('2026-04-01T00:00:00Z'),
       lastAccessedAt: new Date('2026-04-01T00:00:00Z'),
+      accessCount: 0,
     },
     score: 0.85,
     matchType: 'hybrid',

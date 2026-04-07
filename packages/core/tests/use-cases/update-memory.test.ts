@@ -40,6 +40,7 @@ describe('UpdateMemoryUseCase', () => {
       createdAt: new Date('2026-01-01'),
       updatedAt: new Date('2026-01-01'),
       lastAccessedAt: new Date('2026-01-01'),
+      accessCount: 0,
     }
     vi.mocked(storage.findById).mockResolvedValue(existing)
 
@@ -66,6 +67,7 @@ describe('UpdateMemoryUseCase', () => {
       createdAt: new Date('2026-01-01'),
       updatedAt: new Date('2026-01-01'),
       lastAccessedAt: new Date('2026-01-01'),
+      accessCount: 0,
     }
     vi.mocked(storage.findById).mockResolvedValue(existing)
 
