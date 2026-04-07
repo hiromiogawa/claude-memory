@@ -13,9 +13,9 @@ export const SEARCH_DEFAULTS = {
 /**
  * 記憶の重複排除に使用するデフォルトパラメーター。
  *
- * 既存エントリとのcosine similarityが0.95以上の記憶は重複とみなしてスキップする。
+ * 既存エントリとのcosine similarityが0.90以上の記憶は重複とみなしてスキップする。
  */
 export const DEDUP_DEFAULTS = {
-  /** cosine similarity閾値。0.95以上を重複として扱う。 */
-  similarityThreshold: 0.95,
+  /** cosine similarity閾値。0.90以上を重複として扱う。 */
+  similarityThreshold: 0.9,
 } as const

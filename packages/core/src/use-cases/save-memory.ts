@@ -28,7 +28,7 @@ export interface SaveResult {
  * 自動重複排除付きで記憶を保存する。
  *
  * 重複排除: 保存前にvector検索で最近傍の既存記憶を取得する。
- * cosine similarityが0.95以上（設定可能）の場合、新規記憶は重複とみなしてスキップする。
+ * cosine similarityが0.90以上（設定可能）の場合、新規記憶は重複とみなしてスキップする。
  */
 export class SaveMemoryUseCase {
   private readonly similarityThreshold: number
