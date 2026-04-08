@@ -12,6 +12,10 @@
 - project-bootstrap → 新プロジェクト初期化（統括スキル）
 - self-review → 実装後の検証サイクル（lint/test/dep-check/knip）
 - failure-record → エージェントの失敗記録と再発防止ルール管理
+- rule-measure → ルール効果の定量計測
+- rule-explore → ルールのボトルネック・未知パターン探索
+- rule-improve → 計測・探索結果からルール改善提案をIssue化
+- rule-audit → 改善提案の検証・承認・却下
 
 ## プロジェクト固有の指示
 
