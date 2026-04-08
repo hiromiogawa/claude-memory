@@ -1,5 +1,5 @@
 {
-  ".": "0.0.1",
+  ".": "1.0.0",
   "packages/core": "0.0.1",
   "packages/embedding-onnx": "0.0.1",
   "packages/storage-postgres": "0.0.1",
