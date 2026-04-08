@@ -17,6 +17,10 @@
 - rule-improve → 計測・探索結果からルール改善提案をIssue化
 - rule-audit → 改善提案の検証・承認・却下
 - rule-cycle → ルール改善サイクルのオーケストレーター（measure→explore→improve→audit）
+- dev-start → Issue着手時のオーケストレーター（memory検索→github-flow→sdd）
+- dev-complete → 実装完了時のオーケストレーター（self-review→docs-freshness→conventional-commits→PR）
+- post-review → レビュー後のオーケストレーター（failure-record→rule-cycle）
+- design-decision → 設計判断時のオーケストレーター（adr→memory保存）
 
 ## プロジェクト固有の指示
 
