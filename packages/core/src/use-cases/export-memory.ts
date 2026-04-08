@@ -1,4 +1,5 @@
 import type { StorageRepository } from '../interfaces/storage-repository.js'
+import { wrapStorageError } from './wrap-error.js'
 
 /** インポート/エクスポート用の記憶のポータブル表現。 */
 export interface ExportedMemory {
@@ -28,7 +29,7 @@ export class ExportMemoryUseCase {
    * @returns エクスポートされた記憶の配列。
    */
   async execute(): Promise<ExportedMemory[]> {
-    const memories = await this.storage.exportAll()
+    const memories = await wrapStorageError(() => this.storage.exportAll())
     return memories.map((m) => ({
       content: m.content,
       metadata: m.metadata,

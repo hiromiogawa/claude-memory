@@ -2,6 +2,7 @@ import { SEARCH_DEFAULTS } from '../constants.js'
 import type { SearchFilter, SearchResult } from '../entities/search-result.js'
 import type { EmbeddingProvider } from '../interfaces/embedding-provider.js'
 import type { StorageRepository } from '../interfaces/storage-repository.js'
+import { wrapEmbeddingError, wrapStorageError } from './wrap-error.js'
 
 /**
  * RRF fusionと時間減衰を使ったハイブリッドkeyword + vector検索で記憶を検索する。
@@ -39,10 +40,10 @@ export class SearchMemoryUseCase {
     limit: number = SEARCH_DEFAULTS.maxResults,
     filter?: SearchFilter,
   ): Promise<SearchResult[]> {
-    const queryEmbedding = await this.embedding.embed(query)
+    const queryEmbedding = await wrapEmbeddingError(() => this.embedding.embed(query))
     const [keywordResults, vectorResults] = await Promise.all([
-      this.storage.searchByKeyword(query, limit, filter),
-      this.storage.searchByVector(queryEmbedding, limit, filter),
+      wrapStorageError(() => this.storage.searchByKeyword(query, limit, filter)),
+      wrapStorageError(() => this.storage.searchByVector(queryEmbedding, limit, filter)),
     ])
     return this.mergeWithRRF(keywordResults, vectorResults, limit)
   }

@@ -1,4 +1,5 @@
 import type { StorageRepository } from '../interfaces/storage-repository.js'
+import { wrapStorageError } from './wrap-error.js'
 
 /** ストレージ内の全記憶を削除する。 */
 export class ClearMemoryUseCase {
@@ -12,6 +13,6 @@ export class ClearMemoryUseCase {
    * @returns 全記憶が削除されたときに解決する。
    */
   async execute(): Promise<void> {
-    await this.storage.clear()
+    await wrapStorageError(() => this.storage.clear())
   }
 }

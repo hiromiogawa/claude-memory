@@ -5,6 +5,7 @@ import type { Memory } from '../entities/memory.js'
 import type { ChunkingStrategy } from '../interfaces/chunking-strategy.js'
 import type { EmbeddingProvider } from '../interfaces/embedding-provider.js'
 import type { StorageRepository } from '../interfaces/storage-repository.js'
+import { wrapEmbeddingError, wrapStorageError } from './wrap-error.js'
 
 interface SaveManualInput {
   content: string
@@ -59,7 +60,7 @@ export class SaveMemoryUseCase {
    * @returns 記憶が保存されたかスキップされたかを示す結果。
    */
   async saveManual(input: SaveManualInput): Promise<SaveResult> {
-    const embeddingVector = await this.embedding.embed(input.content)
+    const embeddingVector = await wrapEmbeddingError(() => this.embedding.embed(input.content))
 
     if (await this.isDuplicate(embeddingVector)) return { saved: false }
 
@@ -81,7 +82,7 @@ export class SaveMemoryUseCase {
       accessCount: 0,
     }
     await this.enforceCapacity(1)
-    await this.storage.save(memory)
+    await wrapStorageError(() => this.storage.save(memory))
     return { saved: true }
   }
 
@@ -94,7 +95,7 @@ export class SaveMemoryUseCase {
     if (chunks.length === 0) return
 
     const contents = chunks.map((c) => c.content)
-    const embeddings = await this.embedding.embedBatch(contents)
+    const embeddings = await wrapEmbeddingError(() => this.embedding.embedBatch(contents))
 
     // Filter out failed embeddings
     const validChunks: { chunk: (typeof chunks)[0]; embedding: number[] }[] = []
@@ -131,7 +132,7 @@ export class SaveMemoryUseCase {
 
     if (memories.length > 0) {
       await this.enforceCapacity(memories.length)
-      await this.storage.saveBatch(memories)
+      await wrapStorageError(() => this.storage.saveBatch(memories))
     }
   }
 
@@ -141,16 +142,16 @@ export class SaveMemoryUseCase {
    */
   private async enforceCapacity(newCount: number): Promise<void> {
     if (this.maxMemories <= 0) return
-    const current = await this.storage.countAll()
+    const current = await wrapStorageError(() => this.storage.countAll())
     const excess = current + newCount - this.maxMemories
     if (excess > 0) {
-      await this.storage.deleteLeastAccessed(excess)
+      await wrapStorageError(() => this.storage.deleteLeastAccessed(excess))
     }
   }
 
   /** 最近傍1件のコサイン類似度が閾値以上なら重複とみなす */
   private async isDuplicate(embedding: number[]): Promise<boolean> {
-    const results = await this.storage.searchByVector(embedding, 1)
+    const results = await wrapStorageError(() => this.storage.searchByVector(embedding, 1))
     if (results.length === 0 || !results[0]) return false
     return results[0].score >= this.similarityThreshold
   }

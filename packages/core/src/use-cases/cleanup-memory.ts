@@ -1,4 +1,5 @@
 import type { StorageRepository } from '../interfaces/storage-repository.js'
+import { wrapStorageError } from './wrap-error.js'
 
 /** 従来の日数ベースクリーンアップ（olderThanDays必須、後方互換）。 */
 interface OlderThanCleanupOptions {
@@ -49,19 +50,23 @@ export class CleanupMemoryUseCase {
 
   private async executeOlderThan(options: OlderThanCleanupOptions): Promise<CleanupResult> {
     if (options.dryRun !== false) {
-      const count = await this.storage.countOlderThan('lastAccessedAt', options.olderThanDays)
+      const count = await wrapStorageError(() =>
+        this.storage.countOlderThan('lastAccessedAt', options.olderThanDays),
+      )
       return { deletedCount: count, dryRun: true }
     }
-    const deleted = await this.storage.deleteOlderThan('lastAccessedAt', options.olderThanDays)
+    const deleted = await wrapStorageError(() =>
+      this.storage.deleteOlderThan('lastAccessedAt', options.olderThanDays),
+    )
     return { deletedCount: deleted, dryRun: false }
   }
 
   private async executeLeastAccessed(options: LeastAccessedCleanupOptions): Promise<CleanupResult> {
     if (options.dryRun !== false) {
-      const total = await this.storage.countAll()
+      const total = await wrapStorageError(() => this.storage.countAll())
       return { deletedCount: Math.min(options.limit, total), dryRun: true }
     }
-    const deleted = await this.storage.deleteLeastAccessed(options.limit)
+    const deleted = await wrapStorageError(() => this.storage.deleteLeastAccessed(options.limit))
     return { deletedCount: deleted, dryRun: false }
   }
 }
