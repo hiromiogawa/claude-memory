@@ -1,11 +1,10 @@
 import type { SearchFilter } from '@claude-memory/core'
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js'
 import type { Logger } from 'pino'
+import { SCORE_DECIMAL_PLACES } from '../constants.js'
 import type { Container } from '../container.js'
 import { handleToolError } from './error-handler.js'
 import { memorySearchSchema, TOOL_METADATA } from './tool-metadata.js'
-
-const SCORE_DECIMAL_PLACES = 4
 
 /**
  * マッチしたキーワードをmarkdownボールドマーカーで囲んで視認性を高める。

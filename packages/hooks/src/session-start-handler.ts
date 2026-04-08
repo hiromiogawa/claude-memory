@@ -1,6 +1,5 @@
 import type { SearchFilter, SearchResult } from '@claude-memory/core'
-
-const SESSION_START_SEARCH_LIMIT = 5
+import { SESSION_START_SEARCH_LIMIT } from './constants.js'
 
 interface SearchCapable {
   search(query: string, limit: number, filter?: SearchFilter): Promise<SearchResult[]>

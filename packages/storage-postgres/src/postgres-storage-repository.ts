@@ -9,12 +9,10 @@ import type {
 import { and, asc, desc, eq, sql } from 'drizzle-orm'
 import { drizzle } from 'drizzle-orm/postgres-js'
 import postgres from 'postgres'
+import { BULK_INSERT_CHUNK_SIZE, DEFAULT_MAX_CONNECTIONS } from './constants.js'
 import { memories } from './schema.js'
 
 type DbRow = typeof memories.$inferSelect
-
-/** PostgreSQLパラメータ上限(65535)を考慮したbulk insert時のチャンクサイズ（1行あたり約12パラメータ） */
-const BULK_INSERT_CHUNK_SIZE = 500
 
 /** PostgreSQL配列オーバーラップ演算子(&&)で、いずれかのタグを含む行にフィルタ */
 function tagsOverlapCondition(tags: string[]) {
@@ -54,7 +52,6 @@ export class PostgresStorageRepository implements StorageRepository {
    * @param options - コネクションプール最大数などのオプション設定
    */
   constructor(connectionString: string, options?: { maxConnections?: number }) {
-    const DEFAULT_MAX_CONNECTIONS = 10
     this.client = postgres(connectionString, {
       max: options?.maxConnections ?? DEFAULT_MAX_CONNECTIONS,
     })

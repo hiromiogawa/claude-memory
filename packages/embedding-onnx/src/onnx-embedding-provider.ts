@@ -1,5 +1,6 @@
 import type { EmbeddingProvider } from '@claude-memory/core'
 import { type FeatureExtractionPipeline, pipeline } from '@huggingface/transformers'
+import { DEFAULT_DIMENSION } from './constants.js'
 
 interface OnnxEmbeddingConfig {
   modelName: string
@@ -10,8 +11,6 @@ const MODEL_DIMENSIONS: Record<string, number> = {
   'intfloat/multilingual-e5-base': 768,
   'intfloat/multilingual-e5-large': 1024,
 }
-
-const DEFAULT_DIMENSION = 384
 
 /** ONNX Runtimeによるローカル推論（mean pooling + L2正規化）を行うembeddingプロバイダ。 */
 export class OnnxEmbeddingProvider implements EmbeddingProvider {

@@ -33,6 +33,11 @@ memory-save, memory-search, memory-list, memory-update, memory-delete, memory-ex
 - `pnpm --filter @claude-memory/mcp-server start` — MCP サーバー起動
 - `pnpm --filter @claude-memory/mcp-server docs:generate` — ツールドキュメント自動生成
 
+## 定数
+
+`src/constants.ts` に集約:
+- `SCORE_DECIMAL_PLACES` (4) — 検索スコアの小数点以下桁数
+
 ## 制約
 
 - トランスポートは stdio のみ（HTTP/WebSocket 非対応）
