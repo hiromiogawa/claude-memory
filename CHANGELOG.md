@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.0.3](https://github.com/hiromiogawa/claude-memory/compare/v1.0.2...v1.0.3) (2026-04-08)
+
+
+### Bug Fixes
+
+* **storage-postgres:** auto-migrate on server startup ([#158](https://github.com/hiromiogawa/claude-memory/issues/158)) ([#159](https://github.com/hiromiogawa/claude-memory/issues/159)) ([7e90382](https://github.com/hiromiogawa/claude-memory/commit/7e903822e8288aa30f5237b0298915384f8b8ed4))
+
 ## [1.0.2](https://github.com/hiromiogawa/claude-memory/compare/v1.0.1...v1.0.2) (2026-04-08)
 
 
