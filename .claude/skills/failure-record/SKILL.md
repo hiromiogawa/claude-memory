@@ -34,19 +34,4 @@ description: エージェントの失敗記録と再発防止ルール管理
 
 ## 改善サイクルのトリガー
 
-FAIL エントリを ADR-0007 に追記した後、前回サイクル実行以降の新規 FAIL エントリ数を確認する。
-
-```
-# 前回サイクル実行時刻を取得
-memory_search query="rule-journal audit cycle-meta" tags=["rule-journal", "cycle-meta"] limit=1
-
-# ADR-0007 の FAIL エントリ数を確認
-grep -c "^### FAIL-" docs/adr/0007-agent-failure-rules.md
-```
-
-**閾値**: 前回サイクル以降の新規 FAIL エントリが **3 件** に達したら、以下を順次実行する:
-
-1. rule-measure（計測）
-2. rule-explore（探索）
-3. rule-improve（改善提案 → Issue 起票）
-4. rule-audit（検証 → Issue 承認/却下）
+FAIL エントリを ADR-0007 に追記した後、**rule-cycle スキルを呼び出す**。rule-cycle が閾値チェック（前回サイクル以降の新規 FAIL 3 件）とサイクル実行を担当する。
