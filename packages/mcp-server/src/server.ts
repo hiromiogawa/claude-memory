@@ -26,6 +26,8 @@ export async function startServer() {
   logger.info('Starting claude-memory MCP server...')
 
   const container = createContainer(config)
+  await container.storage.migrate()
+  logger.info('Database migration check completed')
   const server = new McpServer({
     name: 'claude-memory',
     version: '0.0.1',
