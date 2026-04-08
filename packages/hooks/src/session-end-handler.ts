@@ -5,9 +5,17 @@ interface SaveConversationCapable {
   saveConversation(log: ConversationLog): Promise<void>
 }
 
+interface ContentBlock {
+  type: string
+  text?: string
+}
+
 interface RawLogEntry {
-  role: 'user' | 'assistant'
-  content: string
+  type: string
+  message?: {
+    role: 'user' | 'assistant'
+    content: string | ContentBlock[]
+  }
   timestamp: string
 }
 
@@ -48,12 +56,21 @@ export class SessionEndHandler {
     for (const line of content.split('\n')) {
       try {
         const entry = JSON.parse(line) as RawLogEntry
-        if (entry.role && entry.content) {
-          messages.push({
-            role: entry.role,
-            content: entry.content,
-            timestamp: new Date(entry.timestamp),
-          })
+        if (entry.type !== 'user' && entry.type !== 'assistant') continue
+        if (!entry.message) continue
+
+        const role = entry.message.role
+        const rawContent = entry.message.content
+        const text =
+          typeof rawContent === 'string'
+            ? rawContent
+            : rawContent
+                .filter((b) => b.type === 'text' && b.text)
+                .map((b) => b.text)
+                .join('\n')
+
+        if (role && text) {
+          messages.push({ role, content: text, timestamp: new Date(entry.timestamp) })
         }
       } catch {
         // skip malformed lines
