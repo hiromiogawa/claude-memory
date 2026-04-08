@@ -4,7 +4,7 @@
       "project": ["src/**/*.ts"]
     },
     "packages/mcp-server": {
-      "entry": ["src/session-start.ts"],
+      "entry": ["src/session-start.ts", "src/session-end.ts"],
       "project": ["src/**/*.ts"]
     }
   },
