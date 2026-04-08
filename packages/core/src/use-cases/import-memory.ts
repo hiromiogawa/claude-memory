@@ -3,6 +3,7 @@ import type { Memory } from '../entities/memory.js'
 import type { EmbeddingProvider } from '../interfaces/embedding-provider.js'
 import type { StorageRepository } from '../interfaces/storage-repository.js'
 import type { ExportedMemory } from './export-memory.js'
+import { wrapEmbeddingError, wrapStorageError } from './wrap-error.js'
 
 /** 以前エクスポートされた記憶をembeddingを再生成してインポートする。 */
 export class ImportMemoryUseCase {
@@ -24,7 +25,7 @@ export class ImportMemoryUseCase {
   async execute(data: ExportedMemory[]): Promise<{ imported: number }> {
     let imported = 0
     for (const item of data) {
-      const embeddingVector = await this.embedding.embed(item.content)
+      const embeddingVector = await wrapEmbeddingError(() => this.embedding.embed(item.content))
       const now = new Date()
       const memory: Memory = {
         id: randomUUID(),
@@ -41,7 +42,7 @@ export class ImportMemoryUseCase {
         lastAccessedAt: now,
         accessCount: 0,
       }
-      await this.storage.save(memory)
+      await wrapStorageError(() => this.storage.save(memory))
       imported++
     }
     return { imported }

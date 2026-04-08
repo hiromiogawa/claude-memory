@@ -1,10 +1,11 @@
-import type {
-  ListOptions,
-  Memory,
-  SearchFilter,
-  SearchResult,
-  StorageRepository,
-  StorageStats,
+import {
+  EmbeddingFailedError,
+  type ListOptions,
+  type Memory,
+  type SearchFilter,
+  type SearchResult,
+  type StorageRepository,
+  type StorageStats,
 } from '@claude-memory/core'
 import { and, asc, desc, eq, sql } from 'drizzle-orm'
 import { drizzle } from 'drizzle-orm/postgres-js'
@@ -72,7 +73,7 @@ export class PostgresStorageRepository implements StorageRepository {
    * @returns 永続化完了時に解決するPromise
    */
   async save(memory: Memory): Promise<void> {
-    if (!memory.embedding) throw new Error('Cannot save memory without embedding')
+    if (!memory.embedding) throw new EmbeddingFailedError('Cannot save memory without embedding')
     const embeddingLiteral = `[${memory.embedding.join(',')}]`
 
     await this.db
@@ -119,7 +120,8 @@ export class PostgresStorageRepository implements StorageRepository {
       for (let i = 0; i < batch.length; i += BULK_INSERT_CHUNK_SIZE) {
         const chunk = batch.slice(i, i + BULK_INSERT_CHUNK_SIZE)
         const values = chunk.map((memory) => {
-          if (!memory.embedding) throw new Error('Cannot save memory without embedding')
+          if (!memory.embedding)
+            throw new EmbeddingFailedError('Cannot save memory without embedding')
           const embeddingLiteral = `[${memory.embedding.join(',')}]`
           return {
             id: memory.id,

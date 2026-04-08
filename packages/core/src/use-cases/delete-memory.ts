@@ -1,5 +1,6 @@
 import { MemoryNotFoundError } from '../errors/memory-error.js'
 import type { StorageRepository } from '../interfaces/storage-repository.js'
+import { wrapStorageError } from './wrap-error.js'
 
 /** IDで単一の記憶を削除する。存在しない場合はスローする。 */
 export class DeleteMemoryUseCase {
@@ -14,8 +15,8 @@ export class DeleteMemoryUseCase {
    * @throws {MemoryNotFoundError} 指定IDの記憶が存在しない場合。
    */
   async execute(id: string): Promise<void> {
-    const existing = await this.storage.findById(id)
+    const existing = await wrapStorageError(() => this.storage.findById(id))
     if (!existing) throw new MemoryNotFoundError(id)
-    await this.storage.delete(id)
+    await wrapStorageError(() => this.storage.delete(id))
   }
 }
