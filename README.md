@@ -75,22 +75,43 @@ docker compose ps
     "claude-memory": {
       "command": "docker",
       "args": [
-        "exec",
-        "claude-memory-mcp-server-1",
-        "node",
-        "packages/mcp-server/dist/index.js"
+        "run",
+        "--rm",
+        "-i",
+        "--network",
+        "claude-memory_default",
+        "-e",
+        "DATABASE_URL=postgresql://memory:memory@db:5432/claude_memory",
+        "-e",
+        "EMBEDDING_MODEL=intfloat/multilingual-e5-small",
+        "-e",
+        "EMBEDDING_DIMENSION=384",
+        "claude-memory-mcp-server"
       ]
     }
   },
   "hooks": {
     "SessionStart": [
       {
-        "command": "docker exec claude-memory-mcp-server-1 node packages/mcp-server/dist/session-start.js"
+        "hooks": [
+          {
+            "type": "prompt",
+            "prompt": "セッション開始。memory_search ツールが利用可能であれば、現在のプロジェクトに関連する最近の記憶を検索し、文脈を把握してください。利用不可なら何もしない。",
+            "statusMessage": "記憶を検索中..."
+          }
+        ]
       }
     ],
-    "PostSessionEnd": [
+    "SessionEnd": [
       {
-        "command": "docker exec claude-memory-mcp-server-1 node packages/hooks/dist/index.js"
+        "hooks": [
+          {
+            "type": "command",
+            "command": "docker run --rm --network claude-memory_default -e DATABASE_URL=postgresql://memory:memory@db:5432/claude_memory -e EMBEDDING_MODEL=intfloat/multilingual-e5-small -e EMBEDDING_DIMENSION=384 claude-memory-mcp-server node packages/hooks/dist/index.js 2>/dev/null || true",
+            "timeout": 120,
+            "statusMessage": "セッションの記憶を保存中..."
+          }
+        ]
       }
     ]
   }
@@ -106,8 +127,9 @@ docker compose ps
 
 **この設定で有効になること:**
 
-- **mcpServers** — Claude Code が `memory_save`, `memory_search` 等のMCPツールを使えるようになる
-- **hooks.PostSessionEnd** — セッション終了時に会話内容をQ&Aペアに分割してDBに自動保存する。ユーザーが意識する必要はなく、会話を終了するだけで記憶が蓄積される
+- **mcpServers** — Claude Code が `memory_save`, `memory_search` 等のMCPツールを使えるようになる。`docker run` で都度コンテナを起動し、stdio 経由で通信する
+- **hooks.SessionStart** — セッション開始時に `prompt` フックで関連する記憶を自動検索し、文脈を把握する
+- **hooks.SessionEnd** — セッション終了時に会話内容をQ&Aペアに分割してDBに自動保存する。ユーザーが意識する必要はなく、会話を終了するだけで記憶が蓄積される
 
 設定後、Claude Code を再起動すると反映される。
 
