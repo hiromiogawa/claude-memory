@@ -24,6 +24,7 @@ description: 実装後の検証サイクル（lint/test/dep-check/knip）
 
 ## 修正ループ
 
+```
 実装 → lint → 失敗? → 修正 → lint（再実行）
                 ↓ 成功
             test → 失敗? → 修正 → test（再実行）
@@ -33,6 +34,7 @@ description: 実装後の検証サイクル（lint/test/dep-check/knip）
             knip → 失敗? → 修正 → knip（再実行）
                 ↓ 成功
             コミット可能
+```
 
 ## 注意事項
 

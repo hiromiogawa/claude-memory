@@ -17,7 +17,7 @@ description: エージェントの失敗記録と再発防止ルール管理
 
 ## ADR エントリフォーマット
 
-```
+```markdown
 ### FAIL-NNN: タイトル (YYYY-MM-DD)
 
 - **事象**: 何が起きたか
