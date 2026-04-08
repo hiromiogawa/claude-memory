@@ -60,6 +60,35 @@ export class PostgresStorageRepository implements StorageRepository {
   }
 
   /**
+   * マイグレーションを実行し、スキーマを最新状態にする。
+   * 既に適用済みのカラムがある場合はスキップする（冪等）。
+   * @returns マイグレーション完了時に解決するPromise
+   */
+  async migrate(): Promise<void> {
+    const migrations = [
+      { column: 'scope', sql: 'ALTER TABLE memories ADD COLUMN scope text' },
+      {
+        column: 'access_count',
+        sql: 'ALTER TABLE memories ADD COLUMN access_count integer DEFAULT 0 NOT NULL',
+      },
+      {
+        column: 'last_accessed_at',
+        sql: 'ALTER TABLE memories ADD COLUMN last_accessed_at timestamptz DEFAULT now() NOT NULL',
+      },
+    ]
+    for (const m of migrations) {
+      const result = await this.client<{ exists: boolean }[]>`
+        SELECT EXISTS (
+          SELECT 1 FROM information_schema.columns
+          WHERE table_name = 'memories' AND column_name = ${m.column}
+        )`
+      if (!result[0]?.exists) {
+        await this.client.unsafe(m.sql)
+      }
+    }
+  }
+
+  /**
    * PostgreSQLコネクションプールを閉じる。
    * @returns 全接続が閉じられたときに解決するPromise
    */
