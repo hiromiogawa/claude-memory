@@ -46,6 +46,12 @@ docker compose -f docker-compose.test.yml up -d
 DATABASE_URL='postgresql://test:test@localhost:5434/claude_memory_test' pnpm --filter @claude-memory/storage-postgres db:push
 ```
 
+## 定数
+
+`src/constants.ts` に集約:
+- `BULK_INSERT_CHUNK_SIZE` (500) — bulk insert のチャンクサイズ
+- `DEFAULT_MAX_CONNECTIONS` (10) — コネクションプール最大数
+
 ## 制約
 
 - bulk insert は 500 件ごとにチャンク分割（PostgreSQL パラメータ上限対策）

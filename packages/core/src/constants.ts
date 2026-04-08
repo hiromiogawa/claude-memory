@@ -29,3 +29,11 @@ export const CAPACITY_DEFAULTS = {
   /** 記憶の最大保存件数。超過時はLFUで自動削除。 */
   maxMemories: 10000,
 } as const
+
+/**
+ * 一覧取得の最大取得件数。
+ */
+export const LIST_DEFAULTS = {
+  /** list APIが1回で返せる最大件数。 */
+  maxLimit: 100,
+} as const

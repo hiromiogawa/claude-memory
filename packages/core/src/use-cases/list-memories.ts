@@ -1,7 +1,6 @@
+import { LIST_DEFAULTS } from '../constants.js'
 import type { ListOptions, Memory } from '../entities/memory.js'
 import type { StorageRepository } from '../interfaces/storage-repository.js'
-
-const MAX_LIMIT = 100
 
 /** ページネーションで記憶を一覧取得する。上限は100件。 */
 export class ListMemoriesUseCase {
@@ -16,7 +15,7 @@ export class ListMemoriesUseCase {
    * @returns 条件に一致する記憶の配列。
    */
   async execute(options: ListOptions): Promise<Memory[]> {
-    const sanitized = { ...options, limit: Math.min(options.limit, MAX_LIMIT) }
+    const sanitized = { ...options, limit: Math.min(options.limit, LIST_DEFAULTS.maxLimit) }
     return this.storage.list(sanitized)
   }
 }

@@ -25,6 +25,11 @@
 - `pnpm --filter @claude-memory/embedding-onnx test` — テスト
 - `pnpm --filter @claude-memory/embedding-onnx build` — ビルド
 
+## 定数
+
+`src/constants.ts` に集約:
+- `DEFAULT_DIMENSION` (384) — 未知のモデルに対するデフォルト embedding 次元数
+
 ## 制約
 
 - モデルは遅延初期化（初回 embed 時にダウンロード、`~/.cache/` にキャッシュ）

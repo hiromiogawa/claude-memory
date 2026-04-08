@@ -1,7 +1,6 @@
 import type { Chunk, ChunkingStrategy, ConversationLog } from '@claude-memory/core'
+import { DEFAULT_MAX_CHUNK_CHARS, MIN_CHUNK_CHARS } from './constants.js'
 
-/** 埋め込みモデル（multilingual-e5-small）の最大入力512トークン ≈ 日本語1000文字 */
-const DEFAULT_MAX_CHUNK_CHARS = 1000
 const QA_PREFIX_USER = 'Q: '
 const QA_PREFIX_ASSISTANT = '\nA: '
 /** 文末句読点で分割する正規表現（日本語・英語対応） */
@@ -50,9 +49,6 @@ const IMPORTANCE_KEYWORDS = [
   'refactor',
   'test',
 ]
-
-/** チャンクの最小文字数。これ以下は重要度が低いと判定 */
-const MIN_CHUNK_CHARS = 50
 
 /** チャンクが保存に値する重要度を持つか判定する */
 function isImportant(content: string): boolean {
