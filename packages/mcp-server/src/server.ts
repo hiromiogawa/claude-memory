@@ -45,5 +45,13 @@ export async function startServer() {
   const transport = new StdioServerTransport()
   await server.connect(transport)
 
+  const cleanup = async () => {
+    logger.info('Shutting down claude-memory MCP server...')
+    await container.storage.close()
+    process.exit(0)
+  }
+  process.on('SIGTERM', cleanup)
+  process.on('SIGINT', cleanup)
+
   logger.info('claude-memory MCP server running on stdio')
 }

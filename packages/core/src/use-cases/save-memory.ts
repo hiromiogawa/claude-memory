@@ -97,11 +97,16 @@ export class SaveMemoryUseCase {
     const contents = chunks.map((c) => c.content)
     const embeddings = await wrapEmbeddingError(() => this.embedding.embedBatch(contents))
 
-    // Filter out failed embeddings
+    // Filter out failed, wrong-dimension, or non-finite embeddings
+    const expectedDim = this.embedding.getDimension()
     const validChunks: { chunk: (typeof chunks)[0]; embedding: number[] }[] = []
     for (let i = 0; i < chunks.length; i++) {
       const embedding = embeddings[i]
-      if (embedding && embedding.length > 0) {
+      if (
+        embedding &&
+        embedding.length === expectedDim &&
+        embedding.every((v) => Number.isFinite(v))
+      ) {
         validChunks.push({ chunk: chunks[i]!, embedding })
       }
     }

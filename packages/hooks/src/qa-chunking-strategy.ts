@@ -95,7 +95,13 @@ export class QAChunkingStrategy implements ChunkingStrategy {
     }
 
     // Filter out low-importance chunks (only when enabled, e.g. auto-save)
-    return this.filterByImportance ? result.filter((chunk) => isImportant(chunk.content)) : result
+    if (!this.filterByImportance) return result
+
+    const filtered = result.filter((chunk) => isImportant(chunk.content))
+    if (result.length > 0 && filtered.length === 0) {
+      console.warn(`All ${result.length} chunks were filtered out by importance filter`)
+    }
+    return filtered
   }
 
   private extractQAPairs(conversation: ConversationLog): Chunk[] {

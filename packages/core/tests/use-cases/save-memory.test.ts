@@ -31,7 +31,7 @@ function createMockEmbedding(): EmbeddingProvider {
       [0.1, 0.2, 0.3],
       [0.4, 0.5, 0.6],
     ]),
-    getDimension: vi.fn().mockReturnValue(384),
+    getDimension: vi.fn().mockReturnValue(3),
   }
 }
 
@@ -99,7 +99,7 @@ describe('SaveMemoryUseCase', () => {
       { content: 'chunk1', metadata: { sessionId: 's1', source: 'auto' as const } },
       { content: 'chunk2', metadata: { sessionId: 's1', source: 'auto' as const } },
     ])
-    vi.mocked(embedding.embedBatch).mockResolvedValue([[0.1, 0.2], []])
+    vi.mocked(embedding.embedBatch).mockResolvedValue([[0.1, 0.2, 0.3], []])
     vi.mocked(storage.searchByVector).mockResolvedValue([])
 
     const useCase = new SaveMemoryUseCase(storage, embedding, chunking)
@@ -335,6 +335,152 @@ describe('SaveMemoryUseCase', () => {
 
       expect(storage.countAll).not.toHaveBeenCalled()
       expect(storage.deleteLeastAccessed).not.toHaveBeenCalled()
+    })
+  })
+
+  describe('embedding validation', () => {
+    it('should skip embeddings with wrong dimension count', async () => {
+      const storage = createMockStorage()
+      const embedding = createMockEmbedding()
+      const chunking = createMockChunking()
+      vi.mocked(chunking.chunk).mockReturnValue([
+        { content: 'chunk1', metadata: { sessionId: 's1', source: 'auto' as const } },
+        { content: 'chunk2', metadata: { sessionId: 's1', source: 'auto' as const } },
+      ])
+      // getDimension returns 3, but first embedding has 2 dimensions (wrong)
+      vi.mocked(embedding.embedBatch).mockResolvedValue([
+        [0.1, 0.2],
+        [0.4, 0.5, 0.6],
+      ])
+      vi.mocked(storage.searchByVector).mockResolvedValue([])
+
+      const useCase = new SaveMemoryUseCase(storage, embedding, chunking)
+      const log: ConversationLog = {
+        sessionId: 's1',
+        messages: [
+          { role: 'user', content: 'q1', timestamp: new Date() },
+          { role: 'assistant', content: 'a1', timestamp: new Date() },
+        ],
+      }
+
+      await useCase.saveConversation(log)
+      const savedMemories = vi.mocked(storage.saveBatch).mock.calls[0]![0]
+      expect(savedMemories).toHaveLength(1)
+      expect(savedMemories[0]!.content).toBe('chunk2')
+    })
+
+    it('should skip embeddings containing NaN values', async () => {
+      const storage = createMockStorage()
+      const embedding = createMockEmbedding()
+      const chunking = createMockChunking()
+      vi.mocked(chunking.chunk).mockReturnValue([
+        { content: 'chunk1', metadata: { sessionId: 's1', source: 'auto' as const } },
+        { content: 'chunk2', metadata: { sessionId: 's1', source: 'auto' as const } },
+      ])
+      vi.mocked(embedding.getDimension).mockReturnValue(3)
+      vi.mocked(embedding.embedBatch).mockResolvedValue([
+        [0.1, Number.NaN, 0.3],
+        [0.4, 0.5, 0.6],
+      ])
+      vi.mocked(storage.searchByVector).mockResolvedValue([])
+
+      const useCase = new SaveMemoryUseCase(storage, embedding, chunking)
+      const log: ConversationLog = {
+        sessionId: 's1',
+        messages: [
+          { role: 'user', content: 'q1', timestamp: new Date() },
+          { role: 'assistant', content: 'a1', timestamp: new Date() },
+        ],
+      }
+
+      await useCase.saveConversation(log)
+      const savedMemories = vi.mocked(storage.saveBatch).mock.calls[0]![0]
+      expect(savedMemories).toHaveLength(1)
+      expect(savedMemories[0]!.content).toBe('chunk2')
+    })
+
+    it('should skip embeddings containing Infinity values', async () => {
+      const storage = createMockStorage()
+      const embedding = createMockEmbedding()
+      const chunking = createMockChunking()
+      vi.mocked(chunking.chunk).mockReturnValue([
+        { content: 'chunk1', metadata: { sessionId: 's1', source: 'auto' as const } },
+        { content: 'chunk2', metadata: { sessionId: 's1', source: 'auto' as const } },
+      ])
+      vi.mocked(embedding.getDimension).mockReturnValue(3)
+      vi.mocked(embedding.embedBatch).mockResolvedValue([
+        [0.1, Number.POSITIVE_INFINITY, 0.3],
+        [0.4, 0.5, 0.6],
+      ])
+      vi.mocked(storage.searchByVector).mockResolvedValue([])
+
+      const useCase = new SaveMemoryUseCase(storage, embedding, chunking)
+      const log: ConversationLog = {
+        sessionId: 's1',
+        messages: [
+          { role: 'user', content: 'q1', timestamp: new Date() },
+          { role: 'assistant', content: 'a1', timestamp: new Date() },
+        ],
+      }
+
+      await useCase.saveConversation(log)
+      const savedMemories = vi.mocked(storage.saveBatch).mock.calls[0]![0]
+      expect(savedMemories).toHaveLength(1)
+      expect(savedMemories[0]!.content).toBe('chunk2')
+    })
+
+    it('should skip embeddings containing -Infinity values', async () => {
+      const storage = createMockStorage()
+      const embedding = createMockEmbedding()
+      const chunking = createMockChunking()
+      vi.mocked(chunking.chunk).mockReturnValue([
+        { content: 'chunk1', metadata: { sessionId: 's1', source: 'auto' as const } },
+        { content: 'chunk2', metadata: { sessionId: 's1', source: 'auto' as const } },
+      ])
+      vi.mocked(embedding.getDimension).mockReturnValue(3)
+      vi.mocked(embedding.embedBatch).mockResolvedValue([
+        [0.4, 0.5, 0.6],
+        [0.1, Number.NEGATIVE_INFINITY, 0.3],
+      ])
+      vi.mocked(storage.searchByVector).mockResolvedValue([])
+
+      const useCase = new SaveMemoryUseCase(storage, embedding, chunking)
+      const log: ConversationLog = {
+        sessionId: 's1',
+        messages: [
+          { role: 'user', content: 'q1', timestamp: new Date() },
+          { role: 'assistant', content: 'a1', timestamp: new Date() },
+        ],
+      }
+
+      await useCase.saveConversation(log)
+      const savedMemories = vi.mocked(storage.saveBatch).mock.calls[0]![0]
+      expect(savedMemories).toHaveLength(1)
+      expect(savedMemories[0]!.content).toBe('chunk1')
+    })
+
+    it('should skip all invalid embeddings and not call saveBatch', async () => {
+      const storage = createMockStorage()
+      const embedding = createMockEmbedding()
+      const chunking = createMockChunking()
+      vi.mocked(chunking.chunk).mockReturnValue([
+        { content: 'chunk1', metadata: { sessionId: 's1', source: 'auto' as const } },
+      ])
+      vi.mocked(embedding.getDimension).mockReturnValue(3)
+      vi.mocked(embedding.embedBatch).mockResolvedValue([[0.1, Number.NaN, 0.3]])
+      vi.mocked(storage.searchByVector).mockResolvedValue([])
+
+      const useCase = new SaveMemoryUseCase(storage, embedding, chunking)
+      const log: ConversationLog = {
+        sessionId: 's1',
+        messages: [
+          { role: 'user', content: 'q1', timestamp: new Date() },
+          { role: 'assistant', content: 'a1', timestamp: new Date() },
+        ],
+      }
+
+      await useCase.saveConversation(log)
+      expect(storage.saveBatch).not.toHaveBeenCalled()
     })
   })
 

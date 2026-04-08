@@ -1,5 +1,5 @@
 import type { ConversationLog } from '@claude-memory/core'
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, type MockInstance, vi } from 'vitest'
 import { QAChunkingStrategy } from '../src/qa-chunking-strategy.js'
 
 describe('QAChunkingStrategy', () => {
@@ -185,6 +185,100 @@ describe('QAChunkingStrategy', () => {
       const strategy = new QAChunkingStrategy()
       const chunks = strategy.chunk(log)
       expect(chunks).toHaveLength(0)
+    })
+
+    it('should warn when all chunks are filtered out by importance filter', () => {
+      const warnSpy: MockInstance = vi.spyOn(console, 'warn').mockImplementation(() => {})
+      try {
+        const log: ConversationLog = {
+          sessionId: 's1',
+          messages: [
+            { role: 'user', content: 'こんにちは、元気ですか？', timestamp: new Date() },
+            {
+              role: 'assistant',
+              content: 'こんにちは！元気です。何かお手伝いできますか？',
+              timestamp: new Date(),
+            },
+            {
+              role: 'user',
+              content: '今日はいい天気ですね。散歩に行きました。',
+              timestamp: new Date(),
+            },
+            {
+              role: 'assistant',
+              content: 'そうですね、素晴らしい一日ですね。楽しい散歩だったでしょう。',
+              timestamp: new Date(),
+            },
+          ],
+        }
+        const strategy = new QAChunkingStrategy()
+        const chunks = strategy.chunk(log)
+        expect(chunks).toHaveLength(0)
+        expect(warnSpy).toHaveBeenCalledOnce()
+        expect(warnSpy).toHaveBeenCalledWith('All 2 chunks were filtered out by importance filter')
+      } finally {
+        warnSpy.mockRestore()
+      }
+    })
+
+    it('should not warn when some chunks pass importance filter', () => {
+      const warnSpy: MockInstance = vi.spyOn(console, 'warn').mockImplementation(() => {})
+      try {
+        const log: ConversationLog = {
+          sessionId: 's1',
+          messages: [
+            { role: 'user', content: 'データベースの設計方針を決定したい', timestamp: new Date() },
+            {
+              role: 'assistant',
+              content:
+                'PostgreSQLを採用する理由は、pgvectorによるベクトル検索とpg_bigmによる日本語検索が統合できるためです。',
+              timestamp: new Date(),
+            },
+          ],
+        }
+        const strategy = new QAChunkingStrategy()
+        const chunks = strategy.chunk(log)
+        expect(chunks).toHaveLength(1)
+        expect(warnSpy).not.toHaveBeenCalled()
+      } finally {
+        warnSpy.mockRestore()
+      }
+    })
+
+    it('should not warn when filterByImportance is disabled', () => {
+      const warnSpy: MockInstance = vi.spyOn(console, 'warn').mockImplementation(() => {})
+      try {
+        const log: ConversationLog = {
+          sessionId: 's1',
+          messages: [
+            { role: 'user', content: 'こんにちは、元気ですか？', timestamp: new Date() },
+            {
+              role: 'assistant',
+              content: 'こんにちは！元気です。何かお手伝いできますか？',
+              timestamp: new Date(),
+            },
+          ],
+        }
+        const strategy = new QAChunkingStrategy({ filterByImportance: false })
+        const chunks = strategy.chunk(log)
+        expect(chunks).toHaveLength(1)
+        expect(warnSpy).not.toHaveBeenCalled()
+      } finally {
+        warnSpy.mockRestore()
+      }
+    })
+
+    it('should not warn when there are no chunks before filtering', () => {
+      const warnSpy: MockInstance = vi.spyOn(console, 'warn').mockImplementation(() => {})
+      try {
+        const log: ConversationLog = { sessionId: 's1', messages: [] }
+        const strategy = new QAChunkingStrategy()
+        const chunks = strategy.chunk(log)
+        expect(chunks).toHaveLength(0)
+        expect(warnSpy).not.toHaveBeenCalled()
+      } finally {
+        warnSpy.mockRestore()
+      }
     })
 
     it('should allow disabling importance filter', () => {

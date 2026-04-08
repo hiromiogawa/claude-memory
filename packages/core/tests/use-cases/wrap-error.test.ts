@@ -43,6 +43,23 @@ describe('wrapStorageError', () => {
       }),
     ).rejects.toThrow(StorageConnectionError)
   })
+
+  it('preserves original error as cause', async () => {
+    const original = new Error('connection refused')
+    const wrapped = wrapStorageError(async () => {
+      throw original
+    })
+    await expect(wrapped).rejects.toSatisfy((err: StorageConnectionError) => err.cause === original)
+  })
+
+  it('preserves non-Error cause', async () => {
+    const wrapped = wrapStorageError(async () => {
+      throw 'string error'
+    })
+    await expect(wrapped).rejects.toSatisfy(
+      (err: StorageConnectionError) => err.cause === 'string error',
+    )
+  })
 })
 
 describe('wrapEmbeddingError', () => {
@@ -65,5 +82,13 @@ describe('wrapEmbeddingError', () => {
         throw new MemoryNotFoundError('abc')
       }),
     ).rejects.toThrow(MemoryNotFoundError)
+  })
+
+  it('preserves original error as cause', async () => {
+    const original = new Error('ONNX runtime failed')
+    const wrapped = wrapEmbeddingError(async () => {
+      throw original
+    })
+    await expect(wrapped).rejects.toSatisfy((err: EmbeddingFailedError) => err.cause === original)
   })
 })

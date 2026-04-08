@@ -420,6 +420,46 @@ describe('PostgresStorageRepository', () => {
       const uniqueScores = new Set(scores)
       expect(uniqueScores.size).toBeGreaterThan(1)
     })
+
+    it('escapes LIKE special characters so they match literally', async () => {
+      await repo.clear()
+      const now = Date.now()
+      await repo.saveBatch([
+        makeMemory({
+          content: 'progress is 100% complete',
+          createdAt: new Date(now - 2000),
+          updatedAt: new Date(now - 2000),
+          lastAccessedAt: new Date(now - 2000),
+        }),
+        makeMemory({
+          content: 'use snake_case naming',
+          createdAt: new Date(now - 1000),
+          updatedAt: new Date(now - 1000),
+          lastAccessedAt: new Date(now - 1000),
+        }),
+        makeMemory({
+          content: 'backslash \\ is an escape char',
+          createdAt: new Date(now),
+          updatedAt: new Date(now),
+          lastAccessedAt: new Date(now),
+        }),
+      ])
+
+      // % should be treated as a literal percent sign, not a wildcard
+      const percentResults = await repo.searchByKeyword('100%', 10)
+      expect(percentResults).toHaveLength(1)
+      expect(percentResults[0]!.memory.content).toContain('100%')
+
+      // _ should be treated as a literal underscore, not a single-char wildcard
+      const underscoreResults = await repo.searchByKeyword('snake_case', 10)
+      expect(underscoreResults).toHaveLength(1)
+      expect(underscoreResults[0]!.memory.content).toContain('snake_case')
+
+      // \ should be treated as a literal backslash
+      const backslashResults = await repo.searchByKeyword('\\', 10)
+      expect(backslashResults).toHaveLength(1)
+      expect(backslashResults[0]!.memory.content).toContain('\\')
+    })
   })
 
   describe('searchByVector', () => {

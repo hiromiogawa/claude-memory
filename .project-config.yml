@@ -1,0 +1,28 @@
+# Project-specific configuration values
+# Referenced by skills for project-specific settings
+
+project:
+  name: claude-memory
+  type: monorepo
+
+coverage:
+  minimum: 75
+  target: 80
+
+architecture:
+  type: clean-architecture
+  layers:
+    domain: packages/core
+    infrastructure:
+      - packages/embedding-onnx
+      - packages/storage-postgres
+    interface:
+      - packages/mcp-server
+      - packages/hooks
+
+scopes:
+  - core
+  - embedding-onnx
+  - storage-postgres
+  - mcp-server
+  - hooks
