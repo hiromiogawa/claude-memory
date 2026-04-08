@@ -125,6 +125,21 @@ describe('PostgresStorageRepository', () => {
     it('handles empty batch without error', async () => {
       await expect(repo.saveBatch([])).resolves.not.toThrow()
     })
+
+    it('upserts existing memories on conflict', async () => {
+      const memory = makeMemory({ content: 'Original content' })
+      await repo.save(memory)
+
+      const updated = { ...memory, content: 'Updated via batch', updatedAt: new Date() }
+      const newMemory = makeMemory({ content: 'Brand new' })
+      await repo.saveBatch([updated, newMemory])
+
+      const found = await repo.findById(memory.id)
+      expect(found!.content).toBe('Updated via batch')
+
+      const stats = await repo.getStats()
+      expect(stats.totalMemories).toBe(2)
+    })
   })
 
   describe('delete', () => {
