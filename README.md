@@ -107,7 +107,7 @@ docker compose ps
         "hooks": [
           {
             "type": "command",
-            "command": "docker run --rm --network claude-memory_default -e DATABASE_URL=postgresql://memory:memory@db:5432/claude_memory -e EMBEDDING_MODEL=intfloat/multilingual-e5-small -e EMBEDDING_DIMENSION=384 claude-memory-mcp-server node packages/hooks/dist/index.js 2>/dev/null || true",
+            "command": "DATABASE_URL=postgresql://memory:memory@localhost:5435/claude_memory node <claude-memory-repo>/packages/mcp-server/dist/session-end.js 2>/dev/null || true",
             "timeout": 120,
             "statusMessage": "セッションの記憶を保存中..."
           }
@@ -129,7 +129,7 @@ docker compose ps
 
 - **mcpServers** — Claude Code が `memory_save`, `memory_search` 等のMCPツールを使えるようになる。`docker run` で都度コンテナを起動し、stdio 経由で通信する
 - **hooks.SessionStart** — セッション開始時に `prompt` フックで関連する記憶を自動検索し、文脈を把握する
-- **hooks.SessionEnd** — セッション終了時に会話内容をQ&Aペアに分割してDBに自動保存する。ユーザーが意識する必要はなく、会話を終了するだけで記憶が蓄積される
+- **hooks.SessionEnd** — セッション終了時に会話ログ（`transcript_path`）をQ&Aペアに分割してDBに自動保存する。ホスト側で `node` を直接実行する（Docker コンテナ内では会話ログファイルにアクセスできないため）。`<claude-memory-repo>` はクローン先の絶対パスに置き換える
 
 設定後、Claude Code を再起動すると反映される。
 
