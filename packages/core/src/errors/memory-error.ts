@@ -4,12 +4,14 @@ export class MemoryError extends Error {
    * 新しい MemoryError を生成する。
    * @param message - 人間が読めるエラーの説明。
    * @param code - マシンが読めるエラーコード。
+   * @param options - ErrorOptions（cause など）。
    */
   constructor(
     message: string,
     public readonly code: string,
+    options?: ErrorOptions,
   ) {
-    super(message)
+    super(message, options)
     this.name = 'MemoryError'
   }
 }
@@ -31,9 +33,10 @@ export class EmbeddingFailedError extends MemoryError {
   /**
    * 新しい EmbeddingFailedError を生成する。
    * @param reason - embedding失敗の理由の説明。
+   * @param options - ErrorOptions（cause など）。
    */
-  constructor(reason: string) {
-    super(`Embedding failed: ${reason}`, 'EMBEDDING_FAILED')
+  constructor(reason: string, options?: ErrorOptions) {
+    super(`Embedding failed: ${reason}`, 'EMBEDDING_FAILED', options)
     this.name = 'EmbeddingFailedError'
   }
 }
@@ -43,9 +46,10 @@ export class StorageConnectionError extends MemoryError {
   /**
    * 新しい StorageConnectionError を生成する。
    * @param reason - 接続失敗の理由の説明。
+   * @param options - ErrorOptions（cause など）。
    */
-  constructor(reason: string) {
-    super(`Storage connection error: ${reason}`, 'STORAGE_CONNECTION_ERROR')
+  constructor(reason: string, options?: ErrorOptions) {
+    super(`Storage connection error: ${reason}`, 'STORAGE_CONNECTION_ERROR', options)
     this.name = 'StorageConnectionError'
   }
 }

@@ -14,7 +14,7 @@ export async function wrapStorageError<T>(fn: () => Promise<T>): Promise<T> {
   } catch (error) {
     if (error instanceof MemoryError) throw error
     const message = error instanceof Error ? error.message : 'Unknown storage error'
-    throw new StorageConnectionError(message)
+    throw new StorageConnectionError(message, { cause: error })
   }
 }
 
@@ -28,6 +28,6 @@ export async function wrapEmbeddingError<T>(fn: () => Promise<T>): Promise<T> {
   } catch (error) {
     if (error instanceof MemoryError) throw error
     const message = error instanceof Error ? error.message : 'Unknown embedding error'
-    throw new EmbeddingFailedError(message)
+    throw new EmbeddingFailedError(message, { cause: error })
   }
 }

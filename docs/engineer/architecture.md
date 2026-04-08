@@ -97,6 +97,7 @@ CREATE TABLE memories (
   project_path TEXT,
   tags TEXT[],
   source TEXT,                    -- 'manual' | 'auto'
+  scope TEXT,                     -- 'project' | 'global'
   created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
   last_accessed_at TIMESTAMPTZ NOT NULL DEFAULT now(),
