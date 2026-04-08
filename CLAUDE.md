@@ -10,6 +10,8 @@
 - code-quality → OXLint/Biome/knip/dependency-cruiser
 - docs-freshness → ドキュメント鮮度維持（Why/What/How分類、自動生成、CI差分チェック）
 - project-bootstrap → 新プロジェクト初期化（統括スキル）
+- self-review → 実装後の検証サイクル（lint/test/dep-check/knip）
+- failure-record → エージェントの失敗記録と再発防止ルール管理
 
 ## プロジェクト固有の指示
 
