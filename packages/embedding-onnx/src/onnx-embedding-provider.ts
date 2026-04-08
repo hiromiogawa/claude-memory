@@ -45,18 +45,20 @@ export class OnnxEmbeddingProvider implements EmbeddingProvider {
   }
 
   /**
-   * 複数テキストのembedding vectorをまとめて生成する。
+   * 複数テキストのembedding vectorを1回のpipeline呼び出しでバッチ生成する。
    * @param texts - embeddingを生成するテキストの配列
    * @returns 正規化されたembedding vectorの配列
    */
   async embedBatch(texts: string[]): Promise<number[][]> {
+    if (texts.length === 0) return []
     const extractor = await this.getExtractor()
-    const results = await Promise.all(
-      texts.map(async (text) => {
-        const output = await extractor(text, { pooling: 'mean', normalize: true })
-        return Array.from(output.data as Float32Array)
-      }),
-    )
+    const output = await extractor(texts, { pooling: 'mean', normalize: true })
+    const dim = this.getDimension()
+    const flat = output.data as Float32Array
+    const results: number[][] = []
+    for (let i = 0; i < texts.length; i++) {
+      results.push(Array.from(flat.slice(i * dim, (i + 1) * dim)))
+    }
     return results
   }
 
