@@ -108,14 +108,52 @@ export class PostgresStorageRepository implements StorageRepository {
   }
 
   /**
-   * 複数のメモリを順次保存する。
-   * @param batch - 保存するメモリの配列
+   * 複数のメモリを一括でPostgreSQLに保存（bulk upsert）する。
+   * @param batch - 保存するメモリの配列（各要素にembeddingが必要）
    * @returns 全メモリの永続化完了時に解決するPromise
    */
   async saveBatch(batch: Memory[]): Promise<void> {
     if (batch.length === 0) return
-    for (const memory of batch) {
-      await this.save(memory)
+
+    const CHUNK_SIZE = 500
+    for (let i = 0; i < batch.length; i += CHUNK_SIZE) {
+      const chunk = batch.slice(i, i + CHUNK_SIZE)
+      const values = chunk.map((memory) => {
+        if (!memory.embedding) throw new Error('Cannot save memory without embedding')
+        const embeddingLiteral = `[${memory.embedding.join(',')}]`
+        return {
+          id: memory.id,
+          content: memory.content,
+          embedding: sql`${embeddingLiteral}::vector`,
+          sessionId: memory.metadata.sessionId,
+          projectPath: memory.metadata.projectPath ?? null,
+          tags: memory.metadata.tags ?? null,
+          source: memory.metadata.source,
+          scope: memory.metadata.scope ?? 'project',
+          createdAt: memory.createdAt,
+          updatedAt: memory.updatedAt,
+          lastAccessedAt: memory.lastAccessedAt,
+          accessCount: memory.accessCount,
+        }
+      })
+
+      await this.db
+        .insert(memories)
+        .values(values)
+        .onConflictDoUpdate({
+          target: memories.id,
+          set: {
+            content: sql`excluded.content`,
+            embedding: sql`excluded.embedding`,
+            sessionId: sql`excluded.session_id`,
+            projectPath: sql`excluded.project_path`,
+            tags: sql`excluded.tags`,
+            source: sql`excluded.source`,
+            scope: sql`excluded.scope`,
+            updatedAt: sql`excluded.updated_at`,
+            lastAccessedAt: sql`excluded.last_accessed_at`,
+          },
+        })
     }
   }
 
