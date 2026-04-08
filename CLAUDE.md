@@ -16,6 +16,7 @@
 - rule-explore → ルールのボトルネック・未知パターン探索
 - rule-improve → 計測・探索結果からルール改善提案をIssue化
 - rule-audit → 改善提案の検証・承認・却下
+- rule-cycle → ルール改善サイクルのオーケストレーター（measure→explore→improve→audit）
 
 ## プロジェクト固有の指示
 
