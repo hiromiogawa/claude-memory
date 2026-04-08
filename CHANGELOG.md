@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.0.1](https://github.com/hiromiogawa/claude-memory/compare/v1.0.0...v1.0.1) (2026-04-08)
+
+
+### Bug Fixes
+
+* **core:** storage/embedding エラーハンドリングの整理 ([#141](https://github.com/hiromiogawa/claude-memory/issues/141)) ([04fb29e](https://github.com/hiromiogawa/claude-memory/commit/04fb29e5e2f62eda8c5ae673ca0209f305f4e752))
+
 ## 1.0.0 (2026-04-08)
 
 
