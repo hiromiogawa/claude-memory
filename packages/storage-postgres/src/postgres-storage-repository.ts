@@ -13,6 +13,9 @@ import { memories } from './schema.js'
 
 type DbRow = typeof memories.$inferSelect
 
+/** PostgreSQLパラメータ上限(65535)を考慮したbulk insert時のチャンクサイズ（1行あたり約12パラメータ） */
+const BULK_INSERT_CHUNK_SIZE = 500
+
 /** PostgreSQL配列オーバーラップ演算子(&&)で、いずれかのタグを含む行にフィルタ */
 function tagsOverlapCondition(tags: string[]) {
   return sql`${memories.tags} && ARRAY[${sql.join(
@@ -115,46 +118,47 @@ export class PostgresStorageRepository implements StorageRepository {
   async saveBatch(batch: Memory[]): Promise<void> {
     if (batch.length === 0) return
 
-    const CHUNK_SIZE = 500
-    for (let i = 0; i < batch.length; i += CHUNK_SIZE) {
-      const chunk = batch.slice(i, i + CHUNK_SIZE)
-      const values = chunk.map((memory) => {
-        if (!memory.embedding) throw new Error('Cannot save memory without embedding')
-        const embeddingLiteral = `[${memory.embedding.join(',')}]`
-        return {
-          id: memory.id,
-          content: memory.content,
-          embedding: sql`${embeddingLiteral}::vector`,
-          sessionId: memory.metadata.sessionId,
-          projectPath: memory.metadata.projectPath ?? null,
-          tags: memory.metadata.tags ?? null,
-          source: memory.metadata.source,
-          scope: memory.metadata.scope ?? 'project',
-          createdAt: memory.createdAt,
-          updatedAt: memory.updatedAt,
-          lastAccessedAt: memory.lastAccessedAt,
-          accessCount: memory.accessCount,
-        }
-      })
-
-      await this.db
-        .insert(memories)
-        .values(values)
-        .onConflictDoUpdate({
-          target: memories.id,
-          set: {
-            content: sql`excluded.content`,
-            embedding: sql`excluded.embedding`,
-            sessionId: sql`excluded.session_id`,
-            projectPath: sql`excluded.project_path`,
-            tags: sql`excluded.tags`,
-            source: sql`excluded.source`,
-            scope: sql`excluded.scope`,
-            updatedAt: sql`excluded.updated_at`,
-            lastAccessedAt: sql`excluded.last_accessed_at`,
-          },
+    await this.db.transaction(async (tx) => {
+      for (let i = 0; i < batch.length; i += BULK_INSERT_CHUNK_SIZE) {
+        const chunk = batch.slice(i, i + BULK_INSERT_CHUNK_SIZE)
+        const values = chunk.map((memory) => {
+          if (!memory.embedding) throw new Error('Cannot save memory without embedding')
+          const embeddingLiteral = `[${memory.embedding.join(',')}]`
+          return {
+            id: memory.id,
+            content: memory.content,
+            embedding: sql`${embeddingLiteral}::vector`,
+            sessionId: memory.metadata.sessionId,
+            projectPath: memory.metadata.projectPath ?? null,
+            tags: memory.metadata.tags ?? null,
+            source: memory.metadata.source,
+            scope: memory.metadata.scope ?? 'project',
+            createdAt: memory.createdAt,
+            updatedAt: memory.updatedAt,
+            lastAccessedAt: memory.lastAccessedAt,
+            accessCount: memory.accessCount,
+          }
         })
-    }
+
+        await tx
+          .insert(memories)
+          .values(values)
+          .onConflictDoUpdate({
+            target: memories.id,
+            set: {
+              content: sql`excluded.content`,
+              embedding: sql`excluded.embedding`,
+              sessionId: sql`excluded.session_id`,
+              projectPath: sql`excluded.project_path`,
+              tags: sql`excluded.tags`,
+              source: sql`excluded.source`,
+              scope: sql`excluded.scope`,
+              updatedAt: sql`excluded.updated_at`,
+              lastAccessedAt: sql`excluded.last_accessed_at`,
+            },
+          })
+      }
+    })
   }
 
   /**
