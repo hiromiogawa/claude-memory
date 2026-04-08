@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.0.2](https://github.com/hiromiogawa/claude-memory/compare/v1.0.1...v1.0.2) (2026-04-08)
+
+
+### Bug Fixes
+
+* self-review improvements ([#143](https://github.com/hiromiogawa/claude-memory/issues/143)) ([#156](https://github.com/hiromiogawa/claude-memory/issues/156)) ([e89ed72](https://github.com/hiromiogawa/claude-memory/commit/e89ed72abf65ce938c5fb11aee767130502e88c6))
+
 ## [1.0.1](https://github.com/hiromiogawa/claude-memory/compare/v1.0.0...v1.0.1) (2026-04-08)
 
 
