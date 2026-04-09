@@ -1,84 +1,29 @@
 import type { Chunk, ChunkingStrategy, ConversationLog } from '@claude-memory/core'
-import { DEFAULT_MAX_CHUNK_CHARS, MIN_CHUNK_CHARS } from './constants.js'
+import { DEFAULT_MAX_CHUNK_CHARS } from './constants.js'
 
 const QA_PREFIX_USER = 'Q: '
 const QA_PREFIX_ASSISTANT = '\nA: '
 /** 文末句読点で分割する正規表現（日本語・英語対応） */
 const SENTENCE_BOUNDARY_REGEX = /[^。.!！?？\n]+[。.!！?？\n]?/g
 
-/** 重要度が高いことを示すキーワード（日本語・英語） */
-const IMPORTANCE_KEYWORDS = [
-  // Design decisions
-  '決定',
-  '選定',
-  '採用',
-  '方針',
-  '設計',
-  'decided',
-  'chose',
-  'architecture',
-  // Bugs
-  'バグ',
-  'エラー',
-  '原因',
-  '修正',
-  'bug',
-  'error',
-  'fix',
-  'cause',
-  // User preferences
-  '好み',
-  'スタイル',
-  'ルール',
-  'prefer',
-  'style',
-  'rule',
-  // Important outcomes
-  '結論',
-  '合意',
-  '理由',
-  'conclusion',
-  'agreed',
-  'reason',
-  'because',
-  // Technical
-  '実装',
-  'リファクタ',
-  'テスト',
-  'implement',
-  'refactor',
-  'test',
-]
-
-/** チャンクが保存に値する重要度を持つか判定する */
-function isImportant(content: string): boolean {
-  if (content.length < MIN_CHUNK_CHARS) return false
-  const lower = content.toLowerCase()
-  return IMPORTANCE_KEYWORDS.some((kw) => lower.includes(kw.toLowerCase()))
-}
-
 interface QAChunkingOptions {
   maxChunkChars?: number
-  /** 重要度フィルタを有効にするか（デフォルト: true） */
-  filterByImportance?: boolean
 }
 
-/** 会話をQ&Aペアのチャンクに分割し、オプションで重要度フィルタを適用するストラテジ。 */
+/** 会話をQ&Aペアのチャンクに分割するストラテジ。 */
 export class QAChunkingStrategy implements ChunkingStrategy {
   private readonly maxChunkChars: number
-  private readonly filterByImportance: boolean
 
   /**
    * QAChunkingStrategyの新しいインスタンスを生成する。
-   * @param options - チャンク最大文字数と重要度フィルタのオプション設定
+   * @param options - チャンク最大文字数のオプション設定
    */
   constructor(options?: QAChunkingOptions) {
     this.maxChunkChars = options?.maxChunkChars ?? DEFAULT_MAX_CHUNK_CHARS
-    this.filterByImportance = options?.filterByImportance ?? true
   }
 
   /**
-   * 会話ログをQ&Aペアのチャンクに分割し、超過チャンクを分割・重要度でフィルタリングする。
+   * 会話ログをQ&Aペアのチャンクに分割し、超過チャンクを分割する。
    * @param conversation - チャンク化する会話ログ
    * @returns embeddingと保存に適したチャンクの配列
    */
@@ -94,14 +39,7 @@ export class QAChunkingStrategy implements ChunkingStrategy {
       }
     }
 
-    // Filter out low-importance chunks (only when enabled, e.g. auto-save)
-    if (!this.filterByImportance) return result
-
-    const filtered = result.filter((chunk) => isImportant(chunk.content))
-    if (result.length > 0 && filtered.length === 0) {
-      console.warn(`All ${result.length} chunks were filtered out by importance filter`)
-    }
-    return filtered
+    return result
   }
 
   private extractQAPairs(conversation: ConversationLog): Chunk[] {

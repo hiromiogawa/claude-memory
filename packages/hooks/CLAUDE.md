@@ -26,11 +26,10 @@
 
 `src/constants.ts` に集約:
 - `DEFAULT_MAX_CHUNK_CHARS` (1000) — QA チャンクの最大文字数
-- `MIN_CHUNK_CHARS` (50) — チャンクの最小文字数（重要度判定）
 - `SESSION_START_SEARCH_LIMIT` (5) — セッション開始時の記憶検索件数
 
 ## 制約
 
 - QA チャンク最大サイズ: 1000 文字（日本語の文境界で分割）
-- 重要度フィルタリングがデフォルト有効（決定、選定、バグ、エラー等のキーワード）
+- 容量管理は core の `enforceCapacity`（LFU方式）に委譲。チャンキング側でのフィルタリングはしない
 - JSONL パースはエラー耐性あり（不正行はスキップ）
