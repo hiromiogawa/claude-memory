@@ -438,7 +438,7 @@ export class PostgresStorageRepository implements StorageRepository {
     cutoff.setDate(cutoff.getDate() - olderThanDays)
     const result = await this.db
       .delete(memories)
-      .where(sql`${col} < ${cutoff}`)
+      .where(sql`${col} < ${cutoff.toISOString()}`)
       .returning({ id: memories.id })
     return result.length
   }
@@ -459,7 +459,7 @@ export class PostgresStorageRepository implements StorageRepository {
     const result = await this.db
       .select({ count: sql<number>`COUNT(*)::int` })
       .from(memories)
-      .where(sql`${col} < ${cutoff}`)
+      .where(sql`${col} < ${cutoff.toISOString()}`)
     return result[0]?.count ?? 0
   }
 
