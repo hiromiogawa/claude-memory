@@ -1,9 +1,11 @@
 ---
 name: code-quality
-description: コード品質ツールの設定と実行タイミングガイド
+description: Use when OXLint/Biome/knip/dependency-cruiser など品質ツールの設定・実行タイミングを決めるとき、または lint・未使用コード・依存違反エラーに遭遇したとき
 ---
 
 # コード品質ツール
+
+品質を pre-commit / pre-push / CI の 3 層で担保し、フォーマットとリントは別ツールに役割分担する。
 
 ## ツールスタック
 
@@ -56,3 +58,12 @@ CI で依存グラフの SVG を自動生成する。
 - `.dependency-cruiser.cjs` — 禁止依存ルール
 - `lefthook.yml` — pre-commit, pre-push, commit-msg フック
 - `commitlint.config.cjs` — Conventional Commits 設定（scope enum 付き）
+
+## よくある間違い
+
+| 間違い | 正しい対応 |
+|--------|-----------|
+| Biome と OXLint の両方で lint を有効化 | Biome はフォーマットのみ、lint は OXLint に一元化 |
+| knip の未使用警告を無視 | 必ず解消（削除 or entry に追加） |
+| dep-check 違反を許可コメントで回避 | import 方向を直す |
+| 新規パッケージ追加時に dep-check 設定を忘れる | `.dependency-cruiser.cjs` に層情報を追加 |

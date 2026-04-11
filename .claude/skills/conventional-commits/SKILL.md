@@ -1,9 +1,11 @@
 ---
 name: conventional-commits
-description: Conventional Commits + ブランチ命名規則による一貫した Git ワークフロー
+description: Use when コミットメッセージを書くとき、ブランチを作成するとき、または type/scope/命名規則の付け方に迷ったとき
 ---
 
 # Conventional Commits とブランチルール
+
+コミットメッセージとブランチ名を機械可読なフォーマットに揃え、changelog 生成・scope フィルタ・Issue 紐付けを自動化可能にする。
 
 ## コミットフォーマット
 
@@ -76,6 +78,16 @@ chore/#20-update-deps
 
 - **commitlint** と `@commitlint/config-conventional` — コミットメッセージを検証
 - **lefthook** — `commit-msg` フックで commitlint を実行
+
+## よくある間違い
+
+| 間違い | 正しい |
+|--------|--------|
+| `feat: Add feature.` | 小文字始まり・ピリオドなし: `feat(scope): add feature` |
+| `fix: fix bug` | scope を省略しない: `fix(core): handle null input` |
+| 破壊的変更を本文のみに書く | `!` または `BREAKING CHANGE:` フッターで明示 |
+| `feat/add-memory` | Issue 番号必須: `feat/#12-add-memory` |
+| 複数パッケージ変更を 1 コミット | scope を分けてコミット分割 |
 
 ## チェックリスト
 

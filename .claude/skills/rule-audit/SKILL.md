@@ -1,6 +1,6 @@
 ---
 name: rule-audit
-description: 改善提案を検証し、承認またはクローズする
+description: Use when rule-improve が起票したルール改善提案 Issue を検証し、承認するかクローズするか判断するとき
 ---
 
 # ルール検証

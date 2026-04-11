@@ -21,6 +21,7 @@
 - dev-complete → 実装完了時のオーケストレーター（self-review→docs-freshness→conventional-commits→PR）
 - post-review → レビュー後のオーケストレーター（failure-record→rule-cycle）
 - design-decision → 設計判断時のオーケストレーター（adr→memory保存）
+- writing-project-skills → このプロジェクトで skill を新規作成・編集するときの規約
 
 ## プロジェクト固有の指示
 
