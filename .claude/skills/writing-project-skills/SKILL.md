@@ -71,6 +71,11 @@ description: Use when [トリガー条件のみ]
 - サブスキル呼び出しは `**REQUIRED SUB-SKILL:** skill-name に従い` で明示
 - `## 完了条件` セクションで全 step のチェックリストを提示
 - description に「A→B→C を順次実行」等のワークフロー要約を書かない
+- **「よくある間違い」セクションは省略可**: 間違いの実体はサブスキル側で記述済みのため。オーケストレーター固有の落とし穴（step 順序違反など）がある場合のみ記述する
+
+## 内部連鎖 skill の扱い
+
+`rule-measure → rule-explore → rule-improve → rule-audit` のように、特定のオーケストレーターからのみ起動される内部連鎖 skill も「よくある間違い」セクションは省略可。ただし description では連鎖の前後関係（「rule-measure の直後」等）を明記する。
 
 ## Discipline skill の追加要件
 
