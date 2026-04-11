@@ -25,6 +25,7 @@
 
 ## プロジェクト固有の指示
 
+- **master/main への直接コミット禁止**。編集前に `git branch --show-current` でブランチを確認し、master なら dev-start スキルを起動して feature ブランチに移る
 - コミット時は Conventional Commits に従う（scope: core, embedding-onnx, storage-postgres, mcp-server, hooks）
 - PRは必ず関連Issueを紐付ける
 - 型定義変更時はJSDocも同時に更新する
