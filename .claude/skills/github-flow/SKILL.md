@@ -1,6 +1,6 @@
 ---
 name: github-flow
-description: Issue階層、PR管理、GitHub Projects ワークフロー
+description: Use when Issue を作成・階層付けするとき、PR を立てるとき、または GitHub Projects のステータスを更新するとき
 ---
 
 # GitHub Flow
@@ -56,6 +56,15 @@ Issue テンプレートは `.github/ISSUE_TEMPLATE/` に配置:
 - 本文: `Closes #XX` で Issue 紐付け
 - 1 PR = 1 Issue
 - レビュー + QA 承認後にマージ
+
+## よくある間違い
+
+| 間違い | 正しい対応 |
+|--------|-----------|
+| 1 PR に複数 Issue を混ぜる | PR と Issue は 1:1。Subtask に分割 |
+| PR 本文に `Closes #XX` 無し | 必須。自動 close が効かず Done に遷移しない |
+| Epic に直接 PR を紐付ける | Epic は Task/Story/Bug 経由で進捗させる |
+| タイプラベル付け忘れ | `task`/`bug`/`story` 等のラベルを必ず付与 |
 
 ## ワークフロー
 

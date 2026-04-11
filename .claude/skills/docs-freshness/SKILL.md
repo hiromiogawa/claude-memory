@@ -1,6 +1,6 @@
 ---
 name: docs-freshness
-description: ドキュメント鮮度ルール — Why/What/How に分類し、What は自動生成、CI で差分チェック
+description: Use when ドキュメントを追加・更新するとき、生成物と手動ドキュメントの役割分担に迷ったとき、または CI の docs 差分チェックが失敗したとき
 ---
 
 # ドキュメント鮮度管理

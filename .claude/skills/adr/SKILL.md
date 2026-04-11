@@ -1,6 +1,6 @@
 ---
 name: adr
-description: アーキテクチャ決定記録（ADR）の作成と管理
+description: Use when 技術選定・アーキテクチャ変更・代替案比較の末に設計判断を下したとき、design-decision オーケストレーター外で単独記録する場合や既存 ADR を Supersede するとき
 ---
 
 # ADR（アーキテクチャ決定記録）
@@ -63,3 +63,13 @@ Proposed | Accepted | Deprecated | Superseded by ADR-YYY
 - ADR は **不変** — 変更する場合は新しい ADR で Supersede
 - ステータスを更新して「Deprecated」or「Superseded by ADR-YYY」にする
 - コミット: `docs(adr): add ADR-XXX for topic`
+
+## よくある間違い
+
+| 間違い | 正しい対応 |
+|--------|-----------|
+| 既存 ADR を書き換える | ADR は不変。新 ADR で Supersede |
+| 選択肢を比較せず結論だけ書く | 却下された代替案と理由こそ ADR の価値 |
+| 番号重複 | 作成前に既存最大番号を確認 |
+| root と packages の番号を混同 | それぞれ独立した連番 |
+| ADR 作成後に memory 保存を忘れる | brainstorming 中なら design-decision を使う |

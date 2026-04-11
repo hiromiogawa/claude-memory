@@ -1,6 +1,6 @@
 ---
 name: rule-cycle
-description: ルール自動改善サイクルのオーケストレーター。failure-record で FAIL エントリ追記後に呼び出し、measure → explore → improve → audit を順次実行する。手動で「ルールを改善して」と言われた場合にも使う。
+description: Use when failure-record に FAIL エントリを追記した直後、またはユーザーから「ルールを改善して」と依頼されたとき
 ---
 
 # ルール改善サイクル
@@ -41,19 +41,19 @@ grep -c "^### FAIL-" docs/adr/0007-agent-failure-rules.md
 
 #### Step 1: rule-measure（計測）
 
-rule-measure スキルを実行する。ADR-0007 の失敗履歴、Git ログ、ルール総数を集計し、効果スコアを算出。結果は memory にジャーナル保存される。
+**REQUIRED SUB-SKILL:** rule-measure を実行する。ADR-0007 の失敗履歴、Git ログ、ルール総数を集計し、効果スコアを算出。結果は memory にジャーナル保存される。
 
 #### Step 2: rule-explore（探索）
 
-rule-explore スキルを実行する。Measure の結果を踏まえ、スキル間の矛盾・重複、未ルール化パターン、アーカイブ候補を探す。結果は memory にジャーナル保存される。
+**REQUIRED SUB-SKILL:** rule-explore を実行する。Measure の結果を踏まえ、スキル間の矛盾・重複、未ルール化パターン、アーカイブ候補を探す。結果は memory にジャーナル保存される。
 
 #### Step 3: rule-improve（改善提案）
 
-rule-improve スキルを実行する。Measure + Explore の結果から改善提案を GitHub Issue として起票する。ファイルは変更しない。
+**REQUIRED SUB-SKILL:** rule-improve を実行する。Measure + Explore の結果から改善提案を GitHub Issue として起票する。ファイルは変更しない。
 
 #### Step 4: rule-audit（検証）
 
-rule-audit スキルを実行する。Improve が起票した Issue を精査し、承認（`approved` ラベル）またはクローズする。サイクルメタ情報を memory に保存し、古いジャーナルを整理する。
+**REQUIRED SUB-SKILL:** rule-audit を実行する。Improve が起票した Issue を精査し、承認（`approved` ラベル）またはクローズする。サイクルメタ情報を memory に保存し、古いジャーナルを整理する。
 
 ### 3. 完了報告
 

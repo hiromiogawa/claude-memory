@@ -1,6 +1,6 @@
 ---
 name: rule-explore
-description: 計測数字だけでは見えないボトルネックや未知のパターンを探索する
+description: Use when rule-measure の直後、計測数字に表れないボトルネックやスキル間の矛盾・未ルール化パターンを洗い出したいとき
 ---
 
 # ルール探索

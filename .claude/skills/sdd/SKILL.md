@@ -1,6 +1,6 @@
 ---
 name: sdd
-description: 仕様駆動開発フロー — Markdown 仕様で設計し、JSDoc を SSoT として実装する
+description: Use when 新機能の設計を始めるとき、仕様書から実装へ移行するとき、または JSDoc/typedoc による仕様記述に迷ったとき
 ---
 
 # 仕様駆動開発（SDD）
@@ -42,6 +42,15 @@ docs/
 - CIで自動生成（PR時）
 - GitHub Pages or `docs/api/` に出力
 - JSDoc の `@remarks`, `@example`, `@see` を活用
+
+## よくある間違い
+
+| 間違い | 正しい対応 |
+|--------|-----------|
+| Markdown 仕様と JSDoc の両方を SSoT 扱い | 実装フェーズ以降は JSDoc が唯一の SSoT |
+| 型だけ変更して JSDoc 未更新 | 型と JSDoc は同時更新 |
+| 仕様書を残さず実装だけ進める | `docs/specs/` に設計を残してから実装 |
+| `@remarks` に制約条件を書かない | 制約は必ず `@remarks`、例は `@example` |
 
 ## チェックリスト
 
