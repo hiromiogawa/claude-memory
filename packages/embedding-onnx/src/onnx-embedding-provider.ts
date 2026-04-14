@@ -1,6 +1,18 @@
+import { homedir } from 'node:os'
+import { join } from 'node:path'
 import type { EmbeddingProvider } from '@claude-memory/core'
-import { type FeatureExtractionPipeline, pipeline } from '@huggingface/transformers'
+import { env, type FeatureExtractionPipeline, pipeline } from '@huggingface/transformers'
 import { DEFAULT_DIMENSION } from './constants.js'
+
+// transformers.js のモデルキャッシュ位置をユーザーホームの `~/.cache/huggingface/` に統一する。
+// デフォルトはパッケージ自身のディレクトリ配下（pnpm の内部パス）で、host と Docker container
+// では異なる node_modules パスになるためキャッシュが共有できない。HF_CACHE_DIR が設定されて
+// いればそれを優先し、未設定時は OS 共通パターンの ~/.cache/huggingface/ を使う。
+// host: /Users/<name>/.cache/huggingface (デフォルト)
+// Docker container: /root/.cache/huggingface (HOME=/root)
+// docker-compose.yml で host の ~/.cache/huggingface を container の /root/.cache/huggingface
+// に bind mount すると、両者が物理的に同じディレクトリを共有しモデルの二重ダウンロードを回避できる。
+env.cacheDir = process.env.HF_CACHE_DIR ?? join(homedir(), '.cache', 'huggingface')
 
 export interface OnnxEmbeddingConfig {
   modelName: string

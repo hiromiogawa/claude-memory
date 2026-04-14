@@ -10,15 +10,9 @@ COPY scripts/ scripts/
 RUN pnpm install --frozen-lockfile
 RUN pnpm build
 
-# Pre-download the ONNX embedding model so it's cached in the image
-# Use pnpm exec to ensure correct module resolution with hoist=false
-RUN pnpm --filter @claude-memory/embedding-onnx exec node -e " \
-  import('./dist/onnx-embedding-provider.js').then(async (m) => { \
-    const p = m.defineOnnxEmbeddingProvider({ modelName: 'intfloat/multilingual-e5-small' }); \
-    const v = await p.embed('warmup'); \
-    console.log('Model cached. Dim:', v.length); \
-  }).catch(e => { console.error(e); process.exit(1); }) \
-"
+# ONNX embedding モデルは image に焼き込まない。実行時に host の ~/.cache/huggingface/
+# を bind mount 経由で共有し、host 側の session-start/end hook とキャッシュを一本化する。
+# docker-compose.yml の `volumes` 設定、または `docker run` の `-v` オプションを参照。
 
 # Save built dist files
 RUN find packages -name 'dist' -type d | tar cf /tmp/dist.tar -T -
@@ -43,7 +37,5 @@ WORKDIR /app
 COPY --from=builder /app/package.json /app/pnpm-workspace.yaml /app/pnpm-lock.yaml /app/.npmrc ./
 COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/packages ./packages
-# Copy ONNX model cache
-COPY --from=builder /root/.cache /root/.cache
 
 CMD ["node", "packages/mcp-server/dist/index.js"]

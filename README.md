@@ -80,6 +80,8 @@ docker compose ps
         "-i",
         "--network",
         "claude-memory_default",
+        "-v",
+        "<your-home>/.cache/huggingface:/root/.cache/huggingface",
         "-e",
         "DATABASE_URL=postgresql://memory:memory@db:5432/claude_memory",
         "-e",
@@ -130,6 +132,10 @@ docker compose ps
 - **mcpServers** — Claude Code が `memory_save`, `memory_search` 等のMCPツールを使えるようになる。`docker run` で都度コンテナを起動し、stdio 経由で通信する
 - **hooks.SessionStart** — セッション開始時に `prompt` フックで関連する記憶を自動検索し、文脈を把握する
 - **hooks.SessionEnd** — セッション終了時に会話ログ（`transcript_path`）をQ&Aペアに分割してDBに自動保存する。ホスト側で `node` を直接実行する（Docker コンテナ内では会話ログファイルにアクセスできないため）。`<claude-memory-repo>` はクローン先の絶対パスに置き換える
+
+**モデルキャッシュの共有:** `defineOnnxEmbeddingProvider` は `env.cacheDir` を `~/.cache/huggingface/` に統一するコードを含む（transformers.js のデフォルトは pnpm パッケージ内部の `.cache/` で host と Docker container で異なるため）。上記設定の `-v <your-home>/.cache/huggingface:/root/.cache/huggingface` で、ホストとコンテナで同じ物理ディレクトリを bind mount 経由で共有する。`<your-home>` は自分のホームディレクトリの絶対パスに置き換える（例: macOS なら `/Users/you`、Linux なら `/home/you`）。Claude Code の `args` は shell 経由で展開されないため、`~` や `${HOME}` は使えず絶対パス必須。
+
+初回のみインターネット接続が必要（`intfloat/multilingual-e5-small`、約 465MB fp32）。2 回目以降はローカルキャッシュから即ロード。これにより image サイズが縮小し、host hook と Docker server でモデル二重ダウンロードが発生しない。キャッシュ位置は `HF_CACHE_DIR` 環境変数で上書き可能。
 
 設定後、Claude Code を再起動すると反映される。
 
