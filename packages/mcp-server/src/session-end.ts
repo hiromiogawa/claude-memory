@@ -12,12 +12,12 @@ interface HookInput {
 
 function readStdin(): Promise<string> {
   return new Promise((resolve, reject) => {
-    let data = ''
+    const chunks: string[] = []
     process.stdin.setEncoding('utf-8')
-    process.stdin.on('data', (chunk) => {
-      data += chunk
+    process.stdin.on('data', (chunk: string | Buffer) => {
+      chunks.push(chunk.toString())
     })
-    process.stdin.on('end', () => resolve(data))
+    process.stdin.on('end', () => resolve(chunks.join('')))
     process.stdin.on('error', reject)
   })
 }
