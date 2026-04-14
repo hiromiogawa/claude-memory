@@ -2,7 +2,7 @@
 
 ## ステータス
 
-採用（ADR-0008 を拡張）
+採用（ADR-0008 を拡張）。[ADR-0010](./0010-hooks-factory-functions.md) で hooks 層まで最終的に拡張し、class-to-factory 移行完了。
 
 ## コンテキスト
 

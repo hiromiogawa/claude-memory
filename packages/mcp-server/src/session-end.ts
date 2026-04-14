@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 import { defineSaveMemoryUseCase } from '@claude-memory/core'
 import { defineOnnxEmbeddingProvider } from '@claude-memory/embedding-onnx'
-import { QAChunkingStrategy, SessionEndHandler } from '@claude-memory/hooks'
+import { defineQAChunkingStrategy, defineSessionEndHandler } from '@claude-memory/hooks'
 import { definePostgresStorageRepository } from '@claude-memory/storage-postgres'
 
 interface HookInput {
@@ -55,9 +55,9 @@ async function main() {
 
   try {
     await storage.migrate()
-    const chunking = new QAChunkingStrategy()
+    const chunking = defineQAChunkingStrategy()
     const saveUseCase = defineSaveMemoryUseCase(storage, embedding, chunking)
-    const handler = new SessionEndHandler(chunking, saveUseCase)
+    const handler = defineSessionEndHandler(saveUseCase)
     await handler.handle(transcriptPath, sessionId, projectPath)
   } finally {
     await storage.close()

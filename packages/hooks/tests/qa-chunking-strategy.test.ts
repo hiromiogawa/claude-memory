@@ -1,9 +1,9 @@
 import type { ConversationLog } from '@claude-memory/core'
 import { describe, expect, it } from 'vitest'
-import { QAChunkingStrategy } from '../src/qa-chunking-strategy.js'
+import { defineQAChunkingStrategy } from '../src/qa-chunking-strategy.js'
 
 describe('QAChunkingStrategy', () => {
-  const strategy = new QAChunkingStrategy()
+  const strategy = defineQAChunkingStrategy()
 
   it('should create Q&A pairs from user-assistant message pairs', () => {
     const log: ConversationLog = {
@@ -85,7 +85,7 @@ describe('QAChunkingStrategy', () => {
         { role: 'assistant', content: longAnswer, timestamp: new Date() },
       ],
     }
-    const strategy = new QAChunkingStrategy({ maxChunkChars: 500 })
+    const strategy = defineQAChunkingStrategy({ maxChunkChars: 500 })
     const chunks = strategy.chunk(log)
     expect(chunks.length).toBeGreaterThan(1)
     for (const chunk of chunks) {
@@ -113,7 +113,7 @@ describe('QAChunkingStrategy', () => {
       ],
     }
     // Set limit so that ~2-3 sentences fit per chunk
-    const strategy = new QAChunkingStrategy({ maxChunkChars: 80 })
+    const strategy = defineQAChunkingStrategy({ maxChunkChars: 80 })
     const chunks = strategy.chunk(log)
     expect(chunks.length).toBeGreaterThan(1)
     for (const chunk of chunks) {
@@ -130,7 +130,7 @@ describe('QAChunkingStrategy', () => {
         { role: 'assistant', content: longAnswer, timestamp: new Date() },
       ],
     }
-    const strategy = new QAChunkingStrategy()
+    const strategy = defineQAChunkingStrategy()
     const chunks = strategy.chunk(log)
     expect(chunks.length).toBeGreaterThan(1)
     for (const chunk of chunks) {

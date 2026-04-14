@@ -1,6 +1,6 @@
 import type { SearchFilter, SearchResult } from '@claude-memory/core'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { SessionStartHandler } from '../src/session-start-handler.js'
+import { defineSessionStartHandler } from '../src/session-start-handler.js'
 
 function createMemory(id: string, content: string): SearchResult {
   return {
@@ -36,7 +36,7 @@ describe('SessionStartHandler', () => {
       createMemory('2', 'Database is PostgreSQL'),
     ])
 
-    const handler = new SessionStartHandler(mockSearchUseCase)
+    const handler = defineSessionStartHandler(mockSearchUseCase)
     const result = await handler.handle('/my/project')
 
     expect(result).toContain('## Previous session context:')
@@ -49,7 +49,7 @@ describe('SessionStartHandler', () => {
   it('should return no-results message when no memories found', async () => {
     mockSearchUseCase.search.mockResolvedValue([])
 
-    const handler = new SessionStartHandler(mockSearchUseCase)
+    const handler = defineSessionStartHandler(mockSearchUseCase)
     const result = await handler.handle('/my/project')
 
     expect(result).toBe('No relevant memories found.')
@@ -58,7 +58,7 @@ describe('SessionStartHandler', () => {
   it('should pass projectPath as filter when provided', async () => {
     mockSearchUseCase.search.mockResolvedValue([])
 
-    const handler = new SessionStartHandler(mockSearchUseCase)
+    const handler = defineSessionStartHandler(mockSearchUseCase)
     await handler.handle('/my/project')
 
     expect(mockSearchUseCase.search).toHaveBeenCalledWith('project context', 5, {
@@ -69,7 +69,7 @@ describe('SessionStartHandler', () => {
   it('should search without filter when projectPath is undefined', async () => {
     mockSearchUseCase.search.mockResolvedValue([])
 
-    const handler = new SessionStartHandler(mockSearchUseCase)
+    const handler = defineSessionStartHandler(mockSearchUseCase)
     await handler.handle()
 
     expect(mockSearchUseCase.search).toHaveBeenCalledWith('project context', 5, undefined)
@@ -78,7 +78,7 @@ describe('SessionStartHandler', () => {
   it('should include score in formatted output', async () => {
     mockSearchUseCase.search.mockResolvedValue([createMemory('1', 'Some memory')])
 
-    const handler = new SessionStartHandler(mockSearchUseCase)
+    const handler = defineSessionStartHandler(mockSearchUseCase)
     const result = await handler.handle()
 
     expect(result).toContain('(score: 0.85)')

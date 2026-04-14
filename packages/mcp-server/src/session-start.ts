@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 import { defineSearchMemoryUseCase } from '@claude-memory/core'
 import { defineOnnxEmbeddingProvider } from '@claude-memory/embedding-onnx'
-import { SessionStartHandler } from '@claude-memory/hooks'
+import { defineSessionStartHandler } from '@claude-memory/hooks'
 import { definePostgresStorageRepository } from '@claude-memory/storage-postgres'
 
 /**
@@ -22,7 +22,7 @@ async function main() {
 
   try {
     const searchUseCase = defineSearchMemoryUseCase(storage, embedding)
-    const handler = new SessionStartHandler(searchUseCase)
+    const handler = defineSessionStartHandler(searchUseCase)
     const projectPath = process.env.PROJECT_PATH || process.cwd()
     const output = await handler.handle(projectPath)
     console.log(output)
