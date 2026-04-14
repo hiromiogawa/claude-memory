@@ -1,1 +1,1 @@
-export { OnnxEmbeddingProvider } from './onnx-embedding-provider.js'
+export { defineOnnxEmbeddingProvider, type OnnxEmbeddingConfig } from './onnx-embedding-provider.js'

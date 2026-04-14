@@ -2,7 +2,7 @@
 
 ## ステータス
 
-採用
+採用。[ADR-0009](./0009-infrastructure-adapter-factory-functions.md) で infrastructure adapter まで方針を拡張。
 
 ## コンテキスト
 

@@ -14,7 +14,7 @@ RUN pnpm build
 # Use pnpm exec to ensure correct module resolution with hoist=false
 RUN pnpm --filter @claude-memory/embedding-onnx exec node -e " \
   import('./dist/onnx-embedding-provider.js').then(async (m) => { \
-    const p = new m.OnnxEmbeddingProvider({ modelName: 'intfloat/multilingual-e5-small' }); \
+    const p = m.defineOnnxEmbeddingProvider({ modelName: 'intfloat/multilingual-e5-small' }); \
     const v = await p.embed('warmup'); \
     console.log('Model cached. Dim:', v.length); \
   }).catch(e => { console.error(e); process.exit(1); }) \
