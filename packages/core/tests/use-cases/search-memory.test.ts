@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from 'vitest'
 import type { Memory } from '../../src/entities/memory.js'
 import type { EmbeddingProvider } from '../../src/interfaces/embedding-provider.js'
 import type { StorageRepository } from '../../src/interfaces/storage-repository.js'
-import { SearchMemoryUseCase } from '../../src/use-cases/search-memory.js'
+import { defineSearchMemoryUseCase } from '../../src/use-cases/search-memory.js'
 
 function makeMemory(id: string, daysAgo: number = 0, accessCount: number = 0): Memory {
   const date = new Date()
@@ -63,7 +63,7 @@ describe('SearchMemoryUseCase', () => {
       { memory: mem3, score: 0.8, matchType: 'vector' },
     ])
 
-    const useCase = new SearchMemoryUseCase(storage, embedding)
+    const useCase = defineSearchMemoryUseCase(storage, embedding)
     const results = await useCase.search('test query', 10)
 
     expect(embedding.embed).toHaveBeenCalledWith('test query')
@@ -84,7 +84,7 @@ describe('SearchMemoryUseCase', () => {
     ])
     vi.mocked(storage.searchByVector).mockResolvedValue([])
 
-    const useCase = new SearchMemoryUseCase(storage, embedding)
+    const useCase = defineSearchMemoryUseCase(storage, embedding)
     const results = await useCase.search('test', 10)
 
     const recentResult = results.find((r) => r.memory.id === 'recent')!
@@ -104,7 +104,7 @@ describe('SearchMemoryUseCase', () => {
     ])
     vi.mocked(storage.searchByVector).mockResolvedValue([])
 
-    const useCase = new SearchMemoryUseCase(storage, embedding)
+    const useCase = defineSearchMemoryUseCase(storage, embedding)
     const results = await useCase.search('test', 10)
 
     const frequentResult = results.find((r) => r.memory.id === 'frequent')!
@@ -129,7 +129,7 @@ describe('SearchMemoryUseCase', () => {
       { memory: mem1000, score: 0.7, matchType: 'vector' },
     ])
 
-    const useCase = new SearchMemoryUseCase(storage, embedding)
+    const useCase = defineSearchMemoryUseCase(storage, embedding)
     const results = await useCase.search('test', 10)
 
     const result50 = results.find((r) => r.memory.id === 'a50')!
@@ -148,7 +148,7 @@ describe('SearchMemoryUseCase', () => {
   it('should pass filter to storage methods', async () => {
     const storage = createMockStorage()
     const embedding = createMockEmbedding()
-    const useCase = new SearchMemoryUseCase(storage, embedding)
+    const useCase = defineSearchMemoryUseCase(storage, embedding)
     await useCase.search('test', 10, { projectPath: '/my/project' })
 
     expect(storage.searchByKeyword).toHaveBeenCalledWith('test', 10, { projectPath: '/my/project' })

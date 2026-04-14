@@ -17,16 +17,36 @@ export {
   StorageConnectionError,
 } from './errors/index.js'
 export type { ChunkingStrategy, EmbeddingProvider, StorageRepository } from './interfaces/index.js'
-export type { CleanupResult, ExportedMemory, SaveResult } from './use-cases/index.js'
-export {
+export type {
   CleanupMemoryUseCase,
+  CleanupOptions,
+  CleanupResult,
   ClearMemoryUseCase,
   DeleteMemoryUseCase,
+  ExportedMemory,
   ExportMemoryUseCase,
   GetStatsUseCase,
   ImportMemoryUseCase,
+  LeastAccessedCleanupOptions,
   ListMemoriesUseCase,
+  OlderThanCleanupOptions,
+  SaveManualInput,
+  SaveMemoryOptions,
   SaveMemoryUseCase,
+  SaveResult,
   SearchMemoryUseCase,
+  UpdateMemoryInput,
   UpdateMemoryUseCase,
+} from './use-cases/index.js'
+export {
+  defineCleanupMemoryUseCase,
+  defineClearMemoryUseCase,
+  defineDeleteMemoryUseCase,
+  defineExportMemoryUseCase,
+  defineGetStatsUseCase,
+  defineImportMemoryUseCase,
+  defineListMemoriesUseCase,
+  defineSaveMemoryUseCase,
+  defineSearchMemoryUseCase,
+  defineUpdateMemoryUseCase,
 } from './use-cases/index.js'

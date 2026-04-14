@@ -16,24 +16,25 @@ export interface ExportedMemory {
   createdAt: string
 }
 
-/** 全記憶をポータブル形式（embeddingなし）でエクスポートする。 */
-export class ExportMemoryUseCase {
-  /**
-   * 新しい ExportMemoryUseCase を生成する。
-   * @param storage - エクスポート元のストレージリポジトリ。
-   */
-  constructor(private readonly storage: StorageRepository) {}
-
-  /**
-   * 全記憶をISO日付文字列のポータブルオブジェクトとしてエクスポートする。
-   * @returns エクスポートされた記憶の配列。
-   */
-  async execute(): Promise<ExportedMemory[]> {
-    const memories = await wrapStorageError(() => this.storage.exportAll())
-    return memories.map((m) => ({
-      content: m.content,
-      metadata: m.metadata,
-      createdAt: m.createdAt.toISOString(),
-    }))
+/**
+ * 全記憶をポータブル形式（embeddingなし）でエクスポートするユースケースを生成する。
+ * @param storage - エクスポート元のストレージリポジトリ。
+ */
+export function defineExportMemoryUseCase(storage: StorageRepository) {
+  return {
+    /**
+     * 全記憶をISO日付文字列のポータブルオブジェクトとしてエクスポートする。
+     * @returns エクスポートされた記憶の配列。
+     */
+    async execute(): Promise<ExportedMemory[]> {
+      const memories = await wrapStorageError(() => storage.exportAll())
+      return memories.map((m) => ({
+        content: m.content,
+        metadata: m.metadata,
+        createdAt: m.createdAt.toISOString(),
+      }))
+    },
   }
 }
+
+export type ExportMemoryUseCase = ReturnType<typeof defineExportMemoryUseCase>

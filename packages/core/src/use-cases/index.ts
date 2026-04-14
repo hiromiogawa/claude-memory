@@ -1,13 +1,31 @@
-export type { CleanupResult } from './cleanup-memory.js'
-export { CleanupMemoryUseCase } from './cleanup-memory.js'
-export { ClearMemoryUseCase } from './clear-memory.js'
-export { DeleteMemoryUseCase } from './delete-memory.js'
-export type { ExportedMemory } from './export-memory.js'
-export { ExportMemoryUseCase } from './export-memory.js'
-export { GetStatsUseCase } from './get-stats.js'
-export { ImportMemoryUseCase } from './import-memory.js'
-export { ListMemoriesUseCase } from './list-memories.js'
-export type { SaveResult } from './save-memory.js'
-export { SaveMemoryUseCase } from './save-memory.js'
-export { SearchMemoryUseCase } from './search-memory.js'
-export { UpdateMemoryUseCase } from './update-memory.js'
+export {
+  type CleanupMemoryUseCase,
+  type CleanupOptions,
+  type CleanupResult,
+  defineCleanupMemoryUseCase,
+  type LeastAccessedCleanupOptions,
+  type OlderThanCleanupOptions,
+} from './cleanup-memory.js'
+export { type ClearMemoryUseCase, defineClearMemoryUseCase } from './clear-memory.js'
+export { type DeleteMemoryUseCase, defineDeleteMemoryUseCase } from './delete-memory.js'
+export {
+  defineExportMemoryUseCase,
+  type ExportedMemory,
+  type ExportMemoryUseCase,
+} from './export-memory.js'
+export { defineGetStatsUseCase, type GetStatsUseCase } from './get-stats.js'
+export { defineImportMemoryUseCase, type ImportMemoryUseCase } from './import-memory.js'
+export { defineListMemoriesUseCase, type ListMemoriesUseCase } from './list-memories.js'
+export {
+  defineSaveMemoryUseCase,
+  type SaveManualInput,
+  type SaveMemoryOptions,
+  type SaveMemoryUseCase,
+  type SaveResult,
+} from './save-memory.js'
+export { defineSearchMemoryUseCase, type SearchMemoryUseCase } from './search-memory.js'
+export {
+  defineUpdateMemoryUseCase,
+  type UpdateMemoryInput,
+  type UpdateMemoryUseCase,
+} from './update-memory.js'

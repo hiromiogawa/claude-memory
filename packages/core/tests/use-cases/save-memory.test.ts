@@ -3,7 +3,7 @@ import type { ConversationLog } from '../../src/entities/conversation.js'
 import type { ChunkingStrategy } from '../../src/interfaces/chunking-strategy.js'
 import type { EmbeddingProvider } from '../../src/interfaces/embedding-provider.js'
 import type { StorageRepository } from '../../src/interfaces/storage-repository.js'
-import { SaveMemoryUseCase } from '../../src/use-cases/save-memory.js'
+import { defineSaveMemoryUseCase } from '../../src/use-cases/save-memory.js'
 
 function createMockStorage(): StorageRepository {
   return {
@@ -52,7 +52,7 @@ describe('SaveMemoryUseCase', () => {
     const embedding = createMockEmbedding()
     const chunking = createMockChunking()
     vi.mocked(storage.searchByVector).mockResolvedValue([])
-    const useCase = new SaveMemoryUseCase(storage, embedding, chunking)
+    const useCase = defineSaveMemoryUseCase(storage, embedding, chunking)
 
     const result = await useCase.saveManual({
       content: 'test content',
@@ -74,7 +74,7 @@ describe('SaveMemoryUseCase', () => {
     const embedding = createMockEmbedding()
     const chunking = createMockChunking()
     vi.mocked(storage.searchByVector).mockResolvedValue([])
-    const useCase = new SaveMemoryUseCase(storage, embedding, chunking)
+    const useCase = defineSaveMemoryUseCase(storage, embedding, chunking)
 
     const log: ConversationLog = {
       sessionId: 'session-1',
@@ -102,7 +102,7 @@ describe('SaveMemoryUseCase', () => {
     vi.mocked(embedding.embedBatch).mockResolvedValue([[0.1, 0.2, 0.3], []])
     vi.mocked(storage.searchByVector).mockResolvedValue([])
 
-    const useCase = new SaveMemoryUseCase(storage, embedding, chunking)
+    const useCase = defineSaveMemoryUseCase(storage, embedding, chunking)
     const log: ConversationLog = {
       sessionId: 's1',
       messages: [
@@ -140,7 +140,7 @@ describe('SaveMemoryUseCase', () => {
       },
     ])
 
-    const useCase = new SaveMemoryUseCase(storage, embedding, chunking)
+    const useCase = defineSaveMemoryUseCase(storage, embedding, chunking)
     const result = await useCase.saveManual({
       content: 'very similar content!',
       sessionId: 'session-1',
@@ -158,7 +158,7 @@ describe('SaveMemoryUseCase', () => {
 
     vi.mocked(storage.searchByVector).mockResolvedValue([])
 
-    const useCase = new SaveMemoryUseCase(storage, embedding, chunking)
+    const useCase = defineSaveMemoryUseCase(storage, embedding, chunking)
     await useCase.saveManual({
       content: 'unique content',
       sessionId: 'session-1',
@@ -188,7 +188,7 @@ describe('SaveMemoryUseCase', () => {
       },
     ])
 
-    const useCase = new SaveMemoryUseCase(storage, embedding, chunking)
+    const useCase = defineSaveMemoryUseCase(storage, embedding, chunking)
     const result = await useCase.saveManual({
       content: 'nearly identical content!',
       sessionId: 'session-1',
@@ -220,7 +220,7 @@ describe('SaveMemoryUseCase', () => {
       },
     ])
 
-    const useCase = new SaveMemoryUseCase(storage, embedding, chunking)
+    const useCase = defineSaveMemoryUseCase(storage, embedding, chunking)
     await useCase.saveManual({
       content: 'different content',
       sessionId: 'session-1',
@@ -246,7 +246,7 @@ describe('SaveMemoryUseCase', () => {
     ])
     vi.mocked(storage.searchByVector).mockResolvedValue([])
 
-    const useCase = new SaveMemoryUseCase(storage, embedding, chunking)
+    const useCase = defineSaveMemoryUseCase(storage, embedding, chunking)
     const log = {
       sessionId: 's1',
       messages: [
@@ -271,7 +271,7 @@ describe('SaveMemoryUseCase', () => {
       vi.mocked(storage.searchByVector).mockResolvedValue([])
       vi.mocked(storage.countAll).mockResolvedValue(10000)
       vi.mocked(storage.deleteLeastAccessed).mockResolvedValue(1)
-      const useCase = new SaveMemoryUseCase(storage, embedding, chunking, { maxMemories: 10000 })
+      const useCase = defineSaveMemoryUseCase(storage, embedding, chunking, { maxMemories: 10000 })
 
       await useCase.saveManual({ content: 'new', sessionId: 's1' })
 
@@ -286,7 +286,7 @@ describe('SaveMemoryUseCase', () => {
       const chunking = createMockChunking()
       vi.mocked(storage.searchByVector).mockResolvedValue([])
       vi.mocked(storage.countAll).mockResolvedValue(100)
-      const useCase = new SaveMemoryUseCase(storage, embedding, chunking, { maxMemories: 10000 })
+      const useCase = defineSaveMemoryUseCase(storage, embedding, chunking, { maxMemories: 10000 })
 
       await useCase.saveManual({ content: 'new', sessionId: 's1' })
 
@@ -309,7 +309,7 @@ describe('SaveMemoryUseCase', () => {
       vi.mocked(storage.searchByVector).mockResolvedValue([])
       vi.mocked(storage.countAll).mockResolvedValue(9999)
       vi.mocked(storage.deleteLeastAccessed).mockResolvedValue(1)
-      const useCase = new SaveMemoryUseCase(storage, embedding, chunking, { maxMemories: 10000 })
+      const useCase = defineSaveMemoryUseCase(storage, embedding, chunking, { maxMemories: 10000 })
 
       const log = {
         sessionId: 's1',
@@ -329,7 +329,7 @@ describe('SaveMemoryUseCase', () => {
       const embedding = createMockEmbedding()
       const chunking = createMockChunking()
       vi.mocked(storage.searchByVector).mockResolvedValue([])
-      const useCase = new SaveMemoryUseCase(storage, embedding, chunking, { maxMemories: 0 })
+      const useCase = defineSaveMemoryUseCase(storage, embedding, chunking, { maxMemories: 0 })
 
       await useCase.saveManual({ content: 'new', sessionId: 's1' })
 
@@ -354,7 +354,7 @@ describe('SaveMemoryUseCase', () => {
       ])
       vi.mocked(storage.searchByVector).mockResolvedValue([])
 
-      const useCase = new SaveMemoryUseCase(storage, embedding, chunking)
+      const useCase = defineSaveMemoryUseCase(storage, embedding, chunking)
       const log: ConversationLog = {
         sessionId: 's1',
         messages: [
@@ -384,7 +384,7 @@ describe('SaveMemoryUseCase', () => {
       ])
       vi.mocked(storage.searchByVector).mockResolvedValue([])
 
-      const useCase = new SaveMemoryUseCase(storage, embedding, chunking)
+      const useCase = defineSaveMemoryUseCase(storage, embedding, chunking)
       const log: ConversationLog = {
         sessionId: 's1',
         messages: [
@@ -414,7 +414,7 @@ describe('SaveMemoryUseCase', () => {
       ])
       vi.mocked(storage.searchByVector).mockResolvedValue([])
 
-      const useCase = new SaveMemoryUseCase(storage, embedding, chunking)
+      const useCase = defineSaveMemoryUseCase(storage, embedding, chunking)
       const log: ConversationLog = {
         sessionId: 's1',
         messages: [
@@ -444,7 +444,7 @@ describe('SaveMemoryUseCase', () => {
       ])
       vi.mocked(storage.searchByVector).mockResolvedValue([])
 
-      const useCase = new SaveMemoryUseCase(storage, embedding, chunking)
+      const useCase = defineSaveMemoryUseCase(storage, embedding, chunking)
       const log: ConversationLog = {
         sessionId: 's1',
         messages: [
@@ -470,7 +470,7 @@ describe('SaveMemoryUseCase', () => {
       vi.mocked(embedding.embedBatch).mockResolvedValue([[0.1, Number.NaN, 0.3]])
       vi.mocked(storage.searchByVector).mockResolvedValue([])
 
-      const useCase = new SaveMemoryUseCase(storage, embedding, chunking)
+      const useCase = defineSaveMemoryUseCase(storage, embedding, chunking)
       const log: ConversationLog = {
         sessionId: 's1',
         messages: [
@@ -518,7 +518,7 @@ describe('SaveMemoryUseCase', () => {
       ])
       .mockResolvedValueOnce([])
 
-    const useCase = new SaveMemoryUseCase(storage, embedding, chunking)
+    const useCase = defineSaveMemoryUseCase(storage, embedding, chunking)
     const log = {
       sessionId: 's1',
       messages: [

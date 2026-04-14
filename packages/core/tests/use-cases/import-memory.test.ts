@@ -1,11 +1,11 @@
 import { describe, expect, it, vi } from 'vitest'
-import { ImportMemoryUseCase } from '../../src/use-cases/import-memory.js'
+import { defineImportMemoryUseCase } from '../../src/use-cases/import-memory.js'
 
 describe('ImportMemoryUseCase', () => {
   it('should import memories with re-computed embeddings', async () => {
     const storage = { save: vi.fn() } as any
     const embedding = { embed: vi.fn().mockResolvedValue([0.1, 0.2, 0.3]) } as any
-    const useCase = new ImportMemoryUseCase(storage, embedding)
+    const useCase = defineImportMemoryUseCase(storage, embedding)
 
     const data = [
       {

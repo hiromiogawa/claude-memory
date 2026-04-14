@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest'
-import { ExportMemoryUseCase } from '../../src/use-cases/export-memory.js'
+import { defineExportMemoryUseCase } from '../../src/use-cases/export-memory.js'
 
 describe('ExportMemoryUseCase', () => {
   it('should export all memories without embeddings', async () => {
@@ -14,7 +14,7 @@ describe('ExportMemoryUseCase', () => {
       },
     ]
     const storage = { exportAll: vi.fn().mockResolvedValue(memories) } as any
-    const useCase = new ExportMemoryUseCase(storage)
+    const useCase = defineExportMemoryUseCase(storage)
     const result = await useCase.execute()
     expect(result).toHaveLength(1)
     expect(result[0]!.content).toBe('test content')
