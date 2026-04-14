@@ -11,22 +11,23 @@ export interface QAChunkingOptions {
 }
 
 function extractQAPairs(conversation: ConversationLog): Chunk[] {
+  const { messages } = conversation
   const chunks: Chunk[] = []
-  const messages = conversation.messages
-  let i = 0
+  const cursor = { i: 0 }
 
-  while (i < messages.length) {
-    const userParts: string[] = []
-    while (i < messages.length && messages[i]!.role === 'user') {
-      userParts.push(messages[i]!.content)
-      i++
+  const consumeRole = (role: 'user' | 'assistant'): string[] => {
+    const parts: string[] = []
+    while (cursor.i < messages.length && messages[cursor.i]!.role === role) {
+      parts.push(messages[cursor.i]!.content)
+      cursor.i++
     }
+    return parts
+  }
 
-    const assistantParts: string[] = []
-    while (i < messages.length && messages[i]!.role === 'assistant') {
-      assistantParts.push(messages[i]!.content)
-      i++
-    }
+  while (cursor.i < messages.length) {
+    const beforePair = cursor.i
+    const userParts = consumeRole('user')
+    const assistantParts = consumeRole('assistant')
 
     if (userParts.length > 0 && assistantParts.length > 0) {
       chunks.push({
@@ -38,6 +39,9 @@ function extractQAPairs(conversation: ConversationLog): Chunk[] {
         },
       })
     }
+
+    // 進捗が無ければ無限ループ防止のため強制的に 1 進める
+    if (cursor.i === beforePair) cursor.i++
   }
   return chunks
 }
@@ -48,37 +52,42 @@ function splitIntoSentences(text: string): string[] {
   return text.match(SENTENCE_BOUNDARY_REGEX) ?? [text]
 }
 
+function sliceByLength(text: string, max: number): string[] {
+  return Array.from({ length: Math.ceil(text.length / max) }, (_, i) =>
+    text.slice(i * max, (i + 1) * max),
+  )
+}
+
 function splitChunk(chunk: Chunk, maxChunkChars: number): Chunk[] {
   const sentences = splitIntoSentences(chunk.content)
   const result: Chunk[] = []
-  let current = ''
+  const buffer = { value: '' }
+
+  const flush = () => {
+    if (buffer.value.trim().length > 0) {
+      result.push({ content: buffer.value.trim(), metadata: chunk.metadata })
+      buffer.value = ''
+    }
+  }
 
   for (const sentence of sentences) {
     if (sentence.length > maxChunkChars) {
-      // Single sentence exceeds limit — force split by character
-      if (current.length > 0) {
-        result.push({ content: current.trim(), metadata: chunk.metadata })
-        current = ''
-      }
-      for (let j = 0; j < sentence.length; j += maxChunkChars) {
-        const slice = sentence.slice(j, j + maxChunkChars)
+      flush()
+      for (const slice of sliceByLength(sentence, maxChunkChars)) {
         result.push({ content: slice, metadata: chunk.metadata })
       }
       continue
     }
 
-    const joined = current.length > 0 ? `${current} ${sentence}` : sentence
+    const joined = buffer.value.length > 0 ? `${buffer.value} ${sentence}` : sentence
     if (joined.length > maxChunkChars) {
-      result.push({ content: current.trim(), metadata: chunk.metadata })
-      current = sentence
+      flush()
+      buffer.value = sentence
     } else {
-      current = joined
+      buffer.value = joined
     }
   }
-
-  if (current.trim().length > 0) {
-    result.push({ content: current.trim(), metadata: chunk.metadata })
-  }
+  flush()
 
   return result
 }

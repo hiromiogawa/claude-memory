@@ -21,7 +21,8 @@ export function defineImportMemoryUseCase(
      * @returns インポートに成功した記憶の件数。
      */
     async execute(data: ExportedMemory[]): Promise<{ imported: number }> {
-      let imported = 0
+      // ループ内のいずれかで wrapStorageError / wrapEmbeddingError が throw すれば
+      // 関数全体が例外で抜けるため、正常終了時は必ず data.length 件保存されている。
       for (const item of data) {
         const embeddingVector = await wrapEmbeddingError(() => embedding.embed(item.content))
         const now = new Date()
@@ -41,9 +42,8 @@ export function defineImportMemoryUseCase(
           accessCount: 0,
         }
         await wrapStorageError(() => storage.save(memory))
-        imported++
       }
-      return { imported }
+      return { imported: data.length }
     },
   }
 }

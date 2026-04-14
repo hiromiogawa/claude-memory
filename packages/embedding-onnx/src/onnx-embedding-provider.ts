@@ -1,5 +1,5 @@
 import type { EmbeddingProvider } from '@claude-memory/core'
-import { type FeatureExtractionPipeline, pipeline } from '@huggingface/transformers'
+import { pipeline } from '@huggingface/transformers'
 import { DEFAULT_DIMENSION } from './constants.js'
 
 export interface OnnxEmbeddingConfig {
@@ -16,41 +16,29 @@ const MODEL_DIMENSIONS: Record<string, number> = {
  * ONNX Runtime によるローカル推論（mean pooling + L2 正規化）で
  * EmbeddingProvider を実装するユースケースを生成する。
  *
- * モデルは遅延初期化: 初回 embed 呼び出し時にダウンロードし `~/.cache/` にキャッシュする。
+ * モデルロードは factory 呼び出し時点で開始される（eager）。返された Promise は
+ * 初回 embed 時に await されるため、複数の呼び出しは同じロード処理を共有する。
  * @param config - ONNX モデル名を指定する設定
  */
 export function defineOnnxEmbeddingProvider(config: OnnxEmbeddingConfig): EmbeddingProvider {
-  let extractor: FeatureExtractionPipeline | null = null
-
-  const getExtractor = async (): Promise<FeatureExtractionPipeline> => {
-    if (!extractor) {
-      extractor = await pipeline('feature-extraction', config.modelName)
-    }
-    return extractor
-  }
-
-  const getDimension = (): number => MODEL_DIMENSIONS[config.modelName] ?? DEFAULT_DIMENSION
+  const extractorPromise = pipeline('feature-extraction', config.modelName)
+  const dimension = MODEL_DIMENSIONS[config.modelName] ?? DEFAULT_DIMENSION
 
   return {
-    getDimension,
+    getDimension: (): number => dimension,
 
     async embed(text: string): Promise<number[]> {
-      const ex = await getExtractor()
-      const output = await ex(text, { pooling: 'mean', normalize: true })
+      const extractor = await extractorPromise
+      const output = await extractor(text, { pooling: 'mean', normalize: true })
       return Array.from(output.data as Float32Array)
     },
 
     async embedBatch(texts: string[]): Promise<number[][]> {
       if (texts.length === 0) return []
-      const ex = await getExtractor()
-      const output = await ex(texts, { pooling: 'mean', normalize: true })
-      const dim = getDimension()
+      const extractor = await extractorPromise
+      const output = await extractor(texts, { pooling: 'mean', normalize: true })
       const flat = output.data as Float32Array
-      const results: number[][] = []
-      for (let i = 0; i < texts.length; i++) {
-        results.push(Array.from(flat.slice(i * dim, (i + 1) * dim)))
-      }
-      return results
+      return texts.map((_, i) => Array.from(flat.slice(i * dimension, (i + 1) * dimension)))
     },
   }
 }
