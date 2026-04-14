@@ -94,7 +94,9 @@ export function definePostgresStorageRepository(
   - `packages/mcp-server/src/container.ts`
   - `packages/mcp-server/src/session-start.ts`
   - `packages/mcp-server/src/session-end.ts`
-  - `scripts/download-model.mjs`
+  - `Dockerfile` の inline warmup スクリプト（`new m.OnnxEmbeddingProvider(...)` → `m.defineOnnxEmbeddingProvider(...)`）
+- 死にコード削除:
+  - `scripts/download-model.mjs`（Dockerfile の inline warmup と二重実装で、どこからも呼ばれていなかった）
 - test 更新:
   - `packages/embedding-onnx/tests/onnx-embedding-provider.test.ts`
   - `packages/storage-postgres/tests/postgres-storage-repository.test.ts`

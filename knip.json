@@ -8,7 +8,6 @@
       "project": ["src/**/*.ts"]
     }
   },
-  "ignore": ["scripts/**"],
   "ignoreBinaries": ["dot", "tbls"],
   "ignoreDependencies": ["onnxruntime-common", "onnxruntime-node", "pino-pretty"]
 }
