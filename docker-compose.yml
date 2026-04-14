@@ -28,6 +28,10 @@ services:
       EMBEDDING_MODEL: intfloat/multilingual-e5-small
       EMBEDDING_DIMENSION: "384"
       DB_POOL_SIZE: "10"
+    volumes:
+      # Hugging Face モデルキャッシュをホストと共有。session-start/end の host 側 hook と
+      # モデルを二重ダウンロードせず、image にも焼き込まない。初回はインターネット接続必須。
+      - ${HOME}/.cache/huggingface:/root/.cache/huggingface
 
 volumes:
   pgdata:
