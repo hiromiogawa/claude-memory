@@ -1,15 +1,15 @@
 // packages/mcp-server/src/container.ts
 import {
-  CleanupMemoryUseCase,
-  ClearMemoryUseCase,
-  DeleteMemoryUseCase,
-  ExportMemoryUseCase,
-  GetStatsUseCase,
-  ImportMemoryUseCase,
-  ListMemoriesUseCase,
-  SaveMemoryUseCase,
-  SearchMemoryUseCase,
-  UpdateMemoryUseCase,
+  defineCleanupMemoryUseCase,
+  defineClearMemoryUseCase,
+  defineDeleteMemoryUseCase,
+  defineExportMemoryUseCase,
+  defineGetStatsUseCase,
+  defineImportMemoryUseCase,
+  defineListMemoriesUseCase,
+  defineSaveMemoryUseCase,
+  defineSearchMemoryUseCase,
+  defineUpdateMemoryUseCase,
 } from '@claude-memory/core'
 import { OnnxEmbeddingProvider } from '@claude-memory/embedding-onnx'
 import { QAChunkingStrategy } from '@claude-memory/hooks'
@@ -32,16 +32,16 @@ export function createContainer(config: AppConfig) {
     storage,
     embedding,
     chunking,
-    saveMemory: new SaveMemoryUseCase(storage, embedding, chunking),
-    searchMemory: new SearchMemoryUseCase(storage, embedding),
-    deleteMemory: new DeleteMemoryUseCase(storage),
-    listMemories: new ListMemoriesUseCase(storage),
-    getStats: new GetStatsUseCase(storage),
-    clearMemory: new ClearMemoryUseCase(storage),
-    updateMemory: new UpdateMemoryUseCase(storage, embedding),
-    exportMemory: new ExportMemoryUseCase(storage),
-    importMemory: new ImportMemoryUseCase(storage, embedding),
-    cleanupMemory: new CleanupMemoryUseCase(storage),
+    saveMemory: defineSaveMemoryUseCase(storage, embedding, chunking),
+    searchMemory: defineSearchMemoryUseCase(storage, embedding),
+    deleteMemory: defineDeleteMemoryUseCase(storage),
+    listMemories: defineListMemoriesUseCase(storage),
+    getStats: defineGetStatsUseCase(storage),
+    clearMemory: defineClearMemoryUseCase(storage),
+    updateMemory: defineUpdateMemoryUseCase(storage, embedding),
+    exportMemory: defineExportMemoryUseCase(storage),
+    importMemory: defineImportMemoryUseCase(storage, embedding),
+    cleanupMemory: defineCleanupMemoryUseCase(storage),
   }
 }
 

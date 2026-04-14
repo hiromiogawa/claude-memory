@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest'
 import type { EmbeddingProvider } from '../../src/interfaces/embedding-provider.js'
 import type { StorageRepository } from '../../src/interfaces/storage-repository.js'
-import { UpdateMemoryUseCase } from '../../src/use-cases/update-memory.js'
+import { defineUpdateMemoryUseCase } from '../../src/use-cases/update-memory.js'
 
 function createMockStorage(): StorageRepository {
   return {
@@ -46,7 +46,7 @@ describe('UpdateMemoryUseCase', () => {
     }
     vi.mocked(storage.findById).mockResolvedValue(existing)
 
-    const useCase = new UpdateMemoryUseCase(storage, embedding)
+    const useCase = defineUpdateMemoryUseCase(storage, embedding)
     await useCase.execute({ id: 'mem-1', content: 'new content' })
 
     expect(embedding.embed).toHaveBeenCalledWith('new content')
@@ -73,7 +73,7 @@ describe('UpdateMemoryUseCase', () => {
     }
     vi.mocked(storage.findById).mockResolvedValue(existing)
 
-    const useCase = new UpdateMemoryUseCase(storage, embedding)
+    const useCase = defineUpdateMemoryUseCase(storage, embedding)
     await useCase.execute({ id: 'mem-1', tags: ['new-tag'] })
 
     expect(embedding.embed).not.toHaveBeenCalled()
@@ -88,7 +88,7 @@ describe('UpdateMemoryUseCase', () => {
     const embedding = createMockEmbedding()
     vi.mocked(storage.findById).mockResolvedValue(null)
 
-    const useCase = new UpdateMemoryUseCase(storage, embedding)
+    const useCase = defineUpdateMemoryUseCase(storage, embedding)
     await expect(useCase.execute({ id: 'missing', content: 'x' })).rejects.toThrow(
       'Memory not found: missing',
     )
