@@ -1,6 +1,6 @@
 ---
 name: dev-start
-description: Use when Issue に着手する直前、ブランチ作成や仕様確認などコンテキスト準備を始めるとき
+description: Issue 着手前のコンテキスト準備（memory 検索 → github-flow でブランチ作成 → sdd で仕様確認）を統括する。Use when Issue に着手する直前、ブランチ作成や仕様確認などのコンテキスト準備を始めるとき
 ---
 
 # 開発開始

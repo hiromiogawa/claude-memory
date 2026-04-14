@@ -1,6 +1,6 @@
 ---
 name: design-decision
-description: Use when ライブラリ選定・DB設計・アーキテクチャ変更など、後から理由を問われうる設計判断が brainstorming 中に発生したとき
+description: 設計判断を docs/adr/ と claude-memory の両方に記録するオーケストレーター（adr → memory_save）。Use when ライブラリ選定・DB 設計・アーキテクチャ変更など、後から理由を問われうる設計判断が brainstorming 中に発生したとき
 ---
 
 # 設計判断

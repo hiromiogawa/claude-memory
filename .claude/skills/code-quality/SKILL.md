@@ -1,6 +1,6 @@
 ---
 name: code-quality
-description: Use when OXLint/Biome/knip/dependency-cruiser など品質ツールの設定・実行タイミングを決めるとき、または lint・未使用コード・依存違反エラーに遭遇したとき
+description: OXLint/Biome/knip/dependency-cruiser を pre-commit / pre-push / CI の 3 層で運用する設定と判断基準を示す。Use when 品質ツールの設定・実行タイミングを決めるとき、または lint・未使用コード・依存違反エラーに遭遇したとき
 ---
 
 # コード品質ツール

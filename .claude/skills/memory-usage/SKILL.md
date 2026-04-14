@@ -1,6 +1,6 @@
 ---
 name: memory-usage
-description: Use when セッション開始時、設計判断を記録するとき、ユーザーの好み・失敗事例・プロジェクト知識を保存または検索したいとき
+description: claude-memory MCP で設計判断・知見・ユーザーの好みを蓄積しセッションを跨いで再利用する。Use when セッション開始時、設計判断を記録するとき、ユーザーの好み・失敗事例・プロジェクト知識を保存または検索したいとき
 ---
 
 # 記憶の活用（claude-memory MCP）

@@ -1,6 +1,6 @@
 ---
 name: sdd
-description: Use when 新機能の設計を始めるとき、仕様書から実装へ移行するとき、または JSDoc/typedoc による仕様記述に迷ったとき
+description: Markdown 仕様から JSDoc へ Single Source of Truth を段階的に移行し、実装後は型 + JSDoc だけを正として維持する仕様駆動開発フローを提供する。Use when 新機能の設計を始めるとき、仕様書から実装へ移行するとき、または JSDoc / typedoc による仕様記述に迷ったとき
 ---
 
 # 仕様駆動開発（SDD）

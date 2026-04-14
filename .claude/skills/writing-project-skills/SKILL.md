@@ -1,6 +1,6 @@
 ---
 name: writing-project-skills
-description: Use when このプロジェクトで新しい skill を追加・編集するとき、既存 skill を点検するとき、または skill の description や構造に迷ったとき
+description: このプロジェクトの .claude/skills/ 配下に置く skill の規約（frontmatter・構造・語数・description 形式）を定める。Use when 新しい skill を追加・編集するとき、既存 skill を点検するとき、または description や構造に迷ったとき
 ---
 
 # プロジェクト skill 作成規約
@@ -14,22 +14,26 @@ description: Use when このプロジェクトで新しい skill を追加・編
 ```yaml
 ---
 name: skill-name
-description: Use when [トリガー条件のみ]
+description: <動作を一文>. Use when <トリガー条件>
 ---
 ```
 
-- `name`: 英数ハイフンのみ。動詞始まり推奨（`writing-x`, `creating-y`）
-- `description`: **「Use when」で始める**。トリガー条件・症状・キーワードのみ
-- 最大 1024 字。通常 200 字以内
+- `name`: 英数ハイフンのみ、64 字以内。動詞始まり推奨（`writing-x`, `creating-y`）
+- `description`: 公式仕様 (https://code.claude.com/docs/ja/skills) に従い **「何をするか」「いつ使うか」の 2 部構成**。
+  - 前半: skill の動作・成果物を一文で。句点（`.` または `。`）で区切る
+  - 後半: `Use when <トリガー条件>` でトリガー・症状・キーワードを列挙
+  - **250 字以内**（公式のスキルリスト短縮閾値）。主要ユースケースは前置きに記載
+- 公式例: `Explains code with visual diagrams and analogies. Use when explaining how code works, teaching about a codebase, or when the user asks "how does this work?"`
 
 ## description アンチパターン
 
 | NG | 理由 |
 |----|------|
-| `XXX の管理` / `XXX の設定ガイド` | 体言止めはトリガーにならない |
-| `A → B → C を順次実行する` | ワークフロー要約。Claude が本文を読まずここに従ってしまう |
-| `〜のオーケストレーター` | 機能説明で、いつ使うかが不明 |
-| `設計判断を記録する` | 動詞で終わっても What。`〜したとき` で終える |
+| `Use when ...` のみで WHAT が無い | 公式仕様違反。Claude がスキルリストから動作を推測できない |
+| `XXX の管理` / `XXX の設定ガイド` | 体言止めだけで終わると WHEN が欠落 |
+| `A → B → C を順次実行する` | ワークフロー要約のみでトリガー条件が無い |
+| WHAT に「〜のオーケストレーター」だけ書く | 何をオーケストレートするかを具体化する |
+| 250 字超過 | スキルリストで短縮され、肝心のキーワードが削られる |
 
 ## 必須構造
 
@@ -70,7 +74,7 @@ description: Use when [トリガー条件のみ]
 - 各 step を `### Step N: skill-name（役割）` で見出し
 - サブスキル呼び出しは `**REQUIRED SUB-SKILL:** skill-name に従い` で明示
 - `## 完了条件` セクションで全 step のチェックリストを提示
-- description に「A→B→C を順次実行」等のワークフロー要約を書かない
+- description の WHAT には「何をオーケストレートするか」を具体的に書く（例: `memory 検索 → ブランチ作成 → 仕様確認を統括する`）
 - **「よくある間違い」セクションは省略可**: 間違いの実体はサブスキル側で記述済みのため。オーケストレーター固有の落とし穴（step 順序違反など）がある場合のみ記述する
 
 ## 内部連鎖 skill の扱い
@@ -101,9 +105,9 @@ description: Use when [トリガー条件のみ]
 
 ## チェックリスト
 
-- [ ] `name` は動詞始まり・英数ハイフンのみ
-- [ ] `description` が「Use when」で始まりトリガーのみ
-- [ ] description にワークフロー要約が無い
+- [ ] `name` は動詞始まり・英数ハイフンのみ・64 字以内
+- [ ] `description` が「WHAT（動作を一文）. Use when <トリガー>」の 2 部構成
+- [ ] description は 250 字以内
 - [ ] 冒頭に 1-2 文の Overview
 - [ ] 「いつ使うか」セクションがある
 - [ ] 「よくある間違い」セクションがある（単なるリファレンス skill を除く）
@@ -117,7 +121,8 @@ description: Use when [トリガー条件のみ]
 
 | 間違い | 正しい対応 |
 |--------|-----------|
-| description に「〜のオーケストレーター。A→B→C を実行」と書く | トリガー条件のみ。手順は本文へ |
+| description が `Use when ...` だけで WHAT が無い | 公式仕様違反。`<動作を一文>. Use when <トリガー>` に直す |
+| description に「〜のオーケストレーター」としか書かない | 何をオーケストレートするか具体語を入れる |
 | 本文にサブスキル名だけ書いて REQUIRED マーカー無し | `**REQUIRED SUB-SKILL:**` を明示 |
 | 既存 skill と重複するトリガーを持たせる | 棲み分けを description に書く（例: `adr` の「design-decision 外で単独記録するとき」） |
 | skill 本文に narrative（「〇〇したときに〜した」） | 再利用可能な pattern/technique/reference のみ |
