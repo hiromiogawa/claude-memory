@@ -14,15 +14,16 @@ description: 実装完了時の仕上げ（self-review → docs-freshness → co
 
 ## 実行フロー
 
-### Step 1: self-review（検証サイクル）
+### Step 1: self-review（検証サイクル） — **必須・省略不可**
 
-**REQUIRED SUB-SKILL:** self-review に従い、全チェックをパスするまで修正する:
+**REQUIRED SUB-SKILL:** self-review を **必ず Skill ツールで明示的に起動する**。
 
-```
-pnpm lint → pnpm test → pnpm dep-check → pnpm knip
-```
+- 検証コマンド（lint → test → dep-check → knip → build）を順に全部走らせる
+- **差分ファイルを新鮮な目で再読して** コードレビュー（想定外の副作用・リグレッション・未考慮のエッジケースを探す）
+- 全パスするまでコミットしない
+- **PR 作成前にもう一度フルサイクルを必ず走らせる**（commit → push の間に追加編集が入る可能性があるため）
 
-全パスするまでコミットしない。
+この Step を省略することは許されない。CI が落ちる / レビュアーが気づくより前に自分で気づくのがセルフレビューの目的。「時間がない」「小さい変更」「CI が走るから」は全て無効な言い訳。
 
 ### Step 2: docs-freshness（ドキュメント確認）
 
@@ -50,7 +51,21 @@ pnpm lint → pnpm test → pnpm dep-check → pnpm knip
 
 ### 完了条件
 
-- [ ] self-review 全パス
+- [ ] self-review skill を **Skill ツールで明示的に起動** し、全パスを確認
+- [ ] 差分ファイルを自分の目で再読し、コードレビューで懸念点を報告（問題なしの場合もその旨を明言）
 - [ ] ドキュメント更新確認済み
 - [ ] Conventional Commits でコミット済み
 - [ ] PR 作成済み（Issue 紐付け済み）
+- [ ] PR 作成後にもう一度 self-review を走らせ、push 時点の差分が全パスすることを確認
+
+## Red Flags — STOP
+
+以下の思考パターンが浮かんだら STOP。セルフレビューをスキップしようとしているサイン:
+
+| 合理化 | 実態 |
+|---|---|
+| 「small diff だから verify だけで良い」 | small diff こそ見落としが致命傷になる |
+| 「CI が走るから手元は飛ばす」 | CI は最後の砦であって一次チェックではない。手元で気づくほうがループが短い |
+| 「さっき走らせたから PR 直前は不要」 | commit → push の間に追加 edit が入りうる。push 時点の差分で再検証する |
+| 「ユーザーに確認されるから後で直せる」 | ユーザーが検出する前に自分で検出するのがセルフレビューの定義 |
+| 「self-review skill を呼ばなくても手でコマンド打てば同じ」 | skill を明示起動することで「やった証拠」と次のチェックリストが残る。手作業だと省略が混入する |
