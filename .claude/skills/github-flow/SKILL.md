@@ -1,6 +1,6 @@
 ---
 name: github-flow
-description: Use when Issue を作成・階層付けするとき、PR を立てるとき、または GitHub Projects のステータスを更新するとき
+description: Issue を Epic / Task / Story / Bug の階層で管理し、PR と 1:1 で結び GitHub Projects で進捗を可視化する。Use when Issue を作成・階層付けするとき、PR を立てるとき、または GitHub Projects のステータスを更新するとき
 ---
 
 # GitHub Flow

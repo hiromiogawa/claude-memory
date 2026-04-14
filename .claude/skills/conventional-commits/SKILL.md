@@ -1,6 +1,6 @@
 ---
 name: conventional-commits
-description: Use when コミットメッセージを書くとき、ブランチを作成するとき、または type/scope/命名規則の付け方に迷ったとき
+description: Conventional Commits のコミットメッセージとブランチ名規約を定める（scope: core / embedding-onnx / storage-postgres / mcp-server / hooks）。Use when コミットメッセージを書くとき、ブランチを作成するとき、または type/scope/命名規則に迷ったとき
 ---
 
 # Conventional Commits とブランチルール

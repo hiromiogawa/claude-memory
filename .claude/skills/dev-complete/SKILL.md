@@ -1,6 +1,6 @@
 ---
 name: dev-complete
-description: Use when 実装が一段落し、コミット・PR作成に向けて仕上げ作業を始めるとき
+description: 実装完了時の仕上げ（self-review → docs-freshness → conventional-commits → PR 作成）を統括する。Use when 実装が一段落し、コミット・PR 作成に向けて仕上げ作業を始めるとき
 ---
 
 # 開発完了

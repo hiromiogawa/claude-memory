@@ -1,6 +1,6 @@
 ---
 name: rule-measure
-description: Use when ルール改善サイクルの起点で、スキル・CLAUDE.md・エージェント定義の効果を定量計測したいとき
+description: スキル・CLAUDE.md・エージェント定義の効果を定量計測する（改善サイクルの起点ステップ）。Use when ルール改善サイクルを始めるとき、またはルールの効果を数値で把握したいとき
 ---
 
 # ルール計測

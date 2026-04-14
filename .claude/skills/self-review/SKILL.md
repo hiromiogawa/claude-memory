@@ -1,6 +1,6 @@
 ---
 name: self-review
-description: Use when 実装が完了しコミット前に lint・test・dep-check・knip の検証サイクルを走らせたいとき
+description: コミット前に lint・test・dep-check・knip の検証サイクルを回し、全パスするまでコミットさせない。Use when 実装が完了しコミット前に検証サイクルを走らせたいとき
 ---
 
 # セルフレビュー

@@ -1,6 +1,6 @@
 ---
 name: project-bootstrap
-description: Use when 新しいリポジトリを作成しこのプロジェクトの dev-skills 標準で初期化するとき
+description: .project-config.yml をもとに新リポジトリを dev-skills 標準（code-quality / conventional-commits / github-flow / sdd / docs-freshness）で初期化する。Use when 新しいリポジトリを作成し dev-skills 標準でブートストラップするとき
 ---
 
 # プロジェクトブートストラップ

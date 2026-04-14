@@ -1,6 +1,6 @@
 ---
 name: rule-improve
-description: Use when rule-measure と rule-explore の結果をもとに、ルール改善提案を GitHub Issue として起票するとき
+description: measure / explore の結果をもとにルール改善提案を GitHub Issue として起票する（ファイルは一切変更しない）。Use when rule-measure と rule-explore の結果をもとに改善提案を Issue 化するとき
 ---
 
 # ルール改善提案

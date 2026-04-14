@@ -1,6 +1,6 @@
 ---
 name: rule-audit
-description: Use when rule-improve が起票したルール改善提案 Issue を検証し、承認するかクローズするか判断するとき
+description: rule-improve が起票した改善提案 Issue を精査し、承認かクローズかを判断する（改善サイクルの最終ステップ）。Use when rule-improve 直後、または `rule-improvement` ラベルの未精査 Issue があるとき
 ---
 
 # ルール検証
