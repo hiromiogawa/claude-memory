@@ -1,11 +1,12 @@
+import type { EmbeddingProvider } from '@claude-memory/core'
 import { beforeAll, describe, expect, it } from 'vitest'
-import { OnnxEmbeddingProvider } from '../src/onnx-embedding-provider.js'
+import { defineOnnxEmbeddingProvider } from '../src/onnx-embedding-provider.js'
 
-describe('OnnxEmbeddingProvider', () => {
-  let provider: OnnxEmbeddingProvider
+describe('defineOnnxEmbeddingProvider', () => {
+  let provider: EmbeddingProvider
 
   beforeAll(async () => {
-    provider = new OnnxEmbeddingProvider({
+    provider = defineOnnxEmbeddingProvider({
       modelName: 'intfloat/multilingual-e5-small',
     })
   })

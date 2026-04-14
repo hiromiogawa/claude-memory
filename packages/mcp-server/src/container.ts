@@ -11,9 +11,9 @@ import {
   defineSearchMemoryUseCase,
   defineUpdateMemoryUseCase,
 } from '@claude-memory/core'
-import { OnnxEmbeddingProvider } from '@claude-memory/embedding-onnx'
+import { defineOnnxEmbeddingProvider } from '@claude-memory/embedding-onnx'
 import { QAChunkingStrategy } from '@claude-memory/hooks'
-import { PostgresStorageRepository } from '@claude-memory/storage-postgres'
+import { definePostgresStorageRepository } from '@claude-memory/storage-postgres'
 import type { AppConfig } from './config.js'
 
 /**
@@ -22,10 +22,10 @@ import type { AppConfig } from './config.js'
  * @returns storage・embedding・全ユースケースのインスタンスを保持するコンテナ
  */
 export function createContainer(config: AppConfig) {
-  const storage = new PostgresStorageRepository(config.databaseUrl, {
+  const storage = definePostgresStorageRepository(config.databaseUrl, {
     maxConnections: config.dbPoolSize,
   })
-  const embedding = new OnnxEmbeddingProvider({ modelName: config.embeddingModel })
+  const embedding = defineOnnxEmbeddingProvider({ modelName: config.embeddingModel })
   const chunking = new QAChunkingStrategy()
 
   return {

@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 import { defineSaveMemoryUseCase } from '@claude-memory/core'
-import { OnnxEmbeddingProvider } from '@claude-memory/embedding-onnx'
+import { defineOnnxEmbeddingProvider } from '@claude-memory/embedding-onnx'
 import { QAChunkingStrategy, SessionEndHandler } from '@claude-memory/hooks'
-import { PostgresStorageRepository } from '@claude-memory/storage-postgres'
+import { definePostgresStorageRepository } from '@claude-memory/storage-postgres'
 
 interface HookInput {
   session_id: string
@@ -48,8 +48,8 @@ async function main() {
     process.exit(1)
   }
 
-  const storage = new PostgresStorageRepository(databaseUrl)
-  const embedding = new OnnxEmbeddingProvider({
+  const storage = definePostgresStorageRepository(databaseUrl)
+  const embedding = defineOnnxEmbeddingProvider({
     modelName: process.env.EMBEDDING_MODEL ?? 'intfloat/multilingual-e5-small',
   })
 

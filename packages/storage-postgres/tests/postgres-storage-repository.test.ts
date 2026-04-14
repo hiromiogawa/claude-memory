@@ -1,7 +1,10 @@
 import { randomUUID } from 'node:crypto'
 import type { Memory } from '@claude-memory/core'
 import { afterAll, beforeEach, describe, expect, it } from 'vitest'
-import { PostgresStorageRepository } from '../src/postgres-storage-repository.js'
+import {
+  definePostgresStorageRepository,
+  type PostgresStorageRepository,
+} from '../src/postgres-storage-repository.js'
 
 const DATABASE_URL =
   process.env.DATABASE_URL ?? 'postgresql://test:test@localhost:5434/claude_memory_test'
@@ -33,7 +36,7 @@ describe('PostgresStorageRepository', () => {
   let repo: PostgresStorageRepository
 
   beforeEach(async () => {
-    repo = new PostgresStorageRepository(DATABASE_URL)
+    repo = definePostgresStorageRepository(DATABASE_URL)
     await repo.clear()
   })
 
@@ -43,13 +46,13 @@ describe('PostgresStorageRepository', () => {
 
   describe('constructor options', () => {
     it('accepts custom pool size option', async () => {
-      const customRepo = new PostgresStorageRepository(DATABASE_URL, { maxConnections: 5 })
+      const customRepo = definePostgresStorageRepository(DATABASE_URL, { maxConnections: 5 })
       expect(customRepo).toBeDefined()
       await customRepo.close()
     })
 
     it('works with default pool size when no options given', async () => {
-      const defaultRepo = new PostgresStorageRepository(DATABASE_URL)
+      const defaultRepo = definePostgresStorageRepository(DATABASE_URL)
       expect(defaultRepo).toBeDefined()
       await defaultRepo.close()
     })
