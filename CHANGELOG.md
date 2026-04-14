@@ -1,5 +1,14 @@
 # Changelog
 
+## [1.0.4](https://github.com/hiromiogawa/claude-memory/compare/v1.0.3...v1.0.4) (2026-04-14)
+
+
+### Bug Fixes
+
+* **hooks:** add session-end CLI script for SessionEnd hook ([#158](https://github.com/hiromiogawa/claude-memory/issues/158)) ([#161](https://github.com/hiromiogawa/claude-memory/issues/161)) ([e37fe25](https://github.com/hiromiogawa/claude-memory/commit/e37fe253b08321a4fda92768f43ac19136bcd22d))
+* **hooks:** parse Claude Code JSONL log format in SessionEndHandler ([#163](https://github.com/hiromiogawa/claude-memory/issues/163)) ([b4c5a60](https://github.com/hiromiogawa/claude-memory/commit/b4c5a6041a440160af25d86ea1caf9aeb0a5bf4b))
+* **storage-postgres:** convert Date to ISO string in cleanup queries ([#168](https://github.com/hiromiogawa/claude-memory/issues/168)) ([#169](https://github.com/hiromiogawa/claude-memory/issues/169)) ([4941de9](https://github.com/hiromiogawa/claude-memory/commit/4941de9804cd99c0023a933e1219729888aeb3fc))
+
 ## [1.0.3](https://github.com/hiromiogawa/claude-memory/compare/v1.0.2...v1.0.3) (2026-04-08)
 
 
