@@ -9,13 +9,15 @@
 - 依存先: `@claude-memory/core`（インターフェースと型のみ）
 - 依存元: `mcp-server`
 
-## 主要クラス
+## 主要 factory
 
-| クラス | ファイル | 役割 |
-|--------|---------|------|
-| `SessionStartHandler` | `src/session-start-handler.ts` | セッション開始時に関連記憶を検索・注入 |
-| `SessionEndHandler` | `src/session-end-handler.ts` | セッション終了時に会話を記憶として保存 |
-| `QAChunkingStrategy` | `src/qa-chunking-strategy.ts` | 会話を Q&A ペアに分割（ChunkingStrategy 実装） |
+ADR-0008 / ADR-0009 に従い、全て factory function で提供する（class は不使用）。
+
+| factory | 戻り値型 | ファイル | 役割 |
+|---------|---------|---------|------|
+| `defineSessionStartHandler(searchUseCase)` | `SessionStartHandler` | `src/session-start-handler.ts` | セッション開始時に関連記憶を検索・注入 |
+| `defineSessionEndHandler(saveUseCase)` | `SessionEndHandler` | `src/session-end-handler.ts` | セッション終了時に会話を記憶として保存 |
+| `defineQAChunkingStrategy(options?)` | `ChunkingStrategy` | `src/qa-chunking-strategy.ts` | 会話を Q&A ペアに分割（ChunkingStrategy 実装） |
 
 ## コマンド
 

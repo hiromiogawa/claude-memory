@@ -1,3 +1,6 @@
-export { QAChunkingStrategy } from './qa-chunking-strategy.js'
-export { SessionEndHandler } from './session-end-handler.js'
-export { SessionStartHandler } from './session-start-handler.js'
+export {
+  defineQAChunkingStrategy,
+  type QAChunkingOptions,
+} from './qa-chunking-strategy.js'
+export { defineSessionEndHandler, type SessionEndHandler } from './session-end-handler.js'
+export { defineSessionStartHandler, type SessionStartHandler } from './session-start-handler.js'

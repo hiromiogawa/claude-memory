@@ -2,8 +2,7 @@ import { mkdirSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { QAChunkingStrategy } from '../src/qa-chunking-strategy.js'
-import { SessionEndHandler } from '../src/session-end-handler.js'
+import { defineSessionEndHandler } from '../src/session-end-handler.js'
 
 describe('SessionEndHandler', () => {
   const testDir = join(tmpdir(), 'claude-memory-test-' + Date.now())
@@ -39,7 +38,7 @@ describe('SessionEndHandler', () => {
     ]
     writeFileSync(logPath, lines.join('\n'))
 
-    const handler = new SessionEndHandler(new QAChunkingStrategy(), mockSaveUseCase)
+    const handler = defineSessionEndHandler(mockSaveUseCase)
     await handler.handle(logPath, 'session-123', '/my/project')
 
     expect(mockSaveUseCase.saveConversation).toHaveBeenCalledTimes(1)
@@ -63,7 +62,7 @@ describe('SessionEndHandler', () => {
     ]
     writeFileSync(logPath, lines.join('\n'))
 
-    const handler = new SessionEndHandler(new QAChunkingStrategy(), mockSaveUseCase)
+    const handler = defineSessionEndHandler(mockSaveUseCase)
     await handler.handle(logPath, 'session-123')
 
     const callArg = vi.mocked(mockSaveUseCase.saveConversation).mock.calls[0]![0]
@@ -87,7 +86,7 @@ describe('SessionEndHandler', () => {
     ]
     writeFileSync(logPath, lines.join('\n'))
 
-    const handler = new SessionEndHandler(new QAChunkingStrategy(), mockSaveUseCase)
+    const handler = defineSessionEndHandler(mockSaveUseCase)
     await handler.handle(logPath, 'session-123')
 
     const callArg = vi.mocked(mockSaveUseCase.saveConversation).mock.calls[0]![0]
@@ -99,7 +98,7 @@ describe('SessionEndHandler', () => {
     const logPath = join(testDir, 'empty.jsonl')
     writeFileSync(logPath, '')
 
-    const handler = new SessionEndHandler(new QAChunkingStrategy(), mockSaveUseCase)
+    const handler = defineSessionEndHandler(mockSaveUseCase)
     await handler.handle(logPath, 'session-123')
 
     expect(mockSaveUseCase.saveConversation).toHaveBeenCalledWith(
@@ -124,7 +123,7 @@ describe('SessionEndHandler', () => {
     ]
     writeFileSync(logPath, lines.join('\n'))
 
-    const handler = new SessionEndHandler(new QAChunkingStrategy(), mockSaveUseCase)
+    const handler = defineSessionEndHandler(mockSaveUseCase)
     await handler.handle(logPath, 'session-123')
 
     const callArg = vi.mocked(mockSaveUseCase.saveConversation).mock.calls[0]![0]
@@ -149,7 +148,7 @@ describe('SessionEndHandler', () => {
     ]
     writeFileSync(logPath, lines.join('\n'))
 
-    const handler = new SessionEndHandler(new QAChunkingStrategy(), mockSaveUseCase)
+    const handler = defineSessionEndHandler(mockSaveUseCase)
     await handler.handle(logPath, 'session-123')
 
     const callArg = vi.mocked(mockSaveUseCase.saveConversation).mock.calls[0]![0]

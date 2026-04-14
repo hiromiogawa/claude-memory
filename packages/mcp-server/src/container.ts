@@ -12,7 +12,7 @@ import {
   defineUpdateMemoryUseCase,
 } from '@claude-memory/core'
 import { defineOnnxEmbeddingProvider } from '@claude-memory/embedding-onnx'
-import { QAChunkingStrategy } from '@claude-memory/hooks'
+import { defineQAChunkingStrategy } from '@claude-memory/hooks'
 import { definePostgresStorageRepository } from '@claude-memory/storage-postgres'
 import type { AppConfig } from './config.js'
 
@@ -26,7 +26,7 @@ export function createContainer(config: AppConfig) {
     maxConnections: config.dbPoolSize,
   })
   const embedding = defineOnnxEmbeddingProvider({ modelName: config.embeddingModel })
-  const chunking = new QAChunkingStrategy()
+  const chunking = defineQAChunkingStrategy()
 
   return {
     storage,

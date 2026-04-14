@@ -6,34 +6,38 @@ interface SearchCapable {
 }
 
 /** セッション開始時に関連メモリを検索してコンテキスト再現用にフォーマットするハンドラ。 */
-export class SessionStartHandler {
-  /**
-   * SessionStartHandlerの新しいインスタンスを生成する。
-   * @param searchUseCase - メモリを検索するユースケース
-   */
-  constructor(private readonly searchUseCase: SearchCapable) {}
-
+export interface SessionStartHandler {
   /**
    * 関連メモリを検索し、フォーマットされたコンテキスト文字列を返す。
    * @param projectPath - 検索スコープを絞るプロジェクトパス（省略可）
    * @returns 関連メモリのフォーマット済み文字列、または結果なしメッセージ
    */
-  async handle(projectPath?: string): Promise<string> {
-    const filter: SearchFilter | undefined = projectPath ? { projectPath } : undefined
-    const results = await this.searchUseCase.search(
-      'project context',
-      SESSION_START_SEARCH_LIMIT,
-      filter,
-    )
+  handle(projectPath?: string): Promise<string>
+}
 
-    if (results.length === 0) {
-      return 'No relevant memories found.'
-    }
+/**
+ * セッション開始時ハンドラを生成する。
+ * @param searchUseCase - メモリを検索するユースケース
+ */
+export function defineSessionStartHandler(searchUseCase: SearchCapable): SessionStartHandler {
+  return {
+    async handle(projectPath?: string): Promise<string> {
+      const filter: SearchFilter | undefined = projectPath ? { projectPath } : undefined
+      const results = await searchUseCase.search(
+        'project context',
+        SESSION_START_SEARCH_LIMIT,
+        filter,
+      )
 
-    const formatted = results
-      .map((r, i) => `[${i + 1}] (score: ${r.score.toFixed(2)}) ${r.memory.content}`)
-      .join('\n\n')
+      if (results.length === 0) {
+        return 'No relevant memories found.'
+      }
 
-    return `## Previous session context:\n\n${formatted}`
+      const formatted = results
+        .map((r, i) => `[${i + 1}] (score: ${r.score.toFixed(2)}) ${r.memory.content}`)
+        .join('\n\n')
+
+      return `## Previous session context:\n\n${formatted}`
+    },
   }
 }
