@@ -4,16 +4,6 @@ import type { EmbeddingProvider } from '@claude-memory/core'
 import { env, type FeatureExtractionPipeline, pipeline } from '@huggingface/transformers'
 import { DEFAULT_DIMENSION } from './constants.js'
 
-// transformers.js のモデルキャッシュ位置をユーザーホームの `~/.cache/huggingface/` に統一する。
-// デフォルトはパッケージ自身のディレクトリ配下（pnpm の内部パス）で、host と Docker container
-// では異なる node_modules パスになるためキャッシュが共有できない。HF_CACHE_DIR が設定されて
-// いればそれを優先し、未設定時は OS 共通パターンの ~/.cache/huggingface/ を使う。
-// host: /Users/<name>/.cache/huggingface (デフォルト)
-// Docker container: /root/.cache/huggingface (HOME=/root)
-// docker-compose.yml で host の ~/.cache/huggingface を container の /root/.cache/huggingface
-// に bind mount すると、両者が物理的に同じディレクトリを共有しモデルの二重ダウンロードを回避できる。
-env.cacheDir = process.env.HF_CACHE_DIR ?? join(homedir(), '.cache', 'huggingface')
-
 export interface OnnxEmbeddingConfig {
   modelName: string
 }
@@ -34,6 +24,22 @@ const MODEL_DIMENSIONS: Record<string, number> = {
  * @param config - ONNX モデル名を指定する設定
  */
 export function defineOnnxEmbeddingProvider(config: OnnxEmbeddingConfig): EmbeddingProvider {
+  // transformers.js のモデルキャッシュ位置をユーザーホームの `~/.cache/huggingface/` に統一する。
+  // デフォルトはパッケージ自身のディレクトリ配下（pnpm の内部パス）で、host と Docker container
+  // では異なる node_modules パスになるためキャッシュが共有できない。HF_CACHE_DIR が設定されて
+  // いればそれを優先し、未設定時は OS 共通パターンの ~/.cache/huggingface/ を使う。
+  //
+  // host: /Users/<name>/.cache/huggingface (デフォルト)
+  // Docker container: /root/.cache/huggingface (HOME=/root)
+  //
+  // docker-compose.yml で host の ~/.cache/huggingface を container の /root/.cache/huggingface
+  // に bind mount すると、両者が物理的に同じディレクトリを共有しモデルの二重ダウンロードを回避できる。
+  //
+  // NOTE: factory 呼び出しごとにべき等に代入される。transformers.js の env は singleton なので
+  // 複数の provider を同時に生成する場合は「最後に呼ばれた factory の設定」が支配的となるが、
+  // 現状このプロジェクトでは 1 factory = 1 provider のため問題にならない。
+  env.cacheDir = process.env.HF_CACHE_DIR ?? join(homedir(), '.cache', 'huggingface')
+
   const dimension = MODEL_DIMENSIONS[config.modelName] ?? DEFAULT_DIMENSION
   const cache: { extractor: Promise<FeatureExtractionPipeline> | null } = { extractor: null }
 
