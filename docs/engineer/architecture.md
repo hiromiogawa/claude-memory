@@ -21,30 +21,37 @@
 - `StorageRepository` — `save()`, `searchByKeyword()`, `searchByVector()`, `list()`, `delete()`, `exportAll()`, `deleteOlderThan()`, `countOlderThan()`
 - `ChunkingStrategy` — `chunk()`
 
-**ユースケース:**
-- `SaveMemoryUseCase` — 保存 + 重複チェック（コサイン類似度 >= 0.90）
-- `SearchMemoryUseCase` — ハイブリッド検索（pg_bigm + pgvector → RRF → 時間減衰 → アクセスブースト）
-- `UpdateMemoryUseCase` — 更新（content変更時のみ再embedding）
-- `DeleteMemoryUseCase` — 削除（存在チェック付き）
-- `ListMemoriesUseCase` — 一覧取得（ページネーション、最大100件）
-- `ExportMemoryUseCase` — 全記憶をJSON形式でエクスポート
-- `ImportMemoryUseCase` — JSONからインポート（embedding再計算）
-- `CleanupMemoryUseCase` — 古い記憶の削除（dry-run対応）
-- `GetStatsUseCase` — 統計情報取得
-- `ClearMemoryUseCase` — 全記憶削除
+**ユースケース（factory function で実装、詳細は [ADR-0008](../adr/0008-use-case-factory-functions.md)）:**
+
+UseCase は class ではなく `defineXxxUseCase(...)` の factory function として実装される。型は `ReturnType<typeof defineXxxUseCase>` で公開される。
+
+- `defineSaveMemoryUseCase` → `SaveMemoryUseCase` — 保存 + 重複チェック（コサイン類似度 >= 0.90）
+- `defineSearchMemoryUseCase` → `SearchMemoryUseCase` — ハイブリッド検索（pg_bigm + pgvector → RRF → 時間減衰 → アクセスブースト）
+- `defineUpdateMemoryUseCase` → `UpdateMemoryUseCase` — 更新（content変更時のみ再embedding）
+- `defineDeleteMemoryUseCase` → `DeleteMemoryUseCase` — 削除（存在チェック付き）
+- `defineListMemoriesUseCase` → `ListMemoriesUseCase` — 一覧取得（ページネーション、最大100件）
+- `defineExportMemoryUseCase` → `ExportMemoryUseCase` — 全記憶をJSON形式でエクスポート
+- `defineImportMemoryUseCase` → `ImportMemoryUseCase` — JSONからインポート（embedding再計算）
+- `defineCleanupMemoryUseCase` → `CleanupMemoryUseCase` — 古い記憶の削除（dry-run対応）
+- `defineGetStatsUseCase` → `GetStatsUseCase` — 統計情報取得
+- `defineClearMemoryUseCase` → `ClearMemoryUseCase` — 全記憶削除
+
+`errors/memory-error.ts` の `MemoryError` 系のみ、`instanceof` によるエラー分類が本質的機能のため class のまま据え置き。
 
 ### Infrastructure Layer
 
-coreのインターフェースを実装する（依存性逆転の原則）。
+coreのインターフェースを factory function で実装する（依存性逆転の原則、詳細は [ADR-0009](../adr/0009-infrastructure-adapter-factory-functions.md)）。
 
 **`@claude-memory/embedding-onnx`:**
-- `OnnxEmbeddingProvider` implements `EmbeddingProvider`
+- `defineOnnxEmbeddingProvider(config): EmbeddingProvider`
 - @huggingface/transformers でローカルONNX推論
 - multilingual-e5-small（384次元）がデフォルト
-- `embedBatch` は `Promise.all` で並列処理
+- モデルは `~/.cache/huggingface/` に lazy init でキャッシュ（host と Docker で共有可能）
+- `embedBatch` は 1 回の pipeline 呼び出しでバッチ実行
 
 **`@claude-memory/storage-postgres`:**
-- `PostgresStorageRepository` implements `StorageRepository`
+- `definePostgresStorageRepository(connectionString, options): PostgresStorageRepository`
+- 戻り値型 `PostgresStorageRepository` は `StorageRepository & { migrate(), close() }` で、interface 外のライフサイクル管理メソッドを露出
 - Drizzle ORM + postgres パッケージ
 - pgvector: HNSWインデックスによるベクトル近傍検索
 - pg_bigm: GINインデックスによる日本語対応キーワード検索
@@ -53,17 +60,18 @@ coreのインターフェースを実装する（依存性逆転の原則）。
 
 ### Interface Layer
 
-外部との接点。
+外部との接点。`@claude-memory/hooks` は interface 層 wrapper 群として factory function で実装される（詳細は [ADR-0010](../adr/0010-hooks-factory-functions.md)）。
 
 **`@claude-memory/mcp-server`:**
 - MCPツール10種を公開（stdio transport）
-- DIコンテナ（`createContainer`）で全パッケージを組み立て・注入
+- `createContainer(config)` で全パッケージの factory を組み立て・DI コンテナを生成（「実体を作る」ので `create` 動詞を使う）
 - Pino loggerで構造化ログ
 - 操作レイテンシをレスポンスに含む
 
 **`@claude-memory/hooks`:**
-- `SessionEndHandler` — PostSessionEndフックのエントリポイント
-- `QAChunkingStrategy` implements `ChunkingStrategy` — 会話をQ&Aペアに分割（最大1000文字/チャンク、文境界で分割）
+- `defineSessionStartHandler(searchUseCase) → SessionStartHandler` — セッション開始時に関連メモリを検索し、コンテキストを整形して返す
+- `defineSessionEndHandler(saveUseCase) → SessionEndHandler` — PostSessionEnd フックの処理本体（JSONLパース → 保存）
+- `defineQAChunkingStrategy(options?) → ChunkingStrategy` — 会話をQ&Aペアに分割（最大1000文字/チャンク、文境界で分割）
 
 ## パッケージ構成
 
@@ -207,11 +215,12 @@ k が大きいほど順位差の影響が小さくなる（結果が均等化さ
 
 ONNX Runtimeによるローカル推論。外部APIへの依存なし。
 
-- **モデル**: multilingual-e5-small（384次元、~100MB）
-- **初期化**: 遅延初期化（初回embed時にモデルをダウンロード、`~/.cache/`にキャッシュ）
+- **モデル**: multilingual-e5-small（384次元、fp32 で約 465MB）
+- **初期化**: 遅延初期化（初回embed時にモデルをダウンロード）
+- **キャッシュ位置**: `~/.cache/huggingface/`（`defineOnnxEmbeddingProvider` が `env.cacheDir` を明示設定。host と Docker container で bind mount により共有可能）
 - **プーリング**: mean pooling
 - **正規化**: L2 norm
-- **バッチ処理**: `Promise.all` で並列実行
+- **バッチ処理**: 1 回の `pipeline()` 呼び出しでバッチ推論
 
 ### インデックス戦略
 
